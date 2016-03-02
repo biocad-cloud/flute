@@ -9,11 +9,11 @@ Imports System.Runtime.InteropServices
 ' Review the values of the assembly attributes
 
 <Assembly: AssemblyTitle("REST")>
-<Assembly: AssemblyDescription("")>
+<Assembly: AssemblyDescription("http://services.gcmodeller.org REST API framework")>
 <Assembly: AssemblyCompany("GPL3")>
 <Assembly: AssemblyProduct("REST")>
 <Assembly: AssemblyCopyright("Copyright © R&D, SMRUCC 2016. All rights reserved.")>
-<Assembly: AssemblyTrademark("")>
+<Assembly: AssemblyTrademark("GCModeller.org")>
 
 <Assembly: ComVisible(False)>
 
