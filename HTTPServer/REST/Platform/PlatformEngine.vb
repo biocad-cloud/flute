@@ -21,14 +21,18 @@ Namespace Platform
         ''' <param name="port"></param>
         ''' <param name="root"></param>
         ''' <param name="nullExists"></param>
-        Sub New(root As String, Optional port As Integer = 80, Optional nullExists As Boolean = False)
+        Sub New(root As String, Optional port As Integer = 80, Optional nullExists As Boolean = False, Optional appDll As String = "")
             Call MyBase.New(port, root, nullExists)
-            Call __init()
+            Call __init(appDll)
         End Sub
 
-        Private Sub __init()
+        Private Sub __init(dll As String)
             _AppManager = New AppEngine.APPManager(Me)
-            AppEngine.ExternalCall.Scan(Me)
+            If dll.FileExists Then
+                Call AppEngine.ExternalCall.ParseDll(dll, Me)
+            Else
+                Call AppEngine.ExternalCall.Scan(Me)
+            End If
             Me._Plugins = REST.Platform.Plugins.ExternalCall.Scan(Me)
         End Sub
 

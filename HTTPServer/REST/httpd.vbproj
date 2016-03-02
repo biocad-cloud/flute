@@ -121,7 +121,8 @@
     <Compile Include="AppEngine\ExternalCall.vb" />
     <Compile Include="AppEngine\APIName.vb" />
     <Compile Include="AppEngine\WebApp.vb" />
-    <Compile Include="CLI.vb" />
+    <Compile Include="Program\Configs.vb" />
+    <Compile Include="Program\CLI.vb" />
     <Compile Include="Platform\PlatformSub.vb" />
     <Compile Include="Platform\Plugin\PluginBase.vb" />
     <Compile Include="Platform\Plugin\ExternalCall.vb" />
@@ -142,7 +143,7 @@
     </Compile>
     <Compile Include="Platform\PlatformEngine.vb" />
     <Compile Include="Platform\Task\TaskPool.vb" />
-    <Compile Include="Program.vb" />
+    <Compile Include="Program\Program.vb" />
     <Compile Include="Platform\Task\Task.vb" />
   </ItemGroup>
   <ItemGroup>

@@ -24,6 +24,12 @@ Namespace AppEngine
             Return True
         End Function
 
+        ''' <summary>
+        ''' Register external WebApp as services.
+        ''' </summary>
+        ''' <param name="dll"></param>
+        ''' <param name="platform"></param>
+        ''' <returns></returns>
         Public Function ParseDll(dll As String, platform As PlatformEngine) As Integer
             Dim assm As Reflection.Assembly = Reflection.Assembly.LoadFile(dll)
             Dim types As Type() = (From typeDef As Type
