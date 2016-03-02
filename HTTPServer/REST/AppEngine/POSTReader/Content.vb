@@ -81,7 +81,8 @@ Namespace AppEngine
         Const WebKitFormBoundary As String = "^[-]+WebKitFormBoundary.+?$"
 
         Public Shared Function ContentParser(post As String) As Content()
-            Dim array As String() = Regex.Split(post, WebKitFormBoundary, RegexOptions.Multiline).ToArray
+
+            Dim array As String() = Strings.Split(post, del)
             Dim value As Content() = array.ToArray(Function(x) Parser(x), where:=Function(x) Not String.IsNullOrWhiteSpace(x))
             Return value
         End Function
