@@ -12,6 +12,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)HttpFileSystem.vb" />
     <Compile Include="$(MSBuildThisFileDirectory)HttpServer.vb" />
     <Compile Include="$(MSBuildThisFileDirectory)HttpProcessor.vb" />
+    <Compile Include="$(MSBuildThisFileDirectory)POSTReader\HttpMultipart.vb" />
+    <Compile Include="$(MSBuildThisFileDirectory)POSTReader\HttpPostedFile.vb" />
+    <Compile Include="$(MSBuildThisFileDirectory)POSTReader\PostReader.vb" />
+    <Compile Include="$(MSBuildThisFileDirectory)POSTReader\ReadSubStream.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)404.html" />

@@ -2,6 +2,7 @@
 Imports System.Net.Sockets
 Imports System.Text
 Imports SMRUCC.REST.HttpInternal
+Imports SMRUCC.REST.HttpInternal.POSTReader
 
 Namespace Platform
 
@@ -33,8 +34,8 @@ Namespace Platform
 
         Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
             Dim out As String = ""
-            Dim args As PostParser = New PostParser(inputData, p.httpHeaders("Content-Type"), Encoding.UTF8)
-            Dim success As Boolean = AppManager.InvokePOST(p.http_url, inputData, out)
+            Dim args As PostReader = New PostReader(inputData, p.httpHeaders("Content-Type"), Encoding.UTF8)
+            Dim success As Boolean = AppManager.InvokePOST(p.http_url, args, out)
             Call __handleSend(p, success, out)
         End Sub
 

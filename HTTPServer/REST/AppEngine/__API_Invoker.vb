@@ -4,6 +4,7 @@ Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports SMRUCC.REST.AppEngine.APIMethods
+Imports SMRUCC.REST.HttpInternal.POSTReader
 
 Namespace AppEngine
 
@@ -18,7 +19,7 @@ Namespace AppEngine
             Return Name
         End Function
 
-        Public Function InvokePOST(obj As Object, args As String, inputs As StreamReader, ByRef result As String) As Boolean
+        Public Function InvokePOST(obj As Object, args As String, inputs As PostReader, ByRef result As String) As Boolean
             Try
                 Return __invokePOST(obj, args, inputs, result)
             Catch ex As Exception
@@ -89,7 +90,7 @@ Namespace AppEngine
             Return sbr.ToString
         End Function
 
-        Private Function __invokePOST(obj As Object, argvs As String, inputs As StreamReader, ByRef result As String) As Boolean
+        Private Function __invokePOST(obj As Object, argvs As String, inputs As PostReader, ByRef result As String) As Boolean
             Dim value As Object = EntryPoint.Invoke(obj, {argvs, inputs})
             result = DirectCast(value, String)
             Return True

@@ -4,6 +4,7 @@ Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports SMRUCC.REST.AppEngine.APIMethods
+Imports SMRUCC.REST.HttpInternal.POSTReader
 
 Namespace AppEngine
 
@@ -51,18 +52,18 @@ Namespace AppEngine
         ''' <param name="api">已经变小写了的</param>
         ''' <param name="inputs"></param>
         ''' <returns></returns>
-        Public Function Invoke(api As String, inputs As MemoryStream, ByRef result As String) As Boolean
+        Public Function Invoke(api As String, inputs As PostReader, ByRef result As String) As Boolean
             If Not Me.API.ContainsKey(api) Then
                 Return False
             End If
 
             Dim script As __API_Invoker = Me.API(api)
-            '   Dim success As Boolean = script.InvokePOST(Application, api, inputs, result)
+            Dim success As Boolean = script.InvokePOST(Application, api, inputs, result)
 
-            '  Return success
+            Return success
         End Function
 
-        Public Shared Function InvokePOST(url As String, inputs As MemoryStream, applications As Dictionary(Of String, APPEngine), ByRef result As String) As Boolean
+        Public Shared Function InvokePOST(url As String, inputs As PostReader, applications As Dictionary(Of String, APPEngine), ByRef result As String) As Boolean
             Dim application As String = "", api As String = "", parameters As String = ""
             If Not APPEngine.GetParameter(url, application, api, parameters) Then
                 Return False

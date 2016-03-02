@@ -117,9 +117,6 @@
     <Compile Include="AppEngine\API\Methods.vb" />
     <Compile Include="AppEngine\APPEngine.vb" />
     <Compile Include="AppEngine\APPManager.vb" />
-    <Compile Include="AppEngine\POSTReader\HttpMultipart.vb" />
-    <Compile Include="AppEngine\POSTReader\PostParser.vb" />
-    <Compile Include="AppEngine\POSTReader\HttpPostedFile.vb" />
     <Compile Include="AppEngine\__API_Invoker.vb" />
     <Compile Include="AppEngine\ExternalCall.vb" />
     <Compile Include="AppEngine\APIName.vb" />
@@ -128,8 +125,6 @@
     <Compile Include="Platform\PlatformSub.vb" />
     <Compile Include="Platform\Plugin\PluginBase.vb" />
     <Compile Include="Platform\Plugin\ExternalCall.vb" />
-    <Compile Include="AppEngine\POSTReader\ArgsMgr.vb" />
-    <Compile Include="AppEngine\POSTReader\Content.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>

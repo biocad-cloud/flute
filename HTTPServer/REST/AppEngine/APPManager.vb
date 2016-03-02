@@ -1,5 +1,6 @@
 ﻿Imports System.IO
 Imports Microsoft.VisualBasic.CommandLine.Reflection
+Imports SMRUCC.REST.HttpInternal.POSTReader
 Imports SMRUCC.REST.Platform
 
 Namespace AppEngine
@@ -51,7 +52,7 @@ Namespace AppEngine
         ''' <param name="inputs"></param>
         ''' <param name="result">HTML输出页面或者json数据</param>
         ''' <returns></returns>
-        Public Function InvokePOST(url As String, inputs As MemoryStream, ByRef result As String) As Boolean
+        Public Function InvokePOST(url As String, inputs As PostReader, ByRef result As String) As Boolean
             Return APPEngine.InvokePOST(url, inputs, RunningAPP, result)
         End Function
 
