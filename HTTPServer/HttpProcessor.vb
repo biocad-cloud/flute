@@ -43,7 +43,7 @@ Namespace HttpInternal
         End Sub
 
         ''' <summary>
-        ''' ????url???HTTP???
+        ''' If current request url is indicates the HTTP root:  index.html
         ''' </summary>
         ''' <returns></returns>
         Public ReadOnly Property IsWWWRoot As Boolean
@@ -56,27 +56,27 @@ Namespace HttpInternal
             Return http_url
         End Function
 
-        Private Function __streamReadLine(InputStream As Stream) As String
-            Dim NextChar As Integer
-            Dim ChunkBuffer As New List(Of Char)
+        Private Function __streamReadLine(inputStream As Stream) As String
+            Dim nextChar As Integer
+            Dim chrbuf As New List(Of Char)
 
             While True
-                NextChar = InputStream.ReadByte()
-                If NextChar = Asc(ControlChars.Lf) Then
+                nextChar = inputStream.ReadByte()
+                If nextChar = Asc(ControlChars.Lf) Then
                     Exit While
                 End If
-                If NextChar = Asc(ControlChars.Cr) Then
+                If nextChar = Asc(ControlChars.Cr) Then
                     Continue While
                 End If
-                If NextChar = -1 Then
+                If nextChar = -1 Then
                     Call Thread.Sleep(1)
                     Continue While
                 End If
 
-                Call ChunkBuffer.Add(Convert.ToChar(NextChar))
+                Call chrbuf.Add(Convert.ToChar(nextChar))
             End While
 
-            Return New String(ChunkBuffer.ToArray)
+            Return New String(chrbuf.ToArray)
         End Function
 
         Public Sub Process()
@@ -121,9 +121,9 @@ Namespace HttpInternal
                 HandlePOSTRequest()
 
             Else
-                Dim MSG As String = $"Unsupport {NameOf(http_method)}:={http_method}"
-                Call MSG.__DEBUG_ECHO
-                Call writeFailure(MSG)
+                Dim msg As String = $"Unsupport {NameOf(http_method)}:={http_method}"
+                Call msg.__DEBUG_ECHO
+                Call writeFailure(msg)
             End If
         End Sub
 
@@ -143,7 +143,8 @@ Namespace HttpInternal
         Public Sub readHeaders()
             Call NameOf(readHeaders).__DEBUG_ECHO
 
-            Dim line As [String] = ""
+            Dim line As String = ""
+
             While __streamReadLine(_inputStream).ShadowCopy(line) IsNot Nothing
                 If line.Equals("") Then
                     Console.WriteLine("got headers")
@@ -154,7 +155,7 @@ Namespace HttpInternal
                 If separator = -1 Then
                     Throw New Exception("invalid http header line: " & line)
                 End If
-                Dim name As [String] = line.Substring(0, separator)
+                Dim name As String = line.Substring(0, separator)
                 Dim pos As Integer = separator + 1
                 While (pos < line.Length) AndAlso (line(pos) = " "c)
                     ' strip any spaces
@@ -191,7 +192,7 @@ Namespace HttpInternal
             If Me.httpHeaders.ContainsKey("Content-Length") Then
                 content_len = Convert.ToInt32(Me.httpHeaders("Content-Length"))
                 If content_len > MAX_POST_SIZE Then
-                    Throw New Exception([String].Format("POST Content-Length({0}) too big for this simple server", content_len))
+                    Throw New Exception(String.Format("POST Content-Length({0}) too big for this simple server", content_len))
                 End If
                 Dim buf As Byte() = New Byte(BUF_SIZE - 1) {}
                 Dim to_read As Integer = content_len

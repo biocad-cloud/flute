@@ -1,6 +1,7 @@
 ﻿Imports Microsoft.VisualBasic.CommandLine
 Imports Microsoft.VisualBasic.ComponentModel.Collection.Generic
 Imports Microsoft.VisualBasic.Parallel
+Imports Microsoft.VisualBasic
 
 Namespace Platform
 
