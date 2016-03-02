@@ -94,6 +94,6 @@ Public Class PostParser
         End While
     End Sub
 
-    Public ReadOnly Property Form As NameValueCollection
-    Public ReadOnly Property Files As Dictionary(Of String, HttpPostedFile)
+    Public ReadOnly Property Form As New NameValueCollection
+    Public ReadOnly Property Files As New Dictionary(Of String, HttpPostedFile)
 End Class
