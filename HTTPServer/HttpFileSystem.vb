@@ -183,7 +183,7 @@ Namespace HttpInternal
             Call $"Transfer data:  {contentType.ToString} ==> [{buf.Length} Bytes]!".__DEBUG_ECHO
         End Sub
 
-        Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As StreamReader)
+        Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
 
         End Sub
 

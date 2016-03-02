@@ -51,7 +51,7 @@ Namespace AppEngine
         ''' <param name="inputs"></param>
         ''' <param name="result">HTML输出页面或者json数据</param>
         ''' <returns></returns>
-        Public Function InvokePOST(url As String, inputs As StreamReader, ByRef result As String) As Boolean
+        Public Function InvokePOST(url As String, inputs As MemoryStream, ByRef result As String) As Boolean
             Return APPEngine.InvokePOST(url, inputs, RunningAPP, result)
         End Function
 

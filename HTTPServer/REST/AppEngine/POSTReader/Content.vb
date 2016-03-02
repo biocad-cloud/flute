@@ -82,9 +82,9 @@ Namespace AppEngine
 
         Public Shared Function ContentParser(post As String) As Content()
 
-            Dim array As String() = Strings.Split(post, del)
-            Dim value As Content() = array.ToArray(Function(x) Parser(x), where:=Function(x) Not String.IsNullOrWhiteSpace(x))
-            Return value
+            '   Dim array As String() = Strings.Split(post, l)
+            '  Dim value As Content() = array.ToArray(Function(x) Parser(x), where:=Function(x) Not String.IsNullOrWhiteSpace(x))
+            '  Return value
         End Function
 
         ''' <summary>

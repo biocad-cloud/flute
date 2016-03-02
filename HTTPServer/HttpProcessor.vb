@@ -215,7 +215,7 @@ Namespace HttpInternal
             End If
 
             Call Console.WriteLine("get post data end")
-            Call srv.handlePOSTRequest(Me, New StreamReader(ms))
+            Call srv.handlePOSTRequest(Me, ms)
         End Sub
 
         Public Sub writeSuccess(Optional content_type As String = "text/html")

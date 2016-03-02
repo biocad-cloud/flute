@@ -117,7 +117,8 @@
     <Compile Include="AppEngine\API\Methods.vb" />
     <Compile Include="AppEngine\APPEngine.vb" />
     <Compile Include="AppEngine\APPManager.vb" />
-    <Compile Include="AppEngine\POSTReader\Class1.vb" />
+    <Compile Include="AppEngine\POSTReader\HttpMultipart.vb" />
+    <Compile Include="AppEngine\POSTReader\PostParser.vb" />
     <Compile Include="AppEngine\POSTReader\HttpPostedFile.vb" />
     <Compile Include="AppEngine\__API_Invoker.vb" />
     <Compile Include="AppEngine\ExternalCall.vb" />

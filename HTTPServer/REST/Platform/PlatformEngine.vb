@@ -30,7 +30,7 @@ Namespace Platform
             Me._Plugins = REST.Platform.Plugins.ExternalCall.Scan(Me)
         End Sub
 
-        Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As StreamReader)
+        Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
             Dim out As String = ""
             Dim success As Boolean = AppManager.InvokePOST(p.http_url, inputData, out)
             Call __handleSend(p, success, out)

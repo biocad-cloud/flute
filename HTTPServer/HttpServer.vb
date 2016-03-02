@@ -140,7 +140,7 @@ Namespace HttpInternal
         ''' 
         ''' </example>
         Public MustOverride Sub handleGETRequest(p As HttpProcessor)
-        Public MustOverride Sub handlePOSTRequest(p As HttpProcessor, inputData As StreamReader)
+        Public MustOverride Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
 
 #Region "IDisposable Support"
         Private disposedValue As Boolean ' To detect redundant calls
