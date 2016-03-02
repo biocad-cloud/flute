@@ -7,35 +7,51 @@ Imports Microsoft.VisualBasic.Parallel
 
 Namespace HttpInternal
 
+    ''' <summary>
+    ''' Internal http server core.
+    ''' </summary>
     Public MustInherit Class HttpServer : Implements System.IDisposable
-
-        Public ReadOnly Property LocalPort As Integer
-
-        Dim _httpListener As TcpListener
-        ReadOnly _homeShowOnStart As Boolean = False
 
         Protected Is_active As Boolean = True
 
+        ReadOnly _httpListener As TcpListener
+        ReadOnly _homeShowOnStart As Boolean = False
+
+        ''' <summary>
+        ''' The network data port of this internal http server listen.
+        ''' </summary>
+        ''' <returns></returns>
+        Public ReadOnly Property LocalPort As Integer
+        ''' <summary>
+        ''' Indicates this http server is running status or not. 
+        ''' </summary>
+        ''' <returns></returns>
         Public ReadOnly Property IsRunning As Boolean
             Get
                 Return Not _httpListener Is Nothing AndAlso _httpListener.Server.IsBound
             End Get
         End Property
 
+        ''' <summary>
+        ''' 
+        ''' </summary>
+        ''' <param name="port">The network data port of this internal http server listen.</param>
+        ''' <param name="homeShowOnStart"></param>
         Public Sub New(port As Integer, Optional homeShowOnStart As Boolean = False)
             Me._LocalPort = port
             Me._homeShowOnStart = homeShowOnStart
+            Me._httpListener = New TcpListener(IPAddress.Any, _LocalPort)
         End Sub
 
         ''' <summary>
-        ''' 线程会被阻塞在这里
+        ''' Running this http server. 
+        ''' NOTE: current thread will be blocked at here until the server core is shutdown. 
+        ''' (请注意，在服务器开启之后，当前的线程会被阻塞在这里)
         ''' </summary>
         ''' <returns></returns>
         Public Overridable Function Run() As Integer
-
             Try
-                _httpListener = New TcpListener(System.Net.IPAddress.Any, _LocalPort)
-                _httpListener.Start()
+                Call _httpListener.Start()
             Catch ex As Exception
                 If ex.IsSocketPortOccupied Then
                     Call $"Could not start http services at {NameOf(_LocalPort)}:={_LocalPort}".__DEBUG_ECHO
@@ -46,7 +62,9 @@ Namespace HttpInternal
                     Call Console.WriteLine()
                     Call Console.WriteLine()
                 Else
+                    ex = New Exception(LocalPort, ex)
                     Call ex.PrintException
+                    Call App.LogException(ex)
                 End If
 
                 Call Pause()
@@ -59,10 +77,11 @@ Namespace HttpInternal
 
             While Is_active
                 Dim s As TcpClient = _httpListener.AcceptTcpClient()
-                Dim processor As HttpInternal.HttpProcessor = __httpProcessor(s)
-                Dim thread__1 As New Thread(New ThreadStart(AddressOf processor.Process))
+                Dim processor As HttpProcessor = __httpProcessor(s)
+                Dim proc As New Thread(New ThreadStart(AddressOf processor.Process))
+
                 Call $"Process client from {s.Client.RemoteEndPoint.ToString}".__DEBUG_ECHO
-                Call thread__1.Start()
+                Call proc.Start()
                 Call Thread.Sleep(1)
             End While
 
@@ -79,16 +98,15 @@ Namespace HttpInternal
         Private Sub OpenAPI_HOME()
             Call Thread.Sleep(10 * 1000)
 
-#If DEBUG Then
-            Return
-#End If
-
             If _homeShowOnStart Then
                 Dim uri As String = $"http://127.0.0.1:{_LocalPort}/"
                 Call Process.Start(uri)
             End If
         End Sub
 
+        ''' <summary>
+        ''' Shutdown this internal http server
+        ''' </summary>
         Public Sub Shutdown()
             Is_active = False
             Call _httpListener.Stop()
@@ -121,8 +139,8 @@ Namespace HttpInternal
         '''  p.outputStream.WriteLine("&lt;/form>")
         ''' 
         ''' </example>
-        Public MustOverride Sub handleGETRequest(p As HttpInternal.HttpProcessor)
-        Public MustOverride Sub handlePOSTRequest(p As HttpInternal.HttpProcessor, inputData As StreamReader)
+        Public MustOverride Sub handleGETRequest(p As HttpProcessor)
+        Public MustOverride Sub handlePOSTRequest(p As HttpProcessor, inputData As StreamReader)
 
 #Region "IDisposable Support"
         Private disposedValue As Boolean ' To detect redundant calls
@@ -156,5 +174,6 @@ Namespace HttpInternal
             ' GC.SuppressFinalize(Me)
         End Sub
 #End Region
+
     End Class
 End Namespace
