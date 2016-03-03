@@ -1,4 +1,4 @@
-Imports System.Collections
+﻿Imports System.Collections
 Imports System.IO
 Imports System.Net
 Imports System.Net.Sockets
@@ -13,7 +13,10 @@ Imports Microsoft.VisualBasic
 
 Namespace Core
 
-    Public Class HttpProcessor
+    ''' <summary>
+    ''' 这个对象包含有具体的http request的处理方法
+    ''' </summary>
+    Public Class HttpProcessor : Implements IDisposable
 
         Public socket As TcpClient
         Public srv As HttpServer
@@ -30,6 +33,16 @@ Namespace Core
         Public Property http_url As String
         Public Property http_protocol_versionstring As String
         Public Property httpHeaders As New Hashtable()
+
+        ''' <summary>
+        ''' 可以向这里面写入数据从而回传数据
+        ''' </summary>
+        ''' <returns></returns>
+        Public ReadOnly Property Out As Stream
+            Get
+                Return outputStream.BaseStream
+            End Get
+        End Property
 
         ''' <summary>
         ''' 10MB
@@ -51,6 +64,14 @@ Namespace Core
                 Return String.Equals("/", http_url)
             End Get
         End Property
+
+        Public Sub WriteData(data As Byte())
+            Call outputStream.BaseStream.Write(data, Scan0, data.Length)
+        End Sub
+
+        Public Sub WriteLine(s As String)
+            Call outputStream.WriteLine(s)
+        End Sub
 
         Public Overrides Function ToString() As String
             Return http_url
@@ -266,6 +287,39 @@ Namespace Core
             Call outputStream.WriteLine("")         ' this terminates the HTTP headers.
         End Sub
 
+#Region "IDisposable Support"
+        Private disposedValue As Boolean ' To detect redundant calls
+
+        ' IDisposable
+        Protected Overridable Sub Dispose(disposing As Boolean)
+            If Not Me.disposedValue Then
+                If disposing Then
+                    ' TODO: dispose managed state (managed objects).
+                    Call outputStream.Flush()
+                    Call outputStream.Close()
+                End If
+
+                ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+                ' TODO: set large fields to null.
+            End If
+            Me.disposedValue = True
+        End Sub
+
+        ' TODO: override Finalize() only if Dispose(disposing As Boolean) above has code to free unmanaged resources.
+        'Protected Overrides Sub Finalize()
+        '    ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+        '    Dispose(False)
+        '    MyBase.Finalize()
+        'End Sub
+
+        ' This code added by Visual Basic to correctly implement the disposable pattern.
+        Public Sub Dispose() Implements IDisposable.Dispose
+            ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+            Dispose(True)
+            ' TODO: uncomment the following line if Finalize() is overridden above.
+            ' GC.SuppressFinalize(Me)
+        End Sub
+#End Region
     End Class
 End Namespace
 
