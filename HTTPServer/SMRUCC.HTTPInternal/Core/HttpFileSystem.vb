@@ -199,6 +199,16 @@ Namespace Core
             Return _404
         End Function
 
+        ''' <summary>
+        ''' 默认的404页面
+        ''' </summary>
+        ''' <returns></returns>
+        Public ReadOnly Property Page404 As String
+            Get
+                Return __request404()
+            End Get
+        End Property
+
         Protected Overrides Function __httpProcessor(client As TcpClient) As HttpProcessor
             Return New HttpProcessor(client, Me) With {
                 ._404Page = __request404()
