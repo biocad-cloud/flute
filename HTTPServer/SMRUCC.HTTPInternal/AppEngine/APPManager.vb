@@ -1,5 +1,6 @@
 ﻿Imports System.IO
 Imports Microsoft.VisualBasic.CommandLine.Reflection
+Imports SMRUCC.HTTPInternal.AppEngine.APIMethods
 Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
 Imports SMRUCC.HTTPInternal.Platform
 
@@ -21,8 +22,7 @@ Namespace AppEngine
 
         Default Public ReadOnly Property App(name As String) As APPEngine
             Get
-                name = name.ToLower
-                If RunningAPP.ContainsKey(name) Then
+                If RunningAPP.ContainsKey(name.ToLower.ShadowCopy(name)) Then
                     Return RunningAPP(name)
                 Else
                     Return Nothing
@@ -31,7 +31,7 @@ Namespace AppEngine
         End Property
 
         Public Function GetApp(Of App As Class)() As App
-            Dim AppEntry = GetType(App)
+            Dim AppEntry As Type = GetType(App)
             Dim LQuery = (From obj In RunningAPP.AsParallel
                           Where AppEntry.Equals(obj.Value.Application.GetType)
                           Let AppInstant = DirectCast(obj.Value.Application, App)
@@ -57,6 +57,27 @@ Namespace AppEngine
         End Function
 
         ''' <summary>
+        ''' 当WebApp查找失败的时候所执行的默认的API函数
+        ''' </summary>
+        ''' <returns></returns>
+        Public Property DefaultAPI As APIAbstract
+
+        ''' <summary>
+        ''' 默认是API执行失败
+        ''' </summary>
+        ''' <param name="api"></param>
+        ''' <param name="args"></param>
+        ''' <param name="out"></param>
+        ''' <returns></returns>
+        Private Shared Function __defaultFailure(api As String, args As String, ByRef out As String) As Boolean
+            Return False
+        End Function
+
+        Public Sub ResetAPIDefault()
+            DefaultAPI = AddressOf __defaultFailure
+        End Sub
+
+        ''' <summary>
         ''' 
         ''' </summary>
         ''' <param name="url"></param>
@@ -75,7 +96,7 @@ Namespace AppEngine
 </body></html>"
         Return b
 #Else
-            Return APPEngine.Invoke(url, RunningAPP, result)
+            Return APPEngine.Invoke(url, RunningAPP, result, DefaultAPI)
 #End If
         End Function
 

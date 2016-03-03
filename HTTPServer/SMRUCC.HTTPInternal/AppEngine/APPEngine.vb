@@ -13,11 +13,12 @@ Namespace AppEngine
     ''' </summary>
     Public Class APPEngine
 
-        Public ReadOnly Property [Namespace] As [Namespace]
         ''' <summary>
         ''' 必须按照从长到短来排序
         ''' </summary>
         Dim API As Dictionary(Of String, __API_Invoker)
+
+        Public ReadOnly Property [Namespace] As [Namespace]
         Public ReadOnly Property Application As Object
 
         Public Function GetHelp() As String
@@ -76,14 +77,21 @@ Namespace AppEngine
             Return applications(application).Invoke(api, inputs, result)
         End Function
 
-        Public Shared Function Invoke(url As String, applications As Dictionary(Of String, APPEngine), ByRef result As String) As Boolean
+        ''' <summary>
+        ''' 分析url，然后查找相对应的WebApp，并进行数据请求的执行
+        ''' </summary>
+        ''' <param name="url"></param>
+        ''' <param name="applications"></param>
+        ''' <param name="result"></param>
+        ''' <returns></returns>
+        Public Shared Function Invoke(url As String, applications As Dictionary(Of String, APPEngine), ByRef result As String, [default] As APIAbstract) As Boolean
             Dim application As String = "", api As String = "", parameters As String = ""
             If Not APPEngine.GetParameter(url, application, api, parameters) Then
                 Return False
             End If
 
-            If Not applications.ContainsKey(application) Then
-                Return False
+            If Not applications.ContainsKey(application) Then ' 找不到相对应的WebApp，则默认返回失败 
+                Return [default](api, parameters, result)
             End If
 
             Return applications(application).Invoke(api, parameters, result)
@@ -101,11 +109,11 @@ Namespace AppEngine
             End If
 
             Dim Methods = Type.GetMethods(BindingFlags.Public Or BindingFlags.Instance)
-            Dim EntryType As Type = CommandLine.Reflection.ExportAPIAttribute.TypeInfo
+            Dim EntryType As Type = ExportAPIAttribute.TypeINFO
             Dim LQuery = (From EntryPoint As MethodInfo In Methods
                           Let attrs As Object() = EntryPoint.GetCustomAttributes(attributeType:=EntryType, inherit:=True)
                           Where Not attrs.IsNullOrEmpty
-                          Let API = DirectCast(attrs(Scan0), CommandLine.Reflection.ExportAPIAttribute)                                         ' 由于rest服务需要返回json、所以在API的申明的时候还需要同时申明GET、POST里面所返回的json对象的类型，
+                          Let API = DirectCast(attrs(Scan0), ExportAPIAttribute)                                         ' 由于rest服务需要返回json、所以在API的申明的时候还需要同时申明GET、POST里面所返回的json对象的类型，
                           Let httpMethod As APIMethod = DirectCast(EntryPoint.GetCustomAttributes(GetType(APIMethod), True)(Scan0), APIMethod)  ' 假若程序是在这里出错的话，则说明有API函数没有进行GET、POST的json类型申明，找到该函数补全即可
                           Let invoke = New __API_Invoker With {
                               .Name = API.Name.ToLower,

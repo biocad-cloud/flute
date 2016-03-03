@@ -7,6 +7,15 @@ Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
 
 Namespace AppEngine.APIMethods
 
+    ''' <summary>
+    ''' WebApp API的抽象接口
+    ''' </summary>
+    ''' <param name="api">URL</param>
+    ''' <param name="args">URL后面的参数请求</param>
+    ''' <param name="out">返回的html页面的文档</param>
+    ''' <returns>是否执行成功</returns>
+    Public Delegate Function APIAbstract(api As String, args As String, ByRef out As String) As Boolean
+
     Public Class __API_Invoker
         Public Property Name As String
         Public Property EntryPoint As System.Reflection.MethodInfo
@@ -26,6 +35,13 @@ Namespace AppEngine.APIMethods
             End Try
         End Function
 
+        ''' <summary>
+        ''' 在API的函数调用的位置，就只需要有args这一个参数
+        ''' </summary>
+        ''' <param name="obj"></param>
+        ''' <param name="args"></param>
+        ''' <param name="result"></param>
+        ''' <returns></returns>
         Public Function Invoke(obj As Object, args As String, ByRef result As String) As Boolean
             Try
                 Return __invoke(obj, args, result)
