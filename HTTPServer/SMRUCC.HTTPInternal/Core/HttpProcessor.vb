@@ -11,7 +11,7 @@ Imports Microsoft.VisualBasic
 ' simple HTTP explanation
 ' http://www.jmarshall.com/easy/http/
 
-Namespace HttpInternal
+Namespace Core
 
     Public Class HttpProcessor
 

@@ -1,5 +1,5 @@
 ﻿Imports Microsoft.VisualBasic.CommandLine.Reflection
-Imports SMRUCC.REST.Platform
+Imports SMRUCC.HTTPInternal.Platform
 
 Module CLI
 

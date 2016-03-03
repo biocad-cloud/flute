@@ -5,7 +5,7 @@ Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Net.Protocols
 Imports Microsoft.VisualBasic.Scripting.MetaData
 
-Namespace HttpInternal
+Namespace Core
 
     ''' <summary>
     ''' 不兼容IE和Edge浏览器???为什么会这样子？

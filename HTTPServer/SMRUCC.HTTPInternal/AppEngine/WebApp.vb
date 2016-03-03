@@ -1,5 +1,5 @@
 ﻿Imports System.IO
-Imports SMRUCC.REST.Platform
+Imports SMRUCC.HTTPInternal.Platform
 
 Namespace AppEngine
 

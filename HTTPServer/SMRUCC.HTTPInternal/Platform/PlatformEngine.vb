@@ -1,19 +1,20 @@
 ﻿Imports System.IO
 Imports System.Net.Sockets
 Imports System.Text
-Imports SMRUCC.REST.HttpInternal
-Imports SMRUCC.REST.HttpInternal.POSTReader
+Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
+Imports SMRUCC.HTTPInternal.Core
+Imports SMRUCC.HTTPInternal.Platform.Plugins
 
 Namespace Platform
 
     ''' <summary>
     ''' 服务基础类，REST API的开发需要引用当前的项目
     ''' </summary>
-    Public Class PlatformEngine : Inherits HttpInternal.HttpFileSystem
+    Public Class PlatformEngine : Inherits HttpFileSystem
 
         Public ReadOnly Property AppManager As AppEngine.APPManager
         Public ReadOnly Property TaskPool As New TaskPool
-        Public ReadOnly Property Plugins As Plugins.PluginBase()
+        Public ReadOnly Property EnginePlugins As Plugins.PluginBase()
 
         ''' <summary>
         ''' 
@@ -33,7 +34,7 @@ Namespace Platform
             Else
                 Call AppEngine.ExternalCall.Scan(Me)
             End If
-            Me._Plugins = REST.Platform.Plugins.ExternalCall.Scan(Me)
+            Me._EnginePlugins = Plugins.ExternalCall.Scan(Me)
         End Sub
 
         Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
@@ -56,13 +57,13 @@ Namespace Platform
         Private Sub __handleSend(p As HttpProcessor, success As Boolean, out As String)
             Call p.outputStream.WriteLine(out)
 
-            For Each plugin As REST.Platform.Plugins.PluginBase In Plugins
+            For Each plugin As PluginBase In EnginePlugins
                 Call plugin.handleVisit(p, success)
             Next
         End Sub
 
         Protected Overrides Sub Dispose(disposing As Boolean)
-            For Each plugin As Plugins.PluginBase In Plugins
+            For Each plugin As Plugins.PluginBase In EnginePlugins
                 Call plugin.Dispose()
             Next
             MyBase.Dispose(disposing)

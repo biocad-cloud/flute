@@ -3,10 +3,9 @@ Imports System.Reflection
 Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
-Imports SMRUCC.REST.AppEngine.APIMethods
-Imports SMRUCC.REST.HttpInternal.POSTReader
+Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
 
-Namespace AppEngine
+Namespace AppEngine.APIMethods
 
     Public Class __API_Invoker
         Public Property Name As String

@@ -1,7 +1,7 @@
 ﻿Imports System.IO
 Imports Microsoft.VisualBasic.CommandLine.Reflection
-Imports SMRUCC.REST.HttpInternal.POSTReader
-Imports SMRUCC.REST.Platform
+Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
+Imports SMRUCC.HTTPInternal.Platform
 
 Namespace AppEngine
 

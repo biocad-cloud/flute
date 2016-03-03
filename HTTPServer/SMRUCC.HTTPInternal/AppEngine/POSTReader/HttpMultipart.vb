@@ -1,22 +1,7 @@
 ﻿Imports System.Text
-Imports System.Collections
-Imports System.Collections.Specialized
 Imports System.IO
-Imports System.Runtime.InteropServices
-Imports System.Security
-Imports System.Security.Permissions
-Imports System.Security.Principal
-Imports System.Threading
-Imports System.Web.Configuration
-Imports System.Web.Management
-Imports System.Web.UI
-Imports System.Web.Util
-Imports System.Globalization
-Imports System.Security.Authentication.ExtendedProtection
-Imports System.Web.Routing
-Imports System.Web
 
-Namespace HttpInternal.POSTReader
+Namespace AppEngine.POSTParser
 
     ''' <summary>
     ''' Stream-based multipart handling.

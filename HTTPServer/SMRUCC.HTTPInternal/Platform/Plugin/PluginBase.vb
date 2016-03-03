@@ -1,4 +1,6 @@
-﻿Namespace Platform.Plugins
+﻿Imports SMRUCC.HTTPInternal.Core
+
+Namespace Platform.Plugins
 
     Public MustInherit Class PluginBase : Inherits PlatformSub
         Implements System.IDisposable
@@ -12,7 +14,7 @@
         ''' </summary>
         ''' <param name="p"></param>
         ''' <param name="success"></param>
-        Public MustOverride Sub handleVisit(p As HttpInternal.HttpProcessor, success As Boolean)
+        Public MustOverride Sub handleVisit(p As HttpProcessor, success As Boolean)
 
 #Region "IDisposable Support"
         Private disposedValue As Boolean ' To detect redundant calls

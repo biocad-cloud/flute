@@ -1,6 +1,6 @@
 ﻿Imports System.IO
 
-Namespace HttpInternal.POSTReader
+Namespace AppEngine.POSTParser
 
     Public Class ReadSubStream
         Inherits Stream

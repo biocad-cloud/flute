@@ -1,5 +1,5 @@
-﻿Imports SMRUCC.REST.Platform
-Imports Microsoft.VisualBasic.Linq
+﻿Imports Microsoft.VisualBasic.Linq
+Imports SMRUCC.HTTPInternal.Platform
 
 Namespace AppEngine
 

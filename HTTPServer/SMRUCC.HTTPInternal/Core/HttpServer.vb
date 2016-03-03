@@ -5,7 +5,7 @@ Imports System.Net.Sockets
 Imports System.Threading
 Imports Microsoft.VisualBasic.Parallel
 
-Namespace HttpInternal
+Namespace Core
 
     ''' <summary>
     ''' Internal http server core.
@@ -93,7 +93,7 @@ Namespace HttpInternal
         ''' </summary>
         ''' <param name="client"></param>
         ''' <returns></returns>
-        Protected MustOverride Function __httpProcessor(client As TcpClient) As HttpInternal.HttpProcessor
+        Protected MustOverride Function __httpProcessor(client As TcpClient) As HttpProcessor
 
         Private Sub OpenAPI_HOME()
             Call Thread.Sleep(10 * 1000)

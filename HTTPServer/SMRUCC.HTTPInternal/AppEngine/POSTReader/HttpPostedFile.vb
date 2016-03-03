@@ -31,7 +31,7 @@
 Imports System.IO
 Imports System.Security.Permissions
 
-Namespace HttpInternal.POSTReader
+Namespace AppEngine.POSTParser
 
     Public Class HttpPostedFile
         Private name As String
