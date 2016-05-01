@@ -46,7 +46,7 @@ Namespace AppEngine
         End Function
 
         ''' <summary>
-        ''' 
+        '''
         ''' </summary>
         ''' <param name="url"></param>
         ''' <param name="inputs"></param>
@@ -78,7 +78,7 @@ Namespace AppEngine
         End Sub
 
         ''' <summary>
-        ''' 
+        '''
         ''' </summary>
         ''' <param name="url"></param>
         ''' <param name="result">HTML输出页面或者json数据</param>
