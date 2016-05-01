@@ -1,5 +1,6 @@
 ﻿Imports System.IO
 Imports System.Net.Sockets
+Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Net.Protocols
@@ -41,7 +42,7 @@ Namespace Core
         ''' <param name="port"></param>
         ''' <param name="root"></param>
         ''' <param name="nullExists"></param>
-        Sub New(port As Integer, root As String, Optional nullExists As Boolean = False)
+        Sub New(port As Integer, root As String, Optional nullExists As Boolean = False, Optional requestResource As IGetResource = Nothing)
             Call MyBase.New(port, True)
             _nullExists = nullExists
             If Not FileIO.FileSystem.DirectoryExists(root) Then
@@ -50,6 +51,12 @@ Namespace Core
             HOME = FileIO.FileSystem.GetDirectoryInfo(root)
             FileIO.FileSystem.CurrentDirectory = root
             _virtualMappings = New Dictionary(Of String, String)
+
+            If requestResource Is Nothing Then
+                RequestStream = AddressOf __requestStream
+            Else
+                RequestStream = requestResource
+            End If
         End Sub
 
         Private Function __requestStream(res As String) As Byte()
@@ -63,6 +70,14 @@ Namespace Core
             End If
             Return IO.File.ReadAllBytes(file)
         End Function
+
+        ''' <summary>
+        ''' 默认是使用<see cref="__requestStream"/>获取得到文件数据
+        ''' </summary>
+        ''' <returns></returns>
+        Public ReadOnly Property RequestStream As IGetResource
+
+        Public Delegate Function IGetResource(res As String) As Byte()
 
         ''' <summary>
         ''' 长
@@ -123,10 +138,10 @@ Namespace Core
 
         Private Sub __handleFileGET(res As String, p As HttpProcessor)
             Dim ext As String = FileIO.FileSystem.GetFileInfo(res).Extension.ToLower
-            Dim buf As Byte() = __requestStream(res)
+            Dim buf As Byte() = RequestStream(res)
 
             If String.Equals(ext, ".html") Then ' Transfer HTML document.
-                Dim html As String = System.Text.Encoding.UTF8.GetString(buf)
+                Dim html As String = Encoding.UTF8.GetString(buf)
 
                 If String.IsNullOrEmpty(html) Then
                     html = __request404()
