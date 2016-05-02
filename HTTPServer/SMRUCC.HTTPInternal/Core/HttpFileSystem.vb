@@ -53,13 +53,13 @@ Namespace Core
             _virtualMappings = New Dictionary(Of String, String)
 
             If requestResource Is Nothing Then
-                RequestStream = AddressOf __requestStream
+                RequestStream = AddressOf GetResource
             Else
                 RequestStream = requestResource
             End If
         End Sub
 
-        Private Function __requestStream(res As String) As Byte()
+        Public Function GetResource(res As String) As Byte()
             Dim mapDIR As String = __getMapDIR(res)
             Dim file As String = $"{mapDIR}/{res}"
             If Not FileExists(file) Then
@@ -72,7 +72,7 @@ Namespace Core
         End Function
 
         ''' <summary>
-        ''' 默认是使用<see cref="__requestStream"/>获取得到文件数据
+        ''' 默认是使用<see cref="GetResource"/>获取得到文件数据
         ''' </summary>
         ''' <returns></returns>
         Public ReadOnly Property RequestStream As IGetResource
