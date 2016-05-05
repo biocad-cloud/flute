@@ -3,13 +3,15 @@ Imports System.Reflection
 Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
+Imports Microsoft.VisualBasic.Language
 Imports SMRUCC.HTTPInternal.AppEngine.APIMethods
 Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
 
 Namespace AppEngine
 
     ''' <summary>
-    ''' 执行<see cref="WebApp"/>的工作引擎
+    ''' Engine for executes the API that defined in the <see cref="WebApp"/>.
+    ''' (执行<see cref="WebApp"/>的工作引擎)
     ''' </summary>
     Public Class APPEngine
 
@@ -21,6 +23,10 @@ Namespace AppEngine
         Public ReadOnly Property [Namespace] As [Namespace]
         Public ReadOnly Property Application As Object
 
+        ''' <summary>
+        ''' Gets help page.
+        ''' </summary>
+        ''' <returns></returns>
         Public Function GetHelp() As String
             Dim LQuery = (From api In Me.API Select "<li>" & api.Value.Help & "</li>").ToArray
             Dim result As String = String.Join("<br />" & vbCrLf, LQuery)
@@ -53,7 +59,7 @@ Namespace AppEngine
         ''' <param name="api">已经变小写了的</param>
         ''' <param name="inputs"></param>
         ''' <returns></returns>
-        Public Function Invoke(api As String, inputs As POSTReader, ByRef result As String) As Boolean
+        Public Function Invoke(api As String, inputs As PostReader, ByRef result As String) As Boolean
             If Not Me.API.ContainsKey(api) Then
                 Return False
             End If
@@ -64,7 +70,7 @@ Namespace AppEngine
             Return success
         End Function
 
-        Public Shared Function InvokePOST(url As String, inputs As POSTReader, applications As Dictionary(Of String, APPEngine), ByRef result As String) As Boolean
+        Public Shared Function InvokePOST(url As String, inputs As PostReader, applications As Dictionary(Of String, APPEngine), ByRef result As String) As Boolean
             Dim application As String = "", api As String = "", parameters As String = ""
             If Not APPEngine.GetParameter(url, application, api, parameters) Then
                 Return False
@@ -98,43 +104,48 @@ Namespace AppEngine
         End Function
 
         Public Shared Function [Imports](Of T As WebApp)(obj As T) As APPEngine
-            Dim Type As Type = obj.GetType
-            Dim [namespace] = Type.NamespaceEntry
+            Dim type As Type = obj.GetType
+            Dim ns As [Namespace] = type.NamespaceEntry
 
-            If [namespace] Is Nothing OrElse [namespace].AutoExtract = True Then
-                Call ServicesLogs.WriteEntry($"Could not found application entry point from {Type.FullName}".__DEBUG_ECHO,
+            If ns Is Nothing OrElse ns.AutoExtract = True Then
+                Call ServicesLogs.WriteEntry($"Could not found application entry point from {type.FullName}".__DEBUG_ECHO,
                                              MethodBase.GetCurrentMethod,
                                              EventLogEntryType.FailureAudit)
                 Return Nothing
             End If
 
-            Dim Methods = Type.GetMethods(BindingFlags.Public Or BindingFlags.Instance)
-            Dim EntryType As Type = ExportAPIAttribute.TypeINFO
-            Dim LQuery = (From EntryPoint As MethodInfo In Methods
-                          Let attrs As Object() = EntryPoint.GetCustomAttributes(attributeType:=EntryType, inherit:=True)
-                          Where Not attrs.IsNullOrEmpty
-                          Let API = DirectCast(attrs(Scan0), ExportAPIAttribute)                                         ' 由于rest服务需要返回json、所以在API的申明的时候还需要同时申明GET、POST里面所返回的json对象的类型，
-                          Let httpMethod As APIMethod = DirectCast(EntryPoint.GetCustomAttributes(GetType(APIMethod), True)(Scan0), APIMethod)  ' 假若程序是在这里出错的话，则说明有API函数没有进行GET、POST的json类型申明，找到该函数补全即可
-                          Let invoke = New __API_Invoker With {
-                              .Name = API.Name.ToLower,
-                              .EntryPoint = EntryPoint,
-                              .Help = API.PrintView(HTML:=True) & $"<br /><div>{httpMethod.GetMethodHelp(EntryPoint)}</div>",
-                              .Error404 = obj.Page404
-                          }
-                          Select invoke
-                          Order By Len(invoke.Name) Descending).ToArray
+            Dim Methods As MethodInfo() = type.GetMethods(BindingFlags.Public Or BindingFlags.Instance)
+            Dim EntryType As Type = ExportAPIAttribute.Type
+            Dim LQuery As __API_Invoker() =
+                LinqAPI.Exec(Of __API_Invoker) <= From EntryPoint As MethodInfo In Methods
+                                                  Let attrs As Object() = EntryPoint.GetCustomAttributes(attributeType:=EntryType, inherit:=True)
+                                                  Where Not attrs.IsNullOrEmpty
+                                                  Let API As ExportAPIAttribute =
+                                                      DirectCast(attrs(Scan0), ExportAPIAttribute)       ' 由于rest服务需要返回json、所以在API的申明的时候还需要同时申明GET、POST里面所返回的json对象的类型，
+                                                  Let attr As Object =
+                                                      EntryPoint.GetCustomAttributes(GetType(APIMethod), True)(Scan0)
+                                                  Let httpMethod As APIMethod = DirectCast(attr, APIMethod)  ' 假若程序是在这里出错的话，则说明有API函数没有进行GET、POST的json类型申明，找到该函数补全即可
+                                                  Let invoke = New __API_Invoker With {
+                                                      .Name = API.Name.ToLower,
+                                                      .EntryPoint = EntryPoint,
+                                                      .Help = API.PrintView(HTML:=True) & $"<br /><div>{httpMethod.GetMethodHelp(EntryPoint)}</div>",
+                                                      .Error404 = obj.Page404
+                                                  }
+                                                  Select invoke
+                                                  Order By Len(invoke.Name) Descending
 
             Return New APPEngine With {
                 .API = LQuery.ToDictionary(Function(api) api.Name.ToLower),
                 ._Application = obj,
-                ._Namespace = [namespace]
+                ._Namespace = ns
             }
         End Function
 
         ''' <summary>
-        ''' 返回False标识无法正确的解析出调用数据
+        ''' If returns false, which means this function can not parsing any arguments parameter from the input url.
+        ''' (返回False标识无法正确的解析出调用数据)
         ''' </summary>
-        ''' <param name="url"></param>
+        ''' <param name="url">Url inputs from the user browser.</param>
         ''' <param name="application"></param>
         ''' <param name="API"></param>
         ''' <param name="parameters"></param>
