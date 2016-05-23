@@ -16,7 +16,7 @@ Namespace Platform
         ''' 任务的编号
         ''' </summary>
         ''' <returns></returns>
-        Public Property uid As String Implements IReadOnlyId.locusId
+        Public Property uid As String Implements IReadOnlyId.Identity
         Public ReadOnly Property Complete As Boolean
 
         Sub New(task As Action, callback As Action)

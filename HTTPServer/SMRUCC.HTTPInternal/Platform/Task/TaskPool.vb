@@ -55,7 +55,9 @@ Namespace Platform
         End Function
 
         Public Overrides Function ToString() As String
-            Return _taskQueue.Count & " tasks in queue...".__DEBUG_ECHO
+            Dim s As String = _taskQueue.Count & " tasks in queue..."
+            Call s.__DEBUG_ECHO
+            Return s
         End Function
 
         Private Sub __taskInvoke()

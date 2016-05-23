@@ -108,9 +108,10 @@ Namespace AppEngine
             Dim ns As [Namespace] = type.NamespaceEntry
 
             If ns Is Nothing OrElse ns.AutoExtract = True Then
-                Call ServicesLogs.WriteEntry($"Could not found application entry point from {type.FullName}".__DEBUG_ECHO,
-                                             MethodBase.GetCurrentMethod,
-                                             EventLogEntryType.FailureAudit)
+                Dim msg As String = $"Could not found application entry point from {type.FullName}"
+
+                Call msg.__DEBUG_ECHO
+                Call ServicesLogs.WriteEntry(msg, MethodBase.GetCurrentMethod, EventLogEntryType.FailureAudit)
                 Return Nothing
             End If
 
