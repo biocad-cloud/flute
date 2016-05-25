@@ -98,7 +98,8 @@ Namespace Core
         Private Sub OpenAPI_HOME()
             Call Thread.Sleep(10 * 1000)
 
-            If _homeShowOnStart Then
+            If Environment.OSVersion.Platform = PlatformID.Win32NT AndAlso
+                _homeShowOnStart Then
                 Dim uri As String = $"http://127.0.0.1:{_LocalPort}/"
                 Call Process.Start(uri)
             End If
