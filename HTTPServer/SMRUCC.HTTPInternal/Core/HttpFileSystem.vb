@@ -63,9 +63,19 @@ Namespace Core
             Dim mapDIR As String = __getMapDIR(res)
             Dim file As String = $"{mapDIR}/{res}"
             If Not FileExists(file) Then
-                If _nullExists Then
-                    Call $"[ERR_EMPTY_RESPONSE::No data send] {file.ToFileURL}".__DEBUG_ECHO
-                    Return New Byte() {}
+                ' 检查是不是文件夹
+                If file.DirectoryExists Then
+                    Dim index As String = file & "/index.html"
+                    If Not index.FileExists Then
+                        GoTo NoData
+                    Else
+                        file = index
+                    End If
+                Else
+NoData:             If _nullExists Then
+                        Call $"[ERR_EMPTY_RESPONSE::No data send] {file.ToFileURL}".__DEBUG_ECHO
+                        Return New Byte() {}
+                    End If
                 End If
             End If
             Return IO.File.ReadAllBytes(file)
@@ -120,7 +130,7 @@ Namespace Core
         Public Overrides Sub handleGETRequest(p As HttpProcessor)
             Dim res As String = p.http_url
 
-            If String.Equals(res, "/") Then
+            If String.Equals(res, "/") Then   ' 在这里首先会检查是否是以/符号结束的，假若是，则可能是暗指该文件夹之下的index.html主页文件
                 res = "index.html"
             End If
 
