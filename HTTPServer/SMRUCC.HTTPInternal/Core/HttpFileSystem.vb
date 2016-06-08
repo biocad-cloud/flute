@@ -59,9 +59,10 @@ Namespace Core
             End If
         End Sub
 
-        Public Function GetResource(res As String) As Byte()
+        Public Function GetResource(ByRef res As String) As Byte()
             Dim mapDIR As String = __getMapDIR(res)
             Dim file As String = $"{mapDIR}/{res}"
+
             If Not FileExists(file) Then
                 ' 检查是不是文件夹
                 If file.DirectoryExists Then
@@ -70,6 +71,7 @@ Namespace Core
                         GoTo NoData
                     Else
                         file = index
+                        res = file
                     End If
                 Else
 NoData:             If _nullExists Then
@@ -87,7 +89,7 @@ NoData:             If _nullExists Then
         ''' <returns></returns>
         Public ReadOnly Property RequestStream As IGetResource
 
-        Public Delegate Function IGetResource(res As String) As Byte()
+        Public Delegate Function IGetResource(ByRef res As String) As Byte()
 
         ''' <summary>
         ''' 长
@@ -147,8 +149,8 @@ NoData:             If _nullExists Then
         End Sub
 
         Private Sub __handleFileGET(res As String, p As HttpProcessor)
+            Dim buf As Byte() = RequestStream(res) ' 由于子文件夹可能会是以/的方式请求index.html，所以在这里res的值可能会变化，文件拓展名放在变化之后再解析
             Dim ext As String = FileIO.FileSystem.GetFileInfo(res).Extension.ToLower
-            Dim buf As Byte() = RequestStream(res)
 
             If String.Equals(ext, ".html") Then ' Transfer HTML document.
                 Dim html As String = Encoding.UTF8.GetString(buf)
