@@ -3,6 +3,7 @@ Imports Microsoft.VisualBasic.ComponentModel.Collection.Generic
 Imports Microsoft.VisualBasic.Parallel
 Imports Microsoft.VisualBasic
 Imports Microsoft.VisualBasic.Parallel.Tasks
+Imports Microsoft.VisualBasic.Parallel.Linq
 
 Namespace Platform
 
