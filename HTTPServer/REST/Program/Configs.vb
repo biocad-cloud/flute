@@ -1,4 +1,5 @@
 ﻿Imports Microsoft.VisualBasic.Serialization
+Imports Microsoft.VisualBasic.Serialization.JSON
 
 Public Class Configs
     Public Property Portal As Integer
