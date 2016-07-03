@@ -5,6 +5,7 @@ Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Net.Protocols
 Imports Microsoft.VisualBasic.Scripting.MetaData
+Imports Microsoft.VisualBasic.Serialization.JSON
 
 Namespace Core
 
@@ -59,7 +60,12 @@ Namespace Core
             End If
         End Sub
 
-        Public Function GetResource(ByRef res As String) As Byte()
+        ''' <summary>
+        ''' Maps the http request url as server file system path.
+        ''' </summary>
+        ''' <param name="res"></param>
+        ''' <returns></returns>
+        Public Function MapPath(ByRef res As String) As String
             Dim mapDIR As String = __getMapDIR(res)
             Dim file As String = $"{mapDIR}/{res}"
 
@@ -67,20 +73,41 @@ Namespace Core
                 ' 检查是不是文件夹
                 If file.DirectoryExists Then
                     Dim index As String = file & "/index.html"
-                    If Not index.FileExists Then
-                        GoTo NoData
-                    Else
-                        file = index
+
+                    If index.FileExists Then
                         res = file
-                    End If
-                Else
-NoData:             If _nullExists Then
-                        Call $"[ERR_EMPTY_RESPONSE::No data send] {file.ToFileURL}".__DEBUG_ECHO
-                        Return New Byte() {}
+                        file = index
                     End If
                 End If
             End If
-            Return IO.File.ReadAllBytes(file)
+
+            Return file
+        End Function
+
+        ''' <summary>
+        ''' ``[ERR_EMPTY_RESPONSE::No data send]``
+        ''' </summary>
+        Const NoData As String = "[ERR_EMPTY_RESPONSE::No data send]"
+
+        ''' <summary>
+        ''' 默认是获取文件数据
+        ''' </summary>
+        ''' <param name="res"></param>
+        ''' <returns></returns>
+        Public Function GetResource(ByRef res As String) As Byte()
+            Dim file As String = MapPath(res)
+
+            If file.FileExists Then
+                Return IO.File.ReadAllBytes(file)
+            Else
+                If _nullExists Then
+                    Call $"{NoData} {file.ToFileURL}".__DEBUG_ECHO
+                    Return New Byte() {}
+                Else
+                    Dim url As String = (New String() {res, file}).GetJson
+                    Throw New NullReferenceException(url)
+                End If
+            End If
         End Function
 
         ''' <summary>
@@ -90,6 +117,14 @@ NoData:             If _nullExists Then
         Public ReadOnly Property RequestStream As IGetResource
 
         Public Delegate Function IGetResource(ByRef res As String) As Byte()
+
+        ''' <summary>
+        ''' Public Delegate Function <see cref="IGetResource"/>(ByRef res As <see cref="System.String"/>) As <see cref="Byte()"/>
+        ''' </summary>
+        ''' <param name="req"></param>
+        Public Sub SetGetRequest(req As IGetResource)
+            _RequestStream = req
+        End Sub
 
         ''' <summary>
         ''' 长

@@ -1,6 +1,8 @@
 ﻿Imports System.IO
 Imports System.Net.Sockets
+Imports System.Reflection
 Imports System.Text
+Imports Microsoft.VisualBasic.Language
 Imports SMRUCC.HTTPInternal.AppEngine
 Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
 Imports SMRUCC.HTTPInternal.Core
@@ -33,15 +35,60 @@ Namespace Platform
             Call __init(appDll)
         End Sub
 
+        ''' <summary>
+        ''' Scanning the dll file and then load the <see cref="WebApp"/> content.
+        ''' </summary>
+        ''' <param name="dll"></param>
         Private Sub __init(dll As String)
+            dll = FileIO.FileSystem.GetFileInfo(dll).FullName
             _AppManager = New AppEngine.APPManager(Me)
 
             If dll.FileExists Then
                 Call AppEngine.ExternalCall.ParseDll(dll, Me)
+                Call __runDll(dll)
             Else
                 Call AppEngine.ExternalCall.Scan(Me)
             End If
+
             Me._EnginePlugins = Plugins.ExternalCall.Scan(Me)
+        End Sub
+
+        ''' <summary>
+        ''' Call sub main in the <see cref="WebApp"/> dll
+        ''' </summary>
+        ''' <param name="dll"></param>
+        Private Sub __runDll(dll As String)
+            Dim assm As Assembly = Assembly.LoadFile(dll)
+            Dim types As Type() = assm.GetTypes
+            Dim webApp As Type =
+                LinqAPI.DefaultFirst(Of Type) <= From type As Type
+                                                 In types
+                                                 Where String.Equals(type.Name, NameOf(webApp))
+                                                 Select type
+
+            If webApp Is Nothing Then
+                Return     ' 没有定义 Sub Main，则忽略掉这次调用
+            End If
+
+            Dim ms = webApp.GetMethods
+            Dim main As MethodInfo =
+                LinqAPI.DefaultFirst(Of MethodInfo) <= From m As MethodInfo
+                                                       In ms
+                                                       Where String.Equals(m.Name, "Main", StringComparison.OrdinalIgnoreCase)
+                                                       Select m
+
+            If main Is Nothing Then
+                Return
+            End If
+
+            Dim params = main.GetParameters
+
+            If params.IsNullOrEmpty Then
+                Call main.Invoke(Nothing, Nothing)
+            Else
+                Dim args As Object() = {Me}
+                Call main.Invoke(Nothing, args)
+            End If
         End Sub
 
         Const contentType As String = "Content-Type"
