@@ -169,7 +169,7 @@ Namespace Core
         End Sub
 
         ''' <summary>
-        ''' 为什么不需要添加<see cref="HttpProcessor.writeSuccess(String)"/>方法？？？
+        ''' 为什么不需要添加<see cref="HttpProcessor.writeSuccess(String, String)"/>方法？？？
         ''' </summary>
         ''' <param name="p"></param>
         Public Overrides Sub handleGETRequest(p As HttpProcessor)
@@ -206,7 +206,7 @@ Namespace Core
                 Call p.writeSuccess()
                 Call p.outputStream.WriteLine(html)
             Else
-                Call __transferData(p, ext, buf)
+                Call __transferData(p, ext, buf, res.BaseName)
             End If
         End Sub
 
@@ -241,12 +241,12 @@ Namespace Core
         ''' <param name="p"></param>
         ''' <param name="ext"></param>
         ''' <param name="buf"></param>
-        Private Sub __transferData(p As HttpProcessor, ext As String, buf As Byte())
+        Private Sub __transferData(p As HttpProcessor, ext As String, buf As Byte(), name As String)
             Dim contentType As ContentType
 
             If Not ContentTypes.ExtDict.ContainsKey(ext) Then
                 contentType = ContentTypes.ExtDict(".bin")
-                Call p.writeSuccess(MIME.Unknown)
+                Call p.writeSuccess(MIME.MsDownload, attachment:=name)
             Else
                 contentType = ContentTypes.ExtDict(ext)
             End If

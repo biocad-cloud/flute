@@ -239,15 +239,19 @@ Namespace Core
             Call srv.handlePOSTRequest(Me, ms)
         End Sub
 
-        Public Sub writeSuccess(Optional content_type As String = "text/html")
+        Public Sub writeSuccess(Optional content_type As String = "text/html", Optional attachment As String = "")
             On Error Resume Next
 
             ' this is the successful HTTP response line
             outputStream.WriteLine("HTTP/1.0 200 OK")
             ' these are the HTTP headers...          
-            outputStream.WriteLine("Content-Type: " & content_type)
+            outputStream.WriteLine("content-type: " & content_type)
             outputStream.WriteLine("Connection: close")
             ' ..add your own headers here if you like
+
+            If Not String.IsNullOrEmpty(attachment) Then
+                outputStream.WriteLine("Content-Disposition: attachment;filename=" & attachment)
+            End If
 
             outputStream.WriteLine("")
             ' this terminates the HTTP headers.. everything after this is HTTP body..
