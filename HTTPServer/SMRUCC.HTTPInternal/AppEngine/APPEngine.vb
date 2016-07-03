@@ -49,7 +49,8 @@ Namespace AppEngine
             End If
 
             Dim script As __API_Invoker = Me.API(api)
-            Dim success As Boolean = script.Invoke(Application, parameters, result)
+            Dim success As Boolean =
+                script.Invoke(Application, parameters, result)
 
             Return success
         End Function
@@ -66,13 +67,15 @@ Namespace AppEngine
             End If
 
             Dim script As __API_Invoker = Me.API(api)
-            Dim success As Boolean = script.InvokePOST(Application, api, inputs, result)
+            Dim success As Boolean =
+                script.InvokePOST(Application, api, inputs, result)
 
             Return success
         End Function
 
         Public Shared Function InvokePOST(url As String, inputs As PostReader, applications As Dictionary(Of String, APPEngine), ByRef result As String) As Boolean
             Dim application As String = "", api As String = "", parameters As String = ""
+
             If Not APPEngine.GetParameter(url, application, api, parameters) Then
                 Return False
             End If
@@ -93,6 +96,7 @@ Namespace AppEngine
         ''' <returns></returns>
         Public Shared Function Invoke(url As String, applications As Dictionary(Of String, APPEngine), ByRef result As String, [default] As APIAbstract) As Boolean
             Dim application As String = "", api As String = "", parameters As String = ""
+
             If Not APPEngine.GetParameter(url, application, api, parameters) Then
                 Return False
             End If
@@ -119,22 +123,26 @@ Namespace AppEngine
             Dim Methods As MethodInfo() = type.GetMethods(BindingFlags.Public Or BindingFlags.Instance)
             Dim EntryType As Type = ExportAPIAttribute.Type
             Dim LQuery As __API_Invoker() =
-                LinqAPI.Exec(Of __API_Invoker) <= From EntryPoint As MethodInfo In Methods
-                                                  Let attrs As Object() = EntryPoint.GetCustomAttributes(attributeType:=EntryType, inherit:=True)
-                                                  Where Not attrs.IsNullOrEmpty
-                                                  Let API As ExportAPIAttribute =
-                                                      DirectCast(attrs(Scan0), ExportAPIAttribute)       ' 由于rest服务需要返回json、所以在API的申明的时候还需要同时申明GET、POST里面所返回的json对象的类型，
-                                                  Let attr As Object =
-                                                      EntryPoint.GetCustomAttributes(GetType(APIMethod), True)(Scan0)
-                                                  Let httpMethod As APIMethod = DirectCast(attr, APIMethod)  ' 假若程序是在这里出错的话，则说明有API函数没有进行GET、POST的json类型申明，找到该函数补全即可
-                                                  Let invoke = New __API_Invoker With {
-                                                      .Name = API.Name.ToLower,
-                                                      .EntryPoint = EntryPoint,
-                                                      .Help = API.PrintView(HTML:=True) & $"<br /><div>{httpMethod.GetMethodHelp(EntryPoint)}</div>",
-                                                      .Error404 = obj.Page404
-                                                  }
-                                                  Select invoke
-                                                  Order By Len(invoke.Name) Descending
+                LinqAPI.Exec(Of __API_Invoker) <=
+ _
+                From EntryPoint As MethodInfo
+                In Methods
+                Let attrs As Object() =
+                    EntryPoint.GetCustomAttributes(attributeType:=EntryType, inherit:=True)
+                Where Not attrs.IsNullOrEmpty
+                Let API As ExportAPIAttribute =
+                    DirectCast(attrs(Scan0), ExportAPIAttribute)       ' 由于rest服务需要返回json、所以在API的申明的时候还需要同时申明GET、POST里面所返回的json对象的类型，
+                Let attr As Object =
+                    EntryPoint.GetCustomAttributes(GetType(APIMethod), True)(Scan0)
+                Let httpMethod As APIMethod = DirectCast(attr, APIMethod)  ' 假若程序是在这里出错的话，则说明有API函数没有进行GET、POST的json类型申明，找到该函数补全即可
+                Let invoke = New __API_Invoker With {
+                    .Name = API.Name.ToLower,
+                    .EntryPoint = EntryPoint,
+                    .Help = API.PrintView(HTML:=True) & $"<br /><div>{httpMethod.GetMethodHelp(EntryPoint)}</div>",
+                    .Error404 = obj.Page404
+                }
+                Select invoke
+                Order By Len(invoke.Name) Descending
 
             Return New APPEngine With {
                 .API = LQuery.ToDictionary(Function(api) api.Name.ToLower),

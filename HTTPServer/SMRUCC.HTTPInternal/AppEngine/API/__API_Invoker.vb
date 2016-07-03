@@ -16,6 +16,23 @@ Namespace AppEngine.APIMethods
     ''' <returns>是否执行成功</returns>
     Public Delegate Function APIAbstract(api As String, args As String, ByRef out As String) As Boolean
 
+    ''' <summary>
+    ''' <see cref="[GET]"/> API interface
+    ''' </summary>
+    ''' <param name="args">url arguments</param>
+    ''' <param name="result">output json or html page</param>
+    ''' <returns>Execute success or not?</returns>
+    Public Delegate Function _Get(args As String, ByRef result As String) As Boolean
+
+    ''' <summary>
+    ''' <see cref="POST"/> API interface
+    ''' </summary>
+    ''' <param name="args">url arguments</param>
+    ''' <param name="inputs">Form data</param>
+    ''' <param name="result"></param>
+    ''' <returns>Execute success or not?</returns>
+    Public Delegate Function _Post(args As String, inputs As PostReader, ByRef result As String) As Boolean
+
     Public Class __API_Invoker
         Public Property Name As String
         Public Property EntryPoint As System.Reflection.MethodInfo
@@ -27,6 +44,7 @@ Namespace AppEngine.APIMethods
             Return Name
         End Function
 
+        <POST(GetType(Boolean))>
         Public Function InvokePOST(obj As Object, args As String, inputs As PostReader, ByRef result As String) As Boolean
             Try
                 Return __invokePOST(obj, args, inputs, result)
@@ -42,6 +60,8 @@ Namespace AppEngine.APIMethods
         ''' <param name="args"></param>
         ''' <param name="result"></param>
         ''' <returns></returns>
+        ''' 
+        <[GET](GetType(Boolean))>
         Public Function Invoke(obj As Object, args As String, ByRef result As String) As Boolean
             Try
                 Return __invoke(obj, args, result)

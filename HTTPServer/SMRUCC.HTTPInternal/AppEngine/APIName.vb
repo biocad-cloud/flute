@@ -1,12 +1,15 @@
-﻿Imports System.Runtime.CompilerServices
+﻿Imports System.Reflection
+Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 
 Namespace AppEngine
 
     Public Module APIName
 
-        <Extension> Public Function GetAPIName(api As System.Reflection.MethodInfo) As String
-            Dim entry As ExportAPIAttribute = api.GetAttribute(Of ExportAPIAttribute)
+        <Extension> Public Function GetAPIName(api As MethodInfo) As String
+            Dim entry As ExportAPIAttribute =
+                api.GetAttribute(Of ExportAPIAttribute)
+
             If entry Is Nothing Then
                 Return ""
             Else
