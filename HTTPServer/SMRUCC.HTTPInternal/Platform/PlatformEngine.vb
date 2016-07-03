@@ -63,7 +63,7 @@ Namespace Platform
             Dim webApp As Type =
                 LinqAPI.DefaultFirst(Of Type) <= From type As Type
                                                  In types
-                                                 Where String.Equals(type.Name, NameOf(webApp))
+                                                 Where String.Equals(type.Name, NameOf(AppEngine.WebApp), StringComparison.OrdinalIgnoreCase)
                                                  Select type
 
             If webApp Is Nothing Then
@@ -76,7 +76,6 @@ Namespace Platform
                                                        In ms
                                                        Where String.Equals(m.Name, "Main", StringComparison.OrdinalIgnoreCase)
                                                        Select m
-
             If main Is Nothing Then
                 Return
             End If
