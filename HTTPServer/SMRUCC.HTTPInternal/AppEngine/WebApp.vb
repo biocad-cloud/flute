@@ -9,6 +9,12 @@ Namespace AppEngine
     ''' </summary>
     Public MustInherit Class WebApp : Inherits PlatformSub
 
+        Public ReadOnly Property wwwroot As String
+            Get
+                Return PlatformEngine.HOME.FullName
+            End Get
+        End Property
+
         Sub New(main As PlatformEngine)
             Call MyBase.New(main)
         End Sub

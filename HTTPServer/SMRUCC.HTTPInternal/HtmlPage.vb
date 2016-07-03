@@ -18,17 +18,21 @@ Public Class HtmlPage : Inherits ClassObject
     End Function
 
     Public Shared Function LoadPage(path As String, wwwroot As String) As HtmlPage
-        Dim html As String = path.ReadAllText
-        Dim head As String = Regex.Match(html, "---.+?---", RegexOptions.Singleline).Value
-        Dim title As String = Regex.Match(head, "title:.+?$", RegexICMul).Value
-        Dim url As String =
-            ProgramPathSearchTool.RelativePath(wwwroot, path)
+        Dim content As String = path.ReadAllText
+        Dim url As String = RelativePath(wwwroot, path)
+        Dim html As HtmlPage = HtmlPage.FromStream(content, url)
+        Return html
+    End Function
 
-        html = Mid(html, head.Length + 1).Trim
+    Public Shared Function FromStream(content As String, Optional url As String = "#") As HtmlPage
+        Dim head As String = Regex.Match(content, "---.+?---", RegexOptions.Singleline).Value
+        Dim title As String = Regex.Match(head, "title:.+?$", RegexICMul).Value
+
         title = title.GetTagValue(":").x.Trim
+        content = Mid(content, head.Length + 1).Trim
 
         Return New HtmlPage With {
-            .html = html,
+            .html = content,
             .Title = title,
             .Url = url
         }

@@ -4,6 +4,7 @@ Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Net.Protocols
+Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 Imports Microsoft.VisualBasic.Scripting.MetaData
 Imports Microsoft.VisualBasic.Serialization.JSON
 
@@ -241,13 +242,15 @@ Namespace Core
         ''' <param name="ext"></param>
         ''' <param name="buf"></param>
         Private Sub __transferData(p As HttpProcessor, ext As String, buf As Byte())
+            Dim contentType As ContentType
+
             If Not ContentTypes.ExtDict.ContainsKey(ext) Then
-                ext = ".txt"
+                contentType = ContentTypes.ExtDict(".bin")
+                Call p.writeSuccess(MIME.Unknown)
+            Else
+                contentType = ContentTypes.ExtDict(ext)
             End If
 
-            Dim contentType = ContentTypes.ExtDict(ext)
-
-            ' Call p.writeSuccess(contentType.MIMEType)
             Call p.outputStream.BaseStream.Write(buf, Scan0, buf.Length)
             Call $"Transfer data:  {contentType.ToString} ==> [{buf.Length} Bytes]!".__DEBUG_ECHO
         End Sub
