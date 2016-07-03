@@ -3,6 +3,7 @@ Imports System.IO
 Imports System.Net
 Imports System.Net.Sockets
 Imports System.Threading
+Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Parallel
 
 Namespace Core
@@ -10,7 +11,8 @@ Namespace Core
     ''' <summary>
     ''' Internal http server core.
     ''' </summary>
-    Public MustInherit Class HttpServer : Implements System.IDisposable
+    Public MustInherit Class HttpServer : Inherits ClassObject
+        Implements IDisposable
 
         Protected Is_active As Boolean = True
 

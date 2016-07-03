@@ -1,6 +1,7 @@
 ﻿Imports System.IO
 Imports System.Net.Sockets
 Imports System.Text
+Imports SMRUCC.HTTPInternal.AppEngine
 Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
 Imports SMRUCC.HTTPInternal.Core
 Imports SMRUCC.HTTPInternal.Platform.Plugins
@@ -17,18 +18,24 @@ Namespace Platform
         Public ReadOnly Property EnginePlugins As Plugins.PluginBase()
 
         ''' <summary>
-        ''' 
+        ''' Init engine.
         ''' </summary>
         ''' <param name="port"></param>
-        ''' <param name="root"></param>
+        ''' <param name="root">html wwwroot</param>
         ''' <param name="nullExists"></param>
-        Sub New(root As String, Optional port As Integer = 80, Optional nullExists As Boolean = False, Optional appDll As String = "")
+        ''' <param name="appDll">Must have a Class object implements the type <see cref="WebApp"/></param>
+        Sub New(root As String,
+                Optional port As Integer = 80,
+                Optional nullExists As Boolean = False,
+                Optional appDll As String = "")
+
             Call MyBase.New(port, root, nullExists)
             Call __init(appDll)
         End Sub
 
         Private Sub __init(dll As String)
             _AppManager = New AppEngine.APPManager(Me)
+
             If dll.FileExists Then
                 Call AppEngine.ExternalCall.ParseDll(dll, Me)
             Else
@@ -37,10 +44,13 @@ Namespace Platform
             Me._EnginePlugins = Plugins.ExternalCall.Scan(Me)
         End Sub
 
+        Const contentType As String = "Content-Type"
+
         Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
             Dim out As String = ""
-            Dim args As PostReader = New PostReader(inputData, p.httpHeaders("Content-Type"), Encoding.UTF8)
+            Dim args As New PostReader(inputData, p.httpHeaders(contentType), Encoding.UTF8)
             Dim success As Boolean = AppManager.InvokePOST(p.http_url, args, out)
+
             Call __handleSend(p, success, out)
         End Sub
 

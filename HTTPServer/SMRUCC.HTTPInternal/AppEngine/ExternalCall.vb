@@ -1,4 +1,6 @@
-﻿Imports Microsoft.VisualBasic.Linq
+﻿Imports Microsoft.VisualBasic.Language
+Imports Microsoft.VisualBasic.Language.UnixBash
+Imports Microsoft.VisualBasic.Linq
 Imports SMRUCC.HTTPInternal.Platform
 
 Namespace AppEngine
@@ -9,7 +11,7 @@ Namespace AppEngine
     Public Module ExternalCall
 
         Public Function Scan(Platform As PlatformEngine) As Boolean
-            Dim dlls = FileIO.FileSystem.GetFiles(App.HOME, FileIO.SearchOption.SearchTopLevelOnly, "*.dll")
+            Dim dlls As IEnumerable(Of String) = ls - l - wildcards("*.dll") <= App.HOME
 
             For Each dllFile As String In dlls
                 Try
@@ -32,10 +34,13 @@ Namespace AppEngine
         ''' <returns></returns>
         Public Function ParseDll(dll As String, platform As PlatformEngine) As Integer
             Dim assm As Reflection.Assembly = Reflection.Assembly.LoadFile(dll)
-            Dim types As Type() = (From typeDef As Type
-                                   In assm.GetTypes
-                                   Where typeDef.IsInheritsFrom(GetType(WebApp)) AndAlso Not typeDef.IsAbstract
-                                   Select typeDef).ToArray
+            Dim types As Type() =
+                LinqAPI.Exec(Of Type) <= From typeDef As Type
+                                         In assm.GetTypes
+                                         Where typeDef.IsInheritsFrom(GetType(WebApp)) _
+                                             AndAlso
+                                             Not typeDef.IsAbstract
+                                         Select typeDef
             If types.Length = 0 Then
                 Return -1
             End If
