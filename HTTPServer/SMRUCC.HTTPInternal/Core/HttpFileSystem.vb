@@ -132,6 +132,13 @@ Namespace Core
         ''' <param name="res"></param>
         ''' <returns></returns>
         Private Function __getMapDIR(ByRef res As String) As String
+            Dim rm As String = Regex.Match(res, ".+?\/[~]\/").Value
+
+            If Not String.IsNullOrEmpty(rm) Then
+                res = res.Replace(rm, "")
+                Return HOME.FullName
+            End If
+
             Dim mapDIR As String = FileIO.FileSystem.GetParentPath(res).ToLower.Replace("\", "/")
             If _virtualMappings.ContainsKey(mapDIR) Then
                 res = Regex.Replace(res.Replace("\", "/"), mapDIR.Replace("\", "/"), "")
