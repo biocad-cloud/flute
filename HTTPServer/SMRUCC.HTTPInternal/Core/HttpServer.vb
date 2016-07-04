@@ -79,7 +79,7 @@ Namespace Core
 
             While Is_active
                 Dim s As TcpClient = _httpListener.AcceptTcpClient()
-                Dim processor As HttpProcessor = __httpProcessor(s)
+                Dim processor As HttpProcessor = getProcessor(s)
                 Dim proc As New Thread(New ThreadStart(AddressOf processor.Process))
 
                 Call $"Process client from {s.Client.RemoteEndPoint.ToString}".__DEBUG_ECHO
@@ -88,6 +88,20 @@ Namespace Core
             End While
 
             Return 0
+        End Function
+
+        Public Property BufferSize As Integer = 4096
+
+        ''' <summary>
+        ''' 一些初始化的设置在这里
+        ''' </summary>
+        ''' <param name="client"></param>
+        ''' <returns></returns>
+        Private Function getProcessor(client As TcpClient) As HttpProcessor
+            Dim proc As HttpProcessor = __httpProcessor(client)
+            proc.BUF_SIZE = BufferSize
+
+            Return proc
         End Function
 
         ''' <summary>

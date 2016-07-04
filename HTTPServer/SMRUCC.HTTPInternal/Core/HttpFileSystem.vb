@@ -169,7 +169,7 @@ Namespace Core
         End Sub
 
         ''' <summary>
-        ''' 为什么不需要添加<see cref="HttpProcessor.writeSuccess(String, String)"/>方法？？？
+        ''' 为什么不需要添加<see cref="HttpProcessor.writeSuccess(String)"/>方法？？？
         ''' </summary>
         ''' <param name="p"></param>
         Public Overrides Sub handleGETRequest(p As HttpProcessor)
@@ -195,7 +195,9 @@ Namespace Core
             Dim buf As Byte() = RequestStream(res) ' 由于子文件夹可能会是以/的方式请求index.html，所以在这里res的值可能会变化，文件拓展名放在变化之后再解析
             Dim ext As String = FileIO.FileSystem.GetFileInfo(res).Extension.ToLower
 
-            If String.Equals(ext, ".html") Then ' Transfer HTML document.
+            If String.Equals(ext, ".html", StringComparison.OrdinalIgnoreCase) OrElse
+                String.Equals(ext, ".htm", StringComparison.OrdinalIgnoreCase) Then ' Transfer HTML document.
+
                 Dim html As String = Encoding.UTF8.GetString(buf)
 
                 If String.IsNullOrEmpty(html) Then
@@ -246,11 +248,17 @@ Namespace Core
 
             If Not ContentTypes.ExtDict.ContainsKey(ext) Then
                 contentType = ContentTypes.ExtDict(".bin")
-                Call p.writeSuccess(MIME.MsDownload, attachment:=name)
             Else
                 contentType = ContentTypes.ExtDict(ext)
             End If
 
+            Dim chead As New Content With {
+                .attachment = name,
+                .Length = buf.Length,
+                .Type = contentType.MIMEType
+            }
+
+            Call p.writeSuccess(chead)
             Call p.outputStream.BaseStream.Write(buf, Scan0, buf.Length)
             Call $"Transfer data:  {contentType.ToString} ==> [{buf.Length} Bytes]!".__DEBUG_ECHO
         End Sub
