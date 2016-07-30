@@ -129,6 +129,18 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|AnyCPU'">
+    <OutputPath>bin\docs\</OutputPath>
+    <DocumentationFile>httpd.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|x64'">
+    <OutputPath>bin\x64\docs\</OutputPath>
+    <DocumentationFile>httpd.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|x86'">
+    <OutputPath>bin\x86\docs\</OutputPath>
+    <DocumentationFile>httpd.xml</DocumentationFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -212,7 +224,7 @@
     <Content Include="Sandbox.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\VisualBasic_AppFramework\Microsoft.VisualBasic.Architecture.Framework\+Microsoft.VisualBasic.Architecture.Framework.vbproj">
+    <ProjectReference Include="..\..\..\visualbasic_App\Microsoft.VisualBasic.Architecture.Framework\+Microsoft.VisualBasic.Architecture.Framework.vbproj">
       <Project>{fecce1fd-e1d4-49e3-a668-60bb5e7aed99}</Project>
       <Name>+Microsoft.VisualBasic.Architecture.Framework</Name>
     </ProjectReference>
