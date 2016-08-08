@@ -1,4 +1,31 @@
-﻿Imports System.IO
+﻿#Region "Microsoft.VisualBasic::d7c3b91c9197b9e0d4a382c3daafc040, ..\httpd\HTTPServer\SMRUCC.HTTPInternal\Core\HttpFileSystem.vb"
+
+    ' Author:
+    ' 
+    '       asuka (amethyst.asuka@gcmodeller.org)
+    '       xieguigang (xie.guigang@live.com)
+    ' 
+    ' Copyright (c) 2016 GPL3 Licensed
+    ' 
+    ' 
+    ' GNU GENERAL PUBLIC LICENSE (GPL3)
+    ' 
+    ' This program is free software: you can redistribute it and/or modify
+    ' it under the terms of the GNU General Public License as published by
+    ' the Free Software Foundation, either version 3 of the License, or
+    ' (at your option) any later version.
+    ' 
+    ' This program is distributed in the hope that it will be useful,
+    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
+    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    ' GNU General Public License for more details.
+    ' 
+    ' You should have received a copy of the GNU General Public License
+    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+#End Region
+
+Imports System.IO
 Imports System.Net.Sockets
 Imports System.Text
 Imports System.Text.RegularExpressions
@@ -187,12 +214,18 @@ Namespace Core
                 If res.Last = "\"c OrElse res.Last = "/"c Then
                     res = res & "index.html"
                 End If
-                Call __handleFileGET(res, p)
+
+                If Not __handleFileGET(res, p) Then
+                    Call __handleREST(p)
+                End If
             End If
         End Sub
 
-        Private Sub __handleFileGET(res As String, p As HttpProcessor)
+        Private Function __handleFileGET(res As String, p As HttpProcessor) As Boolean
             Dim buf As Byte() = RequestStream(res) ' 由于子文件夹可能会是以/的方式请求index.html，所以在这里res的值可能会变化，文件拓展名放在变化之后再解析
+
+            If buf.Length = 0 Then Return False
+
             Dim ext As String = FileIO.FileSystem.GetFileInfo(res).Extension.ToLower
 
             If String.Equals(ext, ".html", StringComparison.OrdinalIgnoreCase) OrElse
@@ -210,7 +243,9 @@ Namespace Core
             Else
                 Call __transferData(p, ext, buf, res.BaseName)
             End If
-        End Sub
+
+            Return True
+        End Function
 
         ''' <summary>
         ''' handle the GET/POST request at here

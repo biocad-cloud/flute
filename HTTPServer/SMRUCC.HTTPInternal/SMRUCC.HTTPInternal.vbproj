@@ -116,6 +116,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|AnyCPU'">
+<<<<<<< HEAD
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\docs\</OutputPath>
     <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
@@ -144,6 +145,18 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+=======
+    <OutputPath>bin\docs\</OutputPath>
+    <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|x64'">
+    <OutputPath>..\..\..\sdk\bin\</OutputPath>
+    <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|x86'">
+    <OutputPath>bin\x86\docs\</OutputPath>
+    <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
+>>>>>>> 666024ee191e3a96b3a91f1dd447406ef257eca3
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -226,7 +239,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\VisualBasic_AppFramework\Microsoft.VisualBasic.Architecture.Framework\+Microsoft.VisualBasic.Architecture.Framework.vbproj">
+    <ProjectReference Include="..\..\..\GCModeller\src\runtime\visualbasic_App\Microsoft.VisualBasic.Architecture.Framework\+Microsoft.VisualBasic.Architecture.Framework.vbproj">
       <Project>{fecce1fd-e1d4-49e3-a668-60bb5e7aed99}</Project>
       <Name>+Microsoft.VisualBasic.Architecture.Framework</Name>
     </ProjectReference>
