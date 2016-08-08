@@ -171,12 +171,18 @@ NoData:             If _nullExists Then
                 If res.Last = "\"c OrElse res.Last = "/"c Then
                     res = res & "index.html"
                 End If
-                Call __handleFileGET(res, p)
+
+                If Not __handleFileGET(res, p) Then
+                    Call __handleREST(p)
+                End If
             End If
         End Sub
 
-        Private Sub __handleFileGET(res As String, p As HttpProcessor)
+        Private Function __handleFileGET(res As String, p As HttpProcessor) As Boolean
             Dim buf As Byte() = RequestStream(res) ' 由于子文件夹可能会是以/的方式请求index.html，所以在这里res的值可能会变化，文件拓展名放在变化之后再解析
+
+            If buf.Length = 0 Then Return False
+
             Dim ext As String = FileIO.FileSystem.GetFileInfo(res).Extension.ToLower
 
             If String.Equals(ext, ".html") Then ' Transfer HTML document.
@@ -192,7 +198,9 @@ NoData:             If _nullExists Then
             Else
                 Call __transferData(p, ext, buf)
             End If
-        End Sub
+
+            Return True
+        End Function
 
         ''' <summary>
         ''' handle the GET/POST request at here

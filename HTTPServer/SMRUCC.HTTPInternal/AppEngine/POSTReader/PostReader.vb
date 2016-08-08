@@ -37,6 +37,17 @@ Namespace AppEngine.POSTParser
     ''' </summary>
     Public Class PostReader
 
+        ''' <summary>
+        ''' Get value from <see cref="Form"/>
+        ''' </summary>
+        ''' <param name="name"></param>
+        ''' <returns></returns>
+        Default Public ReadOnly Property param(name As String) As String
+            Get
+                Return Form(name)
+            End Get
+        End Property
+
         Private Shared Function GetParameter(header As String, attr As String) As String
             Dim ap As Integer = header.IndexOf(attr)
             If ap = -1 Then
@@ -86,30 +97,37 @@ Namespace AppEngine.POSTParser
         ''' </summary>
         Private Sub LoadMultiPart()
             Dim boundary As String = GetParameter(ContentType, "; boundary=")
+
             If boundary Is Nothing Then
-                Return
+                ' probably is a jquery post
+                Dim byts As Byte() = DirectCast(InputStream, MemoryStream).ToArray
+                Dim s As String = ContentEncoding.GetString(byts)
+
+                For Each x In s.postRequestParser
+                    Call Form.Add(x.Key, x.Value)
+                Next
+            Else
+                Dim input As Stream = GetSubStream(InputStream)
+                Dim multi_part As New HttpMultipart(input, boundary, ContentEncoding)
+
+                Dim e As HttpMultipart.Element = Nothing
+                While multi_part.ReadNextElement().ShadowCopy(e) IsNot Nothing
+                    If e.Filename Is Nothing Then
+                        Dim copy As Byte() = New Byte(e.Length - 1) {}
+
+                        input.Position = e.Start
+                        input.Read(copy, 0, CInt(e.Length))
+
+                        Form.Add(e.Name, ContentEncoding.GetString(copy))
+                    Else
+                        '
+                        ' We use a substream, as in 2.x we will support large uploads streamed to disk,
+                        '
+                        Dim [sub] As New HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length)
+                        Files.Add(e.Name, [sub])
+                    End If
+                End While
             End If
-
-            Dim input As Stream = GetSubStream(InputStream)
-            Dim multi_part As New HttpMultipart(input, boundary, ContentEncoding)
-
-            Dim e As HttpMultipart.Element = Nothing
-            While multi_part.ReadNextElement().ShadowCopy(e) IsNot Nothing
-                If e.Filename Is Nothing Then
-                    Dim copy As Byte() = New Byte(e.Length - 1) {}
-
-                    input.Position = e.Start
-                    input.Read(copy, 0, CInt(e.Length))
-
-                    Form.Add(e.Name, ContentEncoding.GetString(copy))
-                Else
-                    '
-                    ' We use a substream, as in 2.x we will support large uploads streamed to disk,
-                    '
-                    Dim [sub] As New HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length)
-                    Files.Add(e.Name, [sub])
-                End If
-            End While
         End Sub
     End Class
 End Namespace
