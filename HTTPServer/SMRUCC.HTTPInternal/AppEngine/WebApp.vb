@@ -63,17 +63,14 @@ Namespace AppEngine
         ''' <param name="args"></param>
         ''' <returns></returns>
         Public Delegate Function GET_API(args As String) As String
-<<<<<<< HEAD
+
         ''' <summary>
         ''' <see cref="APIMethods.POST"/>
         ''' </summary>
         ''' <param name="args"></param>
         ''' <param name="params"></param>
         ''' <returns></returns>
-        Public Delegate Function POST_API(args As String, params As StreamReader) As String
-=======
         Public Delegate Function POST_API(args As String, params As PostReader) As String
->>>>>>> 666024ee191e3a96b3a91f1dd447406ef257eca3
 
     End Class
 End Namespace
