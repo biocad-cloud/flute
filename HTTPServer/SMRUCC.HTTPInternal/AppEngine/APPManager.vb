@@ -27,6 +27,7 @@
 
 Imports System.IO
 Imports Microsoft.VisualBasic.CommandLine.Reflection
+Imports Microsoft.VisualBasic.Language
 Imports SMRUCC.HTTPInternal.AppEngine.APIMethods
 Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
 Imports SMRUCC.HTTPInternal.Platform
@@ -35,12 +36,18 @@ Namespace AppEngine
 
     <[Namespace]("sdk")>
     Public Class APPManager : Inherits WebApp
-        Implements Generic.IEnumerable(Of APPEngine)
+        Implements IEnumerable(Of APPEngine)
 
         ''' <summary>
         ''' 键名要求是小写的
         ''' </summary>
         Dim RunningAPP As New Dictionary(Of String, APPEngine)
+
+        ''' <summary>
+        ''' 生成帮助文档所需要的
+        ''' </summary>
+        ''' <returns></returns>
+        Public Property baseUrl As String
 
         Sub New(API As PlatformEngine)
             Call MyBase.New(API)
@@ -58,12 +65,17 @@ Namespace AppEngine
         End Property
 
         Public Function GetApp(Of App As Class)() As App
-            Dim AppEntry As Type = GetType(App)
-            Dim LQuery = (From obj In RunningAPP.AsParallel
-                          Where AppEntry.Equals(obj.Value.Application.GetType)
-                          Let AppInstant = DirectCast(obj.Value.Application, App)
-                          Select AppInstant).ToArray
-            Return LQuery.FirstOrDefault
+            Dim appType As Type = GetType(App)
+            Dim LQuery As App = LinqAPI.DefaultFirst(Of App) <=
+ _
+                From x As APPEngine
+                In RunningAPP.Values.AsParallel
+                Where appType.Equals(x.Application.GetType)
+                Let AppInstant As App =
+                    DirectCast(x.Application, App)
+                Select AppInstant
+
+            Return LQuery
         End Function
 
         Public Iterator Function GetEnumerator() As IEnumerator(Of APPEngine) Implements IEnumerable(Of APPEngine).GetEnumerator
@@ -129,7 +141,7 @@ Namespace AppEngine
 
         Public Function PrintHelp() As String
             Dim LQuery = (From app In Me.RunningAPP
-                          Let head = $"<br /><div><h3>Application/Namespace                --- <strong>http://mipaimai.com/{app.Value.Namespace.Namespace}/</strong> ---</h3>" &
+                          Let head = $"<br /><div><h3>Application/Namespace                --- <strong>{baseUrl}/{app.Value.Namespace.Namespace}/</strong> ---</h3>" &
                           If(String.IsNullOrEmpty(app.Value.Namespace.Description), "",
                           $"                <p>{app.Value.Namespace.Description}</p>
                           <br /><br />")
@@ -144,7 +156,7 @@ Namespace AppEngine
         <ExportAPI("/sdk/help_doc.html", Info:="Get the help documents about how to using the mipaimai platform WebAPI.",
              Usage:="/sdk/help_doc.html",
              Example:="<a href=""/sdk/help_doc.html"">/sdk/help_doc.html</a>")>
-        <APIMethods.[GET](GetType(String))>
+        <[GET](GetType(String))>
         Public Function Help(args As String) As String
             Return PrintHelp()
         End Function

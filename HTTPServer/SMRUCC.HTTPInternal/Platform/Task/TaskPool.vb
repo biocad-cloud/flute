@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+﻿Imports Microsoft.VisualBasic
+=======
 ﻿#Region "Microsoft.VisualBasic::352eec02af01503445e92e504f5ad498, ..\httpd\HTTPServer\SMRUCC.HTTPInternal\Platform\Task\TaskPool.vb"
 
     ' Author:
@@ -25,12 +28,13 @@
 
 #End Region
 
+>>>>>>> 666024ee191e3a96b3a91f1dd447406ef257eca3
 Imports Microsoft.VisualBasic.CommandLine
 Imports Microsoft.VisualBasic.ComponentModel.Collection.Generic
+Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Parallel
-Imports Microsoft.VisualBasic
-Imports Microsoft.VisualBasic.Parallel.Tasks
 Imports Microsoft.VisualBasic.Parallel.Linq
+Imports Microsoft.VisualBasic.Parallel.Tasks
 
 Namespace Platform
 
@@ -54,17 +58,26 @@ Namespace Platform
         ''' <param name="uid"></param>
         ''' <returns></returns>
         Public Function GetTask(uid As String) As Task
-            Dim LQuery = (From x As Task In _taskQueue
-                          Where String.Equals(uid, x.uid, StringComparison.OrdinalIgnoreCase)
-                          Select x).FirstOrDefault
+            Dim LQuery As Task =
+                LinqAPI.DefaultFirst(Of Task) <=
+ _
+                From x As Task
+                In _taskQueue
+                Where String.Equals(uid, x.uid, StringComparison.OrdinalIgnoreCase)
+                Select x
+
             Return LQuery
         End Function
 
         Public Function TaskRunning(uid As String) As Boolean
-            Dim task As Task = (From x As Task
-                            In _runningTask
-                                Where String.Equals(uid, x.uid, StringComparison.OrdinalIgnoreCase)
-                                Select x).FirstOrDefault
+            Dim task As Task =
+                LinqAPI.DefaultFirst(Of Task) <=
+ _
+                From x As Task
+                In _runningTask
+                Where String.Equals(uid, x.uid, StringComparison.OrdinalIgnoreCase)
+                Select x
+
             If task Is Nothing Then
                 Return False
             Else
@@ -101,7 +114,7 @@ Namespace Platform
                 End If
 
                 Dim LQuery = (From task As AsyncHandle(Of Task)
-                          In TaskPool
+                              In TaskPool
                               Where task.IsCompleted ' 在这里获得完成的任务
                               Select task).ToArray
                 For Each completeTask As AsyncHandle(Of Task) In LQuery
@@ -113,7 +126,8 @@ Namespace Platform
                 Call Threading.Thread.Sleep(TimeInterval)
             Loop
 
-            Call (From task In TaskPool.AsParallel  ' 等待剩余的计算任务完成计算过程
+            Call (From task
+                  In TaskPool.AsParallel  ' 等待剩余的计算任务完成计算过程
                   Let cli As Task = task.GetValue
                   Select cli).ToArray
         End Sub

@@ -31,6 +31,7 @@ Imports System.Net
 Imports System.Net.Sockets
 Imports System.Threading
 Imports Microsoft.VisualBasic
+Imports Microsoft.VisualBasic.Serialization.JSON
 
 ' offered to the public domain for any use with no restriction
 ' and also with no warranty of any kind, please enjoy. - David Jeske. 
@@ -220,7 +221,7 @@ Namespace Core
             Call srv.handleGETRequest(Me)
         End Sub
 
-        Private Const BUF_SIZE As Integer = 4096
+        Public BUF_SIZE As Integer = 4096
 
         ''' <summary>
         ''' This post data processing just reads everything into a memory stream.
@@ -267,8 +268,14 @@ Namespace Core
         End Sub
 
         Public Sub writeSuccess(Optional content_type As String = "text/html")
-            On Error Resume Next
+            Try
+                Call __writeSuccess(content_type, Nothing)
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
+        End Sub
 
+        Private Sub __writeSuccess(content_type As String, content As Content)
             ' this is the successful HTTP response line
             outputStream.WriteLine("HTTP/1.0 200 OK")
             ' these are the HTTP headers...          
@@ -276,8 +283,20 @@ Namespace Core
             outputStream.WriteLine("Connection: close")
             ' ..add your own headers here if you like
 
+            Call content.WriteHeader(outputStream)
+
+            outputStream.WriteLine("X-Powered-By: Microsoft VisualBasic")
             outputStream.WriteLine("")
             ' this terminates the HTTP headers.. everything after this is HTTP body..
+        End Sub
+
+        Public Sub writeSuccess(content As Content)
+            Try
+                Call __writeSuccess(content.Type, content)
+            Catch ex As Exception
+                ex = New Exception(content.GetJson)
+                Call App.LogException(ex)
+            End Try
         End Sub
 
         ''' <summary>

@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+﻿Imports System.Reflection
+=======
 ﻿#Region "Microsoft.VisualBasic::721cd48bd37e0d269c8138417b78941b, ..\httpd\HTTPServer\SMRUCC.HTTPInternal\AppEngine\APIName.vb"
 
     ' Author:
@@ -25,6 +28,7 @@
 
 #End Region
 
+>>>>>>> 666024ee191e3a96b3a91f1dd447406ef257eca3
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 
@@ -32,8 +36,10 @@ Namespace AppEngine
 
     Public Module APIName
 
-        <Extension> Public Function GetAPIName(api As System.Reflection.MethodInfo) As String
-            Dim entry As ExportAPIAttribute = api.GetAttribute(Of ExportAPIAttribute)
+        <Extension> Public Function GetAPIName(api As MethodInfo) As String
+            Dim entry As ExportAPIAttribute =
+                api.GetAttribute(Of ExportAPIAttribute)
+
             If entry Is Nothing Then
                 Return ""
             Else

@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+﻿Imports Microsoft.VisualBasic.Language
+=======
 ﻿#Region "Microsoft.VisualBasic::36510b55bed65bc9b516112c0cf5b1de, ..\httpd\HTTPServer\SMRUCC.HTTPInternal\Platform\PlatformSub.vb"
 
     ' Author:
@@ -26,9 +29,19 @@
 #End Region
 
 Namespace Platform
+>>>>>>> 666024ee191e3a96b3a91f1dd447406ef257eca3
 
-    Public MustInherit Class PlatformSub
+Namespace Platform
 
+    ''' <summary>
+    ''' Web App engine platform components.
+    ''' </summary>
+    Public MustInherit Class PlatformSub : Inherits ClassObject
+
+        ''' <summary>
+        ''' Platform engine parent host
+        ''' </summary>
+        ''' <returns></returns>
         Public ReadOnly Property PlatformEngine As PlatformEngine
 
         Sub New(main As PlatformEngine)

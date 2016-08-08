@@ -32,9 +32,16 @@ Imports SMRUCC.HTTPInternal.Platform
 Namespace AppEngine
 
     ''' <summary>
-    ''' 外部对象需要继承这个基类才可以在App引擎之中注册自身为服务
+    ''' API interface description: <see cref="GET_API"/>, <see cref="POST_API"/>.
+    ''' (外部对象需要继承这个基类才可以在App引擎之中注册自身为服务)
     ''' </summary>
     Public MustInherit Class WebApp : Inherits PlatformSub
+
+        Public ReadOnly Property wwwroot As String
+            Get
+                Return PlatformEngine.HOME.FullName
+            End Get
+        End Property
 
         Sub New(main As PlatformEngine)
             Call MyBase.New(main)
@@ -50,8 +57,23 @@ Namespace AppEngine
             Return $"{PlatformEngine.ToString} ==> {Me.GetType.Name}"
         End Function
 
+        ''' <summary>
+        ''' <see cref="APIMethods.[GET]"/>
+        ''' </summary>
+        ''' <param name="args"></param>
+        ''' <returns></returns>
         Public Delegate Function GET_API(args As String) As String
+<<<<<<< HEAD
+        ''' <summary>
+        ''' <see cref="APIMethods.POST"/>
+        ''' </summary>
+        ''' <param name="args"></param>
+        ''' <param name="params"></param>
+        ''' <returns></returns>
+        Public Delegate Function POST_API(args As String, params As StreamReader) As String
+=======
         Public Delegate Function POST_API(args As String, params As PostReader) As String
+>>>>>>> 666024ee191e3a96b3a91f1dd447406ef257eca3
 
     End Class
 End Namespace

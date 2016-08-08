@@ -116,6 +116,36 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|AnyCPU'">
+<<<<<<< HEAD
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\docs\</OutputPath>
+    <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|x64'">
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\x64\docs\</OutputPath>
+    <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|x86'">
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\x86\docs\</OutputPath>
+    <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+=======
     <OutputPath>bin\docs\</OutputPath>
     <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
   </PropertyGroup>
@@ -126,6 +156,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|x86'">
     <OutputPath>bin\x86\docs\</OutputPath>
     <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
+>>>>>>> 666024ee191e3a96b3a91f1dd447406ef257eca3
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -157,9 +188,11 @@
     <Compile Include="AppEngine\ExternalCall.vb" />
     <Compile Include="AppEngine\WebApp.vb" />
     <Compile Include="AppEngine\API\__API_Invoker.vb" />
+    <Compile Include="Core\Content.vb" />
     <Compile Include="Core\HttpFileSystem.vb" />
     <Compile Include="Core\HttpProcessor.vb" />
     <Compile Include="Core\HttpServer.vb" />
+    <Compile Include="HtmlPage.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>

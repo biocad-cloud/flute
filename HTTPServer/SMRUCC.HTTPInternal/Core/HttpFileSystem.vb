@@ -31,7 +31,9 @@ Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Net.Protocols
+Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 Imports Microsoft.VisualBasic.Scripting.MetaData
+Imports Microsoft.VisualBasic.Serialization.JSON
 
 Namespace Core
 
@@ -86,7 +88,12 @@ Namespace Core
             End If
         End Sub
 
-        Public Function GetResource(ByRef res As String) As Byte()
+        ''' <summary>
+        ''' Maps the http request url as server file system path.
+        ''' </summary>
+        ''' <param name="res"></param>
+        ''' <returns></returns>
+        Public Function MapPath(ByRef res As String) As String
             Dim mapDIR As String = __getMapDIR(res)
             Dim file As String = $"{mapDIR}/{res}"
 
@@ -94,20 +101,41 @@ Namespace Core
                 ' 检查是不是文件夹
                 If file.DirectoryExists Then
                     Dim index As String = file & "/index.html"
-                    If Not index.FileExists Then
-                        GoTo NoData
-                    Else
-                        file = index
+
+                    If index.FileExists Then
                         res = file
-                    End If
-                Else
-NoData:             If _nullExists Then
-                        Call $"[ERR_EMPTY_RESPONSE::No data send] {file.ToFileURL}".__DEBUG_ECHO
-                        Return New Byte() {}
+                        file = index
                     End If
                 End If
             End If
-            Return IO.File.ReadAllBytes(file)
+
+            Return file
+        End Function
+
+        ''' <summary>
+        ''' ``[ERR_EMPTY_RESPONSE::No data send]``
+        ''' </summary>
+        Const NoData As String = "[ERR_EMPTY_RESPONSE::No data send]"
+
+        ''' <summary>
+        ''' 默认是获取文件数据
+        ''' </summary>
+        ''' <param name="res"></param>
+        ''' <returns></returns>
+        Public Function GetResource(ByRef res As String) As Byte()
+            Dim file As String = MapPath(res)
+
+            If file.FileExists Then
+                Return IO.File.ReadAllBytes(file)
+            Else
+                If _nullExists Then
+                    Call $"{NoData} {file.ToFileURL}".__DEBUG_ECHO
+                    Return New Byte() {}
+                Else
+                    Dim url As String = (New String() {res, file}).GetJson
+                    Throw New NullReferenceException(url)
+                End If
+            End If
         End Function
 
         ''' <summary>
@@ -119,11 +147,26 @@ NoData:             If _nullExists Then
         Public Delegate Function IGetResource(ByRef res As String) As Byte()
 
         ''' <summary>
+        ''' Public Delegate Function <see cref="IGetResource"/>(ByRef res As <see cref="System.String"/>) As <see cref="Byte()"/>
+        ''' </summary>
+        ''' <param name="req"></param>
+        Public Sub SetGetRequest(req As IGetResource)
+            _RequestStream = req
+        End Sub
+
+        ''' <summary>
         ''' 长
         ''' </summary>
         ''' <param name="res"></param>
         ''' <returns></returns>
         Private Function __getMapDIR(ByRef res As String) As String
+            Dim rm As String = Regex.Match(res, ".+?\/[~]\/").Value
+
+            If Not String.IsNullOrEmpty(rm) Then
+                res = res.Replace(rm, "")
+                Return HOME.FullName
+            End If
+
             Dim mapDIR As String = FileIO.FileSystem.GetParentPath(res).ToLower.Replace("\", "/")
             If _virtualMappings.ContainsKey(mapDIR) Then
                 res = Regex.Replace(res.Replace("\", "/"), mapDIR.Replace("\", "/"), "")
@@ -185,7 +228,9 @@ NoData:             If _nullExists Then
 
             Dim ext As String = FileIO.FileSystem.GetFileInfo(res).Extension.ToLower
 
-            If String.Equals(ext, ".html") Then ' Transfer HTML document.
+            If String.Equals(ext, ".html", StringComparison.OrdinalIgnoreCase) OrElse
+                String.Equals(ext, ".htm", StringComparison.OrdinalIgnoreCase) Then ' Transfer HTML document.
+
                 Dim html As String = Encoding.UTF8.GetString(buf)
 
                 If String.IsNullOrEmpty(html) Then
@@ -196,7 +241,7 @@ NoData:             If _nullExists Then
                 Call p.writeSuccess()
                 Call p.outputStream.WriteLine(html)
             Else
-                Call __transferData(p, ext, buf)
+                Call __transferData(p, ext, buf, res.BaseName)
             End If
 
             Return True
@@ -233,14 +278,22 @@ NoData:             If _nullExists Then
         ''' <param name="p"></param>
         ''' <param name="ext"></param>
         ''' <param name="buf"></param>
-        Private Sub __transferData(p As HttpProcessor, ext As String, buf As Byte())
+        Private Sub __transferData(p As HttpProcessor, ext As String, buf As Byte(), name As String)
+            Dim contentType As ContentType
+
             If Not ContentTypes.ExtDict.ContainsKey(ext) Then
-                ext = ".txt"
+                contentType = ContentTypes.ExtDict(".bin")
+            Else
+                contentType = ContentTypes.ExtDict(ext)
             End If
 
-            Dim contentType = ContentTypes.ExtDict(ext)
+            Dim chead As New Content With {
+                .attachment = name,
+                .Length = buf.Length,
+                .Type = contentType.MIMEType
+            }
 
-            ' Call p.writeSuccess(contentType.MIMEType)
+            Call p.writeSuccess(chead)
             Call p.outputStream.BaseStream.Write(buf, Scan0, buf.Length)
             Call $"Transfer data:  {contentType.ToString} ==> [{buf.Length} Bytes]!".__DEBUG_ECHO
         End Sub
