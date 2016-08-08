@@ -67,10 +67,11 @@ Namespace Platform
         ''' </summary>
         ''' <param name="dll"></param>
         Private Sub __init(dll As String)
-            dll = FileIO.FileSystem.GetFileInfo(dll).FullName
             _AppManager = New AppEngine.APPManager(Me)
 
             If dll.FileExists Then
+                dll = FileIO.FileSystem.GetFileInfo(dll).FullName
+
                 Call AppEngine.ExternalCall.ParseDll(dll, Me)
                 Call __runDll(dll)
             Else
