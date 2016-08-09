@@ -287,13 +287,13 @@ Namespace Core
                 contentType = ContentTypes.ExtDict(ext)
             End If
 
-            Dim chead As New Content With {
-                .attachment = name,
-                .Length = buf.Length,
-                .Type = contentType.MIMEType
-            }
+            'Dim chead As New Content With {
+            '    .attachment = name,
+            '    .Length = buf.Length,
+            '    .Type = contentType.MIMEType
+            '}
 
-            Call p.writeSuccess(chead)
+            ' Call p.writeSuccess(chead)
             Call p.outputStream.BaseStream.Write(buf, Scan0, buf.Length)
             Call $"Transfer data:  {contentType.ToString} ==> [{buf.Length} Bytes]!".__DEBUG_ECHO
         End Sub
