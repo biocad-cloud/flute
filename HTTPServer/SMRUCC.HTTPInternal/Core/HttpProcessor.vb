@@ -186,7 +186,7 @@ Namespace Core
             http_url = tokens(1)
             http_protocol_versionstring = tokens(2)
 
-            Console.WriteLine("starting: " & request)
+            ' Console.WriteLine("starting: " & request)
         End Sub
 
         Public Sub readHeaders()
@@ -196,7 +196,7 @@ Namespace Core
 
             While __streamReadLine(_inputStream).ShadowCopy(line) IsNot Nothing
                 If line.Equals("") Then
-                    Console.WriteLine("got headers")
+                    ' Console.WriteLine("got headers")
                     Return
                 End If
 
@@ -212,7 +212,7 @@ Namespace Core
                 End While
 
                 Dim value As String = line.Substring(pos, line.Length - pos)
-                Console.WriteLine("header: {0}:{1}", name, value)
+                ' Console.WriteLine("header: {0}:{1}", name, value)
                 httpHeaders(name) = value
             End While
         End Sub
@@ -233,7 +233,7 @@ Namespace Core
         ''' <remarks></remarks>
         Public Sub HandlePOSTRequest()
 
-            Call Console.WriteLine("get post data start")
+            ' Call Console.WriteLine("get post data start")
 
             Dim content_len As Integer = 0
             Dim ms As New MemoryStream()
@@ -246,10 +246,10 @@ Namespace Core
                 Dim buf As Byte() = New Byte(BUF_SIZE - 1) {}
                 Dim to_read As Integer = content_len
                 While to_read > 0
-                    Console.WriteLine("starting Read, to_read={0}", to_read)
+                    ' Console.WriteLine("starting Read, to_read={0}", to_read)
 
                     Dim numread As Integer = Me._inputStream.Read(buf, 0, Math.Min(BUF_SIZE, to_read))
-                    Console.WriteLine("read finished, numread={0}", numread)
+                    ' Console.WriteLine("read finished, numread={0}", numread)
                     If numread = 0 Then
                         If to_read = 0 Then
                             Exit While
@@ -263,7 +263,7 @@ Namespace Core
                 ms.Seek(0, SeekOrigin.Begin)
             End If
 
-            Call Console.WriteLine("get post data end")
+            ' Call Console.WriteLine("get post data end")
             Call srv.handlePOSTRequest(Me, ms)
         End Sub
 

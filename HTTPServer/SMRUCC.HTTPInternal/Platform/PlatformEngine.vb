@@ -56,9 +56,10 @@ Namespace Platform
         Sub New(root As String,
                 Optional port As Integer = 80,
                 Optional nullExists As Boolean = False,
-                Optional appDll As String = "")
+                Optional appDll As String = "",
+                Optional threads As Integer = -1)
 
-            Call MyBase.New(port, root, nullExists)
+            Call MyBase.New(port, root, nullExists, threads:=threads)
             Call __init(appDll)
         End Sub
 
@@ -88,22 +89,25 @@ Namespace Platform
         Private Sub __runDll(dll As String)
             Dim assm As Assembly = Assembly.LoadFile(dll)
             Dim types As Type() = assm.GetTypes
-            Dim webApp As Type =
-                LinqAPI.DefaultFirst(Of Type) <= From type As Type
-                                                 In types
-                                                 Where String.Equals(type.Name, NameOf(AppEngine.WebApp), StringComparison.OrdinalIgnoreCase)
-                                                 Select type
+            Dim webApp As Type = LinqAPI.DefaultFirst(Of Type) <=
+ _
+                From type As Type
+                In types
+                Where String.Equals(type.Name, NameOf(AppEngine.WebApp), StringComparison.OrdinalIgnoreCase)
+                Select type
 
             If webApp Is Nothing Then
                 Return     ' 没有定义 Sub Main，则忽略掉这次调用
             End If
 
             Dim ms = webApp.GetMethods
-            Dim main As MethodInfo =
-                LinqAPI.DefaultFirst(Of MethodInfo) <= From m As MethodInfo
-                                                       In ms
-                                                       Where String.Equals(m.Name, "Main", StringComparison.OrdinalIgnoreCase)
-                                                       Select m
+            Dim main As MethodInfo = LinqAPI.DefaultFirst(Of MethodInfo) <=
+ _
+                From m As MethodInfo
+                In ms
+                Where String.Equals(m.Name, "Main", StringComparison.OrdinalIgnoreCase)
+                Select m
+
             If main Is Nothing Then
                 Return
             End If
@@ -139,7 +143,11 @@ Namespace Platform
         End Sub
 
         Private Sub __handleSend(p As HttpProcessor, success As Boolean, out As String)
-            Call p.outputStream.WriteLine(out)
+            Try
+                Call p.outputStream.WriteLine(out)
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
 
             For Each plugin As PluginBase In EnginePlugins
                 Call plugin.handleVisit(p, success)
