@@ -72,6 +72,8 @@ Namespace Core
             Me._httpListener = New TcpListener(IPAddress.Any, _LocalPort)
         End Sub
 
+        Dim threadPool As New Threads.ThreadPool
+
         ''' <summary>
         ''' Running this http server. 
         ''' NOTE: current thread will be blocked at here until the server core is shutdown. 
@@ -107,10 +109,9 @@ Namespace Core
             While Is_active
                 Dim s As TcpClient = _httpListener.AcceptTcpClient()
                 Dim processor As HttpProcessor = getProcessor(s)
-                Dim proc As New Thread(New ThreadStart(AddressOf processor.Process))
 
+                Call threadPool.RunTask(AddressOf processor.Process)
                 Call $"Process client from {s.Client.RemoteEndPoint.ToString}".__DEBUG_ECHO
-                Call proc.Start()
                 Call Thread.Sleep(1)
             End While
 

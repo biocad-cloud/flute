@@ -142,7 +142,11 @@ Namespace Platform
         End Sub
 
         Private Sub __handleSend(p As HttpProcessor, success As Boolean, out As String)
-            Call p.outputStream.WriteLine(out)
+            Try
+                Call p.outputStream.WriteLine(out)
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
 
             For Each plugin As PluginBase In EnginePlugins
                 Call plugin.handleVisit(p, success)
