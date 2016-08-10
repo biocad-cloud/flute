@@ -67,13 +67,16 @@ Namespace Core
         ''' </summary>
         ''' <param name="port">The network data port of this internal http server listen.</param>
         ''' <param name="homeShowOnStart"></param>
-        Public Sub New(port As Integer, Optional homeShowOnStart As Boolean = False)
+        Public Sub New(port As Integer, Optional homeShowOnStart As Boolean = False, Optional threads As Integer = -1)
             Me._LocalPort = port
             Me._homeShowOnStart = homeShowOnStart
             Me._httpListener = New TcpListener(IPAddress.Any, _LocalPort)
+            Me._threadPool = New Threads.ThreadPool(If(threads = -1, LQuerySchedule.Recommended_NUM_THREADS * 8, threads))
+
+            Call Console.WriteLine("Web server threads_pool_size=" & _threadPool.NumOfThreads)
         End Sub
 
-        Dim threadPool As New Threads.ThreadPool(LQuerySchedule.Recommended_NUM_THREADS * 8)
+        Dim _threadPool As Threads.ThreadPool
 
         ''' <summary>
         ''' Running this http server. 
@@ -111,7 +114,7 @@ Namespace Core
                 Dim s As TcpClient = _httpListener.AcceptTcpClient()
                 Dim processor As HttpProcessor = getProcessor(s)
 
-                Call threadPool.RunTask(AddressOf processor.Process)
+                Call _threadPool.RunTask(AddressOf processor.Process)
                 Call $"Process client from {s.Client.RemoteEndPoint.ToString}".__DEBUG_ECHO
                 Call Thread.Sleep(1)
             End While

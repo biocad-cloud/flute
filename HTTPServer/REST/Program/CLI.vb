@@ -30,11 +30,12 @@ Imports SMRUCC.HTTPInternal.Platform
 
 Module CLI
 
-    <ExportAPI("/start", Usage:="/start [/port 80 /root <wwwroot_DIR>]")>
+    <ExportAPI("/start", Usage:="/start [/port 80 /root <wwwroot_DIR> /threads -1]")>
     Public Function Start(args As CommandLine.CommandLine) As Integer
         Dim port As Integer = args.GetValue("/port", 80)
         Dim HOME As String = args.GetValue("/root", App.CurrentDirectory)
-        Return New PlatformEngine(HOME, port, True).Run
+        Dim threads As Integer = args.GetValue("/threads", -1)
+        Return New PlatformEngine(HOME, port, True, threads:=threads).Run
     End Function
 
     <ExportAPI("/run", Usage:="/run /dll <app.dll> [/port <80> /root <wwwroot_DIR>]")>

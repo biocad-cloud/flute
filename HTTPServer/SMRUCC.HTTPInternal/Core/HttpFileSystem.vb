@@ -71,12 +71,18 @@ Namespace Core
         ''' <param name="port"></param>
         ''' <param name="root"></param>
         ''' <param name="nullExists"></param>
-        Sub New(port As Integer, root As String, Optional nullExists As Boolean = False, Optional requestResource As IGetResource = Nothing)
-            Call MyBase.New(port, True)
-            _nullExists = nullExists
+        Sub New(port As Integer, root As String,
+                Optional nullExists As Boolean = False,
+                Optional requestResource As IGetResource = Nothing,
+                Optional threads As Integer = -1)
+
+            Call MyBase.New(port, True, threads)
+
             If Not FileIO.FileSystem.DirectoryExists(root) Then
                 Call FileIO.FileSystem.CreateDirectory(root)
             End If
+
+            _nullExists = nullExists
             HOME = FileIO.FileSystem.GetDirectoryInfo(root)
             FileIO.FileSystem.CurrentDirectory = root
             _virtualMappings = New Dictionary(Of String, String)

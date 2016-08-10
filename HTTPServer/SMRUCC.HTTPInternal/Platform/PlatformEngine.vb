@@ -56,9 +56,10 @@ Namespace Platform
         Sub New(root As String,
                 Optional port As Integer = 80,
                 Optional nullExists As Boolean = False,
-                Optional appDll As String = "")
+                Optional appDll As String = "",
+                Optional threads As Integer = -1)
 
-            Call MyBase.New(port, root, nullExists)
+            Call MyBase.New(port, root, nullExists, threads:=threads)
             Call __init(appDll)
         End Sub
 
