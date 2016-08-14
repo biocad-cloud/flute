@@ -1,27 +1,27 @@
 ﻿#Region "Microsoft.VisualBasic::59f3fe00b8291ca4a1d3adba0260bf31, ..\httpd\HTTPServer\SMRUCC.HTTPInternal\Core\HttpProcessor.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2016 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2016 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #End Region
 
@@ -31,6 +31,7 @@ Imports System.Net
 Imports System.Net.Sockets
 Imports System.Threading
 Imports Microsoft.VisualBasic
+Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Serialization.JSON
 
 ' offered to the public domain for any use with no restriction
@@ -60,7 +61,7 @@ Namespace Core
         ''' <returns></returns>
         Public Property http_url As String
         Public Property http_protocol_versionstring As String
-        Public Property httpHeaders As New Hashtable()
+        Public Property httpHeaders As New Dictionary(Of String, String)
 
         ''' <summary>
         ''' 可以向这里面写入数据从而回传数据
@@ -138,7 +139,7 @@ Namespace Core
             Try
                 Call __processInvoker()  ' ??????http???????????????????????????????
             Catch e As Exception
-                Console.WriteLine("Exception: " & e.ToString())
+                Call e.PrintException
                 writeFailure(e.ToString)
             End Try
 
@@ -190,14 +191,16 @@ Namespace Core
         End Sub
 
         Public Sub readHeaders()
+            Dim line As String = "", s As New Value(Of String)
+
             Call NameOf(readHeaders).__DEBUG_ECHO
 
-            Dim line As String = ""
-
-            While __streamReadLine(_inputStream).ShadowCopy(line) IsNot Nothing
-                If line.Equals("") Then
+            While (s = __streamReadLine(_inputStream)) IsNot Nothing
+                If s.value.Equals("") Then
                     ' Console.WriteLine("got headers")
                     Return
+                Else
+                    line = s.value
                 End If
 
                 Dim separator As Integer = line.IndexOf(":"c)
@@ -212,7 +215,7 @@ Namespace Core
                 End While
 
                 Dim value As String = line.Substring(pos, line.Length - pos)
-                ' Console.WriteLine("header: {0}:{1}", name, value)
+                Call $"header: {name}:{value}".__DEBUG_ECHO
                 httpHeaders(name) = value
             End While
         End Sub
@@ -222,6 +225,9 @@ Namespace Core
         End Sub
 
         Public BUF_SIZE As Integer = 4096
+
+        Public Const ContentLengthTooLarge As String = "POST Content-Length({0}) too big for this simple server"
+        Public Const ContentLength As String = "Content-Length"
 
         ''' <summary>
         ''' This post data processing just reads everything into a memory stream.
@@ -238,10 +244,10 @@ Namespace Core
             Dim content_len As Integer = 0
             Dim ms As New MemoryStream()
 
-            If Me.httpHeaders.ContainsKey("Content-Length") Then
-                content_len = Convert.ToInt32(Me.httpHeaders("Content-Length"))
+            If Me.httpHeaders.ContainsKey(ContentLength) Then
+                content_len = Convert.ToInt32(Me.httpHeaders(ContentLength))
                 If content_len > MAX_POST_SIZE Then
-                    Throw New Exception(String.Format("POST Content-Length({0}) too big for this simple server", content_len))
+                    Throw New Exception(String.Format(ContentLengthTooLarge, content_len))
                 End If
                 Dim buf As Byte() = New Byte(BUF_SIZE - 1) {}
                 Dim to_read As Integer = content_len
@@ -260,7 +266,8 @@ Namespace Core
                     to_read -= numread
                     ms.Write(buf, 0, numread)
                 End While
-                ms.Seek(0, SeekOrigin.Begin)
+
+                Call ms.Seek(Scan0, SeekOrigin.Begin)
             End If
 
             ' Call Console.WriteLine("get post data end")
@@ -309,8 +316,17 @@ Namespace Core
         ''' 404
         ''' </summary>
         Public Sub writeFailure(ex As String)
-            On Error Resume Next
+            Try
+                Call __writeFailure(ex)
+            Catch e As Exception
+                Call App.LogException(e)
+            End Try
+        End Sub
 
+        ''' <summary>
+        ''' 404
+        ''' </summary>
+        Private Sub __writeFailure(ex As String)
             ' this is an http 404 failure response
             Call outputStream.WriteLine("HTTP/1.0 404 Not Found")
             ' these are the HTTP headers
