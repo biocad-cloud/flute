@@ -45,6 +45,9 @@ Namespace AppEngine.APIMethods.Arguments
             HttpHeaders = request.httpHeaders
         End Sub
 
+        Sub New()
+        End Sub
+
         Public Overrides Function ToString() As String
             Return Me.GetJson
         End Function
@@ -69,12 +72,43 @@ Namespace AppEngine.APIMethods.Arguments
             response = rep
         End Sub
 
+        Dim __writeHTML As Boolean = False
+        Dim __writeData As Boolean = False
+
         Public Sub Redirect(url As String)
             Call WriteHTML(<script>window.location='%s';</script>, url)
         End Sub
 
         Public Sub WriteHTML(html As String)
+            If Not __writeHTML AndAlso Not __writeData Then  ' 如果writeData是True，则说明在这之前已经写了其他数据，就不写http头部了
+                __writeHTML = writeSuccess()
+            End If
             Call response.WriteLine(html)
+        End Sub
+
+        Private Function writeSuccess() As Boolean
+            Try
+                Call __writeSuccess("text/html", Nothing)
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
+
+            Return True
+        End Function
+
+        Private Sub __writeSuccess(content_type As String, content As Content)
+            ' this is the successful HTTP response line
+            response.WriteLine("HTTP/1.0 200 OK")
+            ' these are the HTTP headers...          
+            response.WriteLine("Content-Type: " & content_type)
+            response.WriteLine("Connection: close")
+            ' ..add your own headers here if you like
+
+            Call content.WriteHeader(response)
+
+            response.WriteLine("X-Powered-By: Microsoft VisualBasic")
+            response.WriteLine("")
+            ' this terminates the HTTP headers.. everything after this is HTTP body..
         End Sub
 
         ''' <summary>
@@ -87,11 +121,23 @@ Namespace AppEngine.APIMethods.Arguments
         End Sub
 
         Public Sub WriteJSON(Of T)(obj As T)
-            Call WriteHTML(obj.GetJson)
+            __writeData = True
+            Call response.WriteLine(obj.GetJson)
         End Sub
 
         Public Sub WriteXML(Of T)(obj As T)
-            Call WriteHTML(obj.GetXml)
+            __writeData = True
+            Call response.WriteLine(obj.GetXml)
+        End Sub
+
+        Public Sub Write(byts As Byte())
+            __writeData = True
+            Call response.BaseStream.Write(byts, Scan0, byts.Length)
+        End Sub
+
+        Public Sub Write(byts As Byte(), offset As Integer, count As Integer)
+            __writeData = True
+            Call response.BaseStream.Write(byts, offset, count)
         End Sub
 
         ' Exceptions:
@@ -144,6 +190,7 @@ Namespace AppEngine.APIMethods.Arguments
         ''' </summary>
         ''' <param name="value">The character to write to the stream.</param>
         Public Sub Write(value As Char)
+            __writeData = True
             Call response.Write(value)
         End Sub
 
@@ -165,6 +212,7 @@ Namespace AppEngine.APIMethods.Arguments
         ''' </summary>
         ''' <param name="value">The string to write to the stream. If value is null, nothing is written.</param>
         Public Sub Write(value As String)
+            __writeData = True
             Call response.Write(value)
         End Sub
 
@@ -187,6 +235,7 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <param name="buffer">A character array containing the data to write. If buffer is null, nothing is
         ''' written.</param>
         Public Sub Write(buffer() As Char)
+            __writeData = True
             Call response.Write(buffer)
         End Sub
 
@@ -219,6 +268,7 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <param name="index">The character position in the buffer at which to start reading data.</param>
         ''' <param name="count">The maximum number of characters to write.</param>
         Public Sub Write(buffer() As Char, index As Integer, count As Integer)
+            __writeData = True
             Call response.Write(buffer, index, count)
         End Sub
 
@@ -251,6 +301,7 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <returns>A task that represents the asynchronous write operation.</returns>
         <ComVisible(False)>
         Public Function WriteAsync(value As Char) As Tasks.Task
+            __writeData = True
             Return response.WriteAsync(value)
         End Function
 
@@ -268,6 +319,7 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <returns>A task that represents the asynchronous write operation.</returns>
         <ComVisible(False)>
         Public Function WriteAsync(value As String) As Tasks.Task
+            __writeData = True
             Return response.WriteAsync(value)
         End Function
 
@@ -296,6 +348,7 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <returns>A task that represents the asynchronous write operation.</returns>
         <ComVisible(False)>
         Public Function WriteAsync(buffer() As Char, index As Integer, count As Integer) As Tasks.Task
+            __writeData = True
             Return response.WriteAsync(buffer, index, count)
         End Function
 
@@ -312,6 +365,7 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <returns>A task that represents the asynchronous write operation.</returns>
         <ComVisible(False)>
         Public Function WriteLineAsync() As Tasks.Task
+            __writeData = True
             Return response.WriteLineAsync
         End Function
 
@@ -329,6 +383,7 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <returns>A task that represents the asynchronous write operation.</returns>
         <ComVisible(False)>
         Public Function WriteLineAsync(value As Char) As Tasks.Task
+            __writeData = True
             Return response.WriteLineAsync(value)
         End Function
 
@@ -345,6 +400,7 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <returns>A task that represents the asynchronous write operation.</returns>
         <ComVisible(False)>
         Public Function WriteLineAsync(value As String) As Tasks.Task
+            __writeData = True
             Return response.WriteLineAsync(value)
         End Function
 
@@ -374,15 +430,16 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <returns>A task that represents the asynchronous write operation.</returns>
         <ComVisible(False)>
         Public Function WriteLineAsync(buffer() As Char, index As Integer, count As Integer) As Tasks.Task
+            __writeData = True
             Return response.WriteLineAsync(buffer, index, count)
         End Function
 
-        Public Shared Operator <=(rep As HttpResponse, url As String) As HttpResponse
+        Public Shared Operator <=(rep As HttpResponse, url As String) As Boolean
             Call rep.Redirect(url)
-            Return rep
+            Return True
         End Operator
 
-        Public Shared Operator >=(rep As HttpResponse, url As String) As HttpResponse
+        Public Shared Operator >=(rep As HttpResponse, url As String) As Boolean
             Throw New NotSupportedException
         End Operator
 
