@@ -110,6 +110,8 @@ Namespace AppEngine
 
             If Not APPEngine.GetParameter(url, application, api, parameters) Then
                 Return False
+            Else
+                request.URLParameters = parameters.requestParser
             End If
 
             If Not applications.ContainsKey(application) Then
@@ -133,6 +135,8 @@ Namespace AppEngine
 
             If Not APPEngine.GetParameter(url, application, api, parameters) Then
                 Return False
+            Else
+                request.URLParameters = parameters.requestParser
             End If
 
             If Not applications.ContainsKey(application) Then ' 找不到相对应的WebApp，则默认返回失败 
