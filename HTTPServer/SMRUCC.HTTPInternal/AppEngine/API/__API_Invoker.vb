@@ -60,10 +60,10 @@ Namespace AppEngine.APIMethods
     ''' <returns>Execute success or not?</returns>
     Public Delegate Function _Post(args As String, inputs As PostReader, ByRef result As String) As Boolean
 
-    Public Class __API_Invoker
+    Public Class APIInvoker
 
         Public Property Name As String
-        Public Property EntryPoint As System.Reflection.MethodInfo
+        Public Property EntryPoint As MethodInfo
         Public Property Help As String
         Public Property Method As APIMethod
         Public Property Error404 As String

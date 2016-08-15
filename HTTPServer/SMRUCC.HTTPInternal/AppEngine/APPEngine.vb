@@ -46,7 +46,7 @@ Namespace AppEngine
         ''' <summary>
         ''' 必须按照从长到短来排序
         ''' </summary>
-        Dim API As Dictionary(Of String, __API_Invoker)
+        Dim API As Dictionary(Of String, APIInvoker)
 
         Public ReadOnly Property [Namespace] As [Namespace]
         Public ReadOnly Property Application As Object
@@ -75,7 +75,7 @@ Namespace AppEngine
                 Return False
             End If
 
-            Dim script As __API_Invoker = Me.API(api)
+            Dim script As APIInvoker = Me.API(api)
             Dim success As Boolean =
                 script.Invoke(Application, parameters, result)
 
@@ -93,7 +93,7 @@ Namespace AppEngine
                 Return False
             End If
 
-            Dim script As __API_Invoker = Me.API(api)
+            Dim script As APIInvoker = Me.API(api)
             Dim success As Boolean =
                 script.InvokePOST(Application, api, inputs, result)
 
@@ -149,8 +149,8 @@ Namespace AppEngine
 
             Dim Methods As MethodInfo() = type.GetMethods(BindingFlags.Public Or BindingFlags.Instance)
             Dim EntryType As Type = ExportAPIAttribute.Type
-            Dim LQuery As __API_Invoker() =
-                LinqAPI.Exec(Of __API_Invoker) <=
+            Dim LQuery As APIInvoker() =
+                LinqAPI.Exec(Of APIInvoker) <=
  _
                 From EntryPoint As MethodInfo
                 In Methods
@@ -162,7 +162,7 @@ Namespace AppEngine
                 Let attr As Object =
                     EntryPoint.GetCustomAttributes(GetType(APIMethod), True)(Scan0)
                 Let httpMethod As APIMethod = DirectCast(attr, APIMethod)  ' 假若程序是在这里出错的话，则说明有API函数没有进行GET、POST的json类型申明，找到该函数补全即可
-                Let invoke = New __API_Invoker With {
+                Let invoke = New APIInvoker With {
                     .Name = API.Name.ToLower,
                     .EntryPoint = EntryPoint,
                     .Help = API.PrintView(HTML:=True) & $"<br /><div>{httpMethod.GetMethodHelp(EntryPoint)}</div>",
