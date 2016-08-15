@@ -1,27 +1,27 @@
 ﻿#Region "Microsoft.VisualBasic::a1ad00ed9d7b052475f06b738b5b33c2, ..\httpd\HTTPServer\SMRUCC.HTTPInternal\AppEngine\APPEngine.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2016 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2016 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #End Region
 
@@ -33,6 +33,7 @@ Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Win32
 Imports SMRUCC.HTTPInternal.AppEngine.APIMethods
+Imports SMRUCC.HTTPInternal.AppEngine.APIMethods.Arguments
 Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
 
 Namespace AppEngine
@@ -68,16 +69,16 @@ Namespace AppEngine
         ''' 
         ''' </summary>
         ''' <param name="api">已经变小写了的</param>
-        ''' <param name="parameters"></param>
+        ''' <param name="request"></param>
         ''' <returns></returns>
-        Public Function Invoke(api As String, parameters As String, ByRef result As String) As Boolean
+        Public Function Invoke(api As String, request As HttpRequest, response As HttpResponse) As Boolean
             If Not Me.API.ContainsKey(api) Then
                 Return False
             End If
 
             Dim script As APIInvoker = Me.API(api)
             Dim success As Boolean =
-                script.Invoke(Application, parameters, result)
+                script.Invoke(Application, request, response)
 
             Return success
         End Function
@@ -86,22 +87,26 @@ Namespace AppEngine
         ''' 
         ''' </summary>
         ''' <param name="api">已经变小写了的</param>
-        ''' <param name="inputs"></param>
+        ''' <param name="request"></param>
         ''' <returns></returns>
-        Public Function Invoke(api As String, inputs As PostReader, ByRef result As String) As Boolean
+        Public Function Invoke(api As String, request As HttpPOSTRequest, response As HttpResponse) As Boolean
             If Not Me.API.ContainsKey(api) Then
                 Return False
             End If
 
             Dim script As APIInvoker = Me.API(api)
             Dim success As Boolean =
-                script.InvokePOST(Application, api, inputs, result)
+                script.InvokePOST(Application, request, response)
 
             Return success
         End Function
 
-        Public Shared Function InvokePOST(url As String, inputs As PostReader, applications As Dictionary(Of String, APPEngine), ByRef result As String) As Boolean
+        Public Shared Function InvokePOST(request As HttpPOSTRequest,
+                                          applications As Dictionary(Of String, APPEngine),
+                                          response As HttpResponse) As Boolean
+
             Dim application As String = "", api As String = "", parameters As String = ""
+            Dim url As String = request.URL
 
             If Not APPEngine.GetParameter(url, application, api, parameters) Then
                 Return False
@@ -111,28 +116,29 @@ Namespace AppEngine
                 Return False
             End If
 
-            Return applications(application).Invoke(api, inputs, result)
+            Return applications(application).Invoke(api, request, response)
         End Function
 
         ''' <summary>
         ''' 分析url，然后查找相对应的WebApp，并进行数据请求的执行
         ''' </summary>
-        ''' <param name="url"></param>
-        ''' <param name="applications"></param>
-        ''' <param name="result"></param>
         ''' <returns></returns>
-        Public Shared Function Invoke(url As String, applications As Dictionary(Of String, APPEngine), ByRef result As String, [default] As APIAbstract) As Boolean
+        Public Shared Function Invoke(request As HttpRequest,
+                                      applications As Dictionary(Of String, APPEngine),
+                                      response As HttpResponse,
+                                      [default] As APIAbstract) As Boolean
             Dim application As String = "", api As String = "", parameters As String = ""
+            Dim url As String = request.URL
 
             If Not APPEngine.GetParameter(url, application, api, parameters) Then
                 Return False
             End If
 
             If Not applications.ContainsKey(application) Then ' 找不到相对应的WebApp，则默认返回失败 
-                Return [default](api, parameters, result)
+                Return [default](api, request, response)
             End If
 
-            Return applications(application).Invoke(api, parameters, result)
+            Return applications(application).Invoke(api, request, response)
         End Function
 
         Public Shared Function [Imports](Of T As WebApp)(obj As T) As APPEngine

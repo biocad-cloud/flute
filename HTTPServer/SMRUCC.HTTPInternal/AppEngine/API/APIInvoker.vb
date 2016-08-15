@@ -39,10 +39,10 @@ Namespace AppEngine.APIMethods
     ''' WebApp API的抽象接口
     ''' </summary>
     ''' <param name="api">URL</param>
-    ''' <param name="args">URL后面的参数请求</param>
-    ''' <param name="out">返回的html页面的文档</param>
+    ''' <param name="request">URL后面的参数请求</param>
+    ''' <param name="response">返回的html页面的文档</param>
     ''' <returns>是否执行成功</returns>
-    Public Delegate Function APIAbstract(api As String, args As String, ByRef out As String) As Boolean
+    Public Delegate Function APIAbstract(api As String, request As HttpRequest, response As HttpResponse) As Boolean
 
     ''' <summary>
     ''' <see cref="[GET]"/> API interface
