@@ -216,6 +216,11 @@ Namespace AppEngine.APIMethods.Arguments
             Call response.Write(value)
         End Sub
 
+        Public Sub WriteLine(s As String)
+            __writeData = True
+            Call response.WriteLine(s)
+        End Sub
+
         ' Exceptions:
         '   T:System.IO.IOException:
         '     An I/O error occurs.
