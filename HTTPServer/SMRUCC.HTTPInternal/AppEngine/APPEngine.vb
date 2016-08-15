@@ -127,6 +127,7 @@ Namespace AppEngine
                                       applications As Dictionary(Of String, APPEngine),
                                       response As HttpResponse,
                                       [default] As APIAbstract) As Boolean
+
             Dim application As String = "", api As String = "", parameters As String = ""
             Dim url As String = request.URL
 
@@ -135,7 +136,11 @@ Namespace AppEngine
             End If
 
             If Not applications.ContainsKey(application) Then ' 找不到相对应的WebApp，则默认返回失败 
-                Return [default](api, request, response)
+                If Not [default] Is Nothing Then
+                    Return [default](api, request, response)
+                End If
+
+                Return False
             End If
 
             Return applications(application).Invoke(api, request, response)
