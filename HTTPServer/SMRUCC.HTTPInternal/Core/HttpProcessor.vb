@@ -144,9 +144,12 @@ Namespace Core
             End Try
 
             Try
-                outputStream.Flush()
+                Call outputStream.Flush()
             Catch ex As Exception
                 ' ????????????????????????????????????
+            Finally
+                Call outputStream.Close()
+                Call outputStream.Dispose()
             End Try
 
             ' bs.Flush(); // flush any remaining output
@@ -164,10 +167,10 @@ Namespace Core
             Call parseRequest()
             Call readHeaders()
 
-            If http_method.Equals("GET") Then
+            If http_method.Equals("GET", StringComparison.OrdinalIgnoreCase) Then
                 handleGETRequest()
 
-            ElseIf http_method.Equals("POST") Then
+            ElseIf http_method.Equals("POST", StringComparison.OrdinalIgnoreCase) Then
                 HandlePOSTRequest()
 
             Else

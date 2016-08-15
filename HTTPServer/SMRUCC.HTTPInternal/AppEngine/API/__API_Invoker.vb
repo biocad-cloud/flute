@@ -61,6 +61,7 @@ Namespace AppEngine.APIMethods
     Public Delegate Function _Post(args As String, inputs As PostReader, ByRef result As String) As Boolean
 
     Public Class __API_Invoker
+
         Public Property Name As String
         Public Property EntryPoint As System.Reflection.MethodInfo
         Public Property Help As String
@@ -102,7 +103,7 @@ Namespace AppEngine.APIMethods
 #If DEBUG Then
             result = ex.ToString
 #Else
-                result = Fakes(ex.ToString)
+            result = Fakes(ex.ToString)
 #End If
             If Not String.IsNullOrEmpty(Error404) Then
                 result = result.Replace("--->", "<br />--->")
@@ -122,10 +123,10 @@ Namespace AppEngine.APIMethods
             Dim LTokens = (From obj In LQuery Let tokens = obj.path.Split("\"c) Select tokens, obj.source).ToArray
             Dim p As Integer
 
-            For i As Integer = 0 To (From obj In LTokens Select obj.tokens.Count).ToArray.Min - 1
+            For i As Integer = 0 To (From obj In LTokens Select obj.tokens.Length).Min - 1
                 p = i
 
-                If (From n In LTokens Select n.tokens(p) Distinct).ToArray.Count > 1 Then
+                If (From n In LTokens Select n.tokens(p) Distinct).Count > 1 Then
                     Exit For
                 End If
             Next
@@ -134,16 +135,17 @@ Namespace AppEngine.APIMethods
             Dim LpreFakes = (From obj In LSkips
                              Select obj.source,
                                  virtual = String.Join("/", obj.ToArray).Replace(".vb", ".vbs")).ToArray
-            Dim hash = LpreFakes.ToDictionary(
+            Dim hash As Dictionary(Of String, String) = LpreFakes.ToDictionary(
                 Function(obj) obj.source,
-                elementSelector:=Function(obj) $"in {prefix}/{obj.virtual}:line {CInt(5000 * RandomDouble() + 100)}")
+                Function(obj) $"in {prefix}/{obj.virtual}:line {CInt(5000 * RandomDouble() + 100)}")
             Return hash
         End Function
 
         Private Function Fakes(ex As String) As String
             Dim line As String() = (From m As Match In Regex.Matches(ex, "in .+?[:]line \d+") Select str = m.Value).ToArray
-            Dim hash = VirtualPath(line, "/root/ubuntu.d~/->/wwwroot/~mipaimai.com/api.php?virtual=ms_visualBasic_sh:/")
-            Dim sbr = New StringBuilder(ex)
+            Dim hash As Dictionary(Of String, String) =
+                VirtualPath(line, "/root/ubuntu.d~/->/wwwroot/~azure.microsoft.com/api.vbs?virtual=ms_visualBasic_sh:/")
+            Dim sbr As New StringBuilder(ex)
 
             For Each obj In hash
                 Call sbr.Replace(obj.Key, obj.Value)

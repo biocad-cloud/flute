@@ -122,7 +122,7 @@ Namespace Platform
             End If
         End Sub
 
-        Const contentType As String = "Content-Type"
+        Public Const contentType As String = "Content-Type"
 
         Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
             Dim out As String = ""

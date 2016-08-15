@@ -26,13 +26,15 @@
 #End Region
 
 Imports System.IO
+Imports SMRUCC.HTTPInternal.AppEngine.APIMethods.Arguments
 Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
+Imports SMRUCC.HTTPInternal.Core
 Imports SMRUCC.HTTPInternal.Platform
 
 Namespace AppEngine
 
     ''' <summary>
-    ''' API interface description: <see cref="GET_API"/>, <see cref="POST_API"/>.
+    ''' API interface description: <see cref="IGET"/>, <see cref="IPOST"/>.
     ''' (外部对象需要继承这个基类才可以在App引擎之中注册自身为服务)
     ''' </summary>
     Public MustInherit Class WebApp : Inherits PlatformSub
@@ -60,17 +62,17 @@ Namespace AppEngine
         ''' <summary>
         ''' <see cref="APIMethods.[GET]"/>
         ''' </summary>
-        ''' <param name="args"></param>
+        ''' <param name="request"></param>
         ''' <returns></returns>
-        Public Delegate Function GET_API(args As String) As String
+        Public Delegate Function IGET(request As HttpRequest, response As StreamWriter) As Boolean
 
         ''' <summary>
         ''' <see cref="APIMethods.POST"/>
         ''' </summary>
-        ''' <param name="args"></param>
-        ''' <param name="params"></param>
+        ''' <param name="request"></param>
+        ''' <param name="response"></param>
         ''' <returns></returns>
-        Public Delegate Function POST_API(args As String, params As PostReader) As String
+        Public Delegate Function IPOST(request As HttpPOSTRequest, response As StreamWriter) As Boolean
 
     End Class
 End Namespace
