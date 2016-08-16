@@ -109,6 +109,7 @@ Namespace Core
         Private Function __streamReadLine(inputStream As Stream) As String
             Dim nextChar As Integer
             Dim chrbuf As New List(Of Char)
+            Dim n As Integer
 
             While True
                 nextChar = inputStream.ReadByte()
@@ -120,7 +121,12 @@ Namespace Core
                 End If
                 If nextChar = -1 Then
                     Call Thread.Sleep(1)
-                    Continue While
+                    n += 1
+                    If n > 1024 Then
+                        Exit While
+                    Else
+                        Continue While
+                    End If
                 End If
 
                 Call chrbuf.Add(Convert.ToChar(nextChar))
@@ -174,9 +180,10 @@ Namespace Core
                 HandlePOSTRequest()
 
             Else
-                Dim msg As String = $"Unsupport {NameOf(http_method)}:={http_method}"
-                Call msg.__DEBUG_ECHO
-                Call writeFailure(msg)
+                ' Dim msg As String = $"Unsupport {NameOf(http_method)}:={http_method}"
+                ' Call msg.__DEBUG_ECHO
+                ' Call writeFailure(msg)
+                Call srv.handleOtherMethod(Me)
             End If
         End Sub
 

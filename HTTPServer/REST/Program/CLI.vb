@@ -30,12 +30,17 @@ Imports SMRUCC.HTTPInternal.Platform
 
 Module CLI
 
-    <ExportAPI("/start", Usage:="/start [/port 80 /root <wwwroot_DIR> /threads -1]")>
+    <ExportAPI("/start", Usage:="/start [/port 80 /root <wwwroot_DIR> /threads -1 /cache]")>
     Public Function Start(args As CommandLine.CommandLine) As Integer
         Dim port As Integer = args.GetValue("/port", 80)
         Dim HOME As String = args.GetValue("/root", App.CurrentDirectory)
         Dim threads As Integer = args.GetValue("/threads", -1)
-        Return New PlatformEngine(HOME, port, True, threads:=threads).Run
+        Dim cacheMode As Boolean = args.GetBoolean("/cache")
+
+        Return New PlatformEngine(HOME, port,
+                                  True,
+                                  threads:=threads,
+                                  cache:=cacheMode).Run
     End Function
 
     <ExportAPI("/run", Usage:="/run /dll <app.dll> [/port <80> /root <wwwroot_DIR>]")>

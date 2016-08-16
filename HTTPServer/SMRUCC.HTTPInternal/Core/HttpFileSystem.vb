@@ -1,27 +1,27 @@
 ﻿#Region "Microsoft.VisualBasic::d7c3b91c9197b9e0d4a382c3daafc040, ..\httpd\HTTPServer\SMRUCC.HTTPInternal\Core\HttpFileSystem.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2016 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2016 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #End Region
 
@@ -32,6 +32,7 @@ Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Net.Protocols
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
+Imports Microsoft.VisualBasic.Parallel.Tasks
 Imports Microsoft.VisualBasic.Scripting.MetaData
 Imports Microsoft.VisualBasic.Serialization.JSON
 
@@ -52,6 +53,9 @@ Namespace Core
         ''' </summary>
         ReadOnly _virtualMappings As Dictionary(Of String, String)
         ReadOnly _nullExists As Boolean
+        ReadOnly _cache As Dictionary(Of String, CachedFile)
+        ReadOnly _cacheMode As Boolean
+        ReadOnly _cacheUpdate As UpdateThread
 
         Public Function AddMappings(DIR As String, url As String) As Boolean
             url = url & "/index.html"
@@ -74,7 +78,8 @@ Namespace Core
         Sub New(port As Integer, root As String,
                 Optional nullExists As Boolean = False,
                 Optional requestResource As IGetResource = Nothing,
-                Optional threads As Integer = -1)
+                Optional threads As Integer = -1,
+                Optional cache As Boolean = False)
 
             Call MyBase.New(port, True, threads)
 
@@ -91,6 +96,36 @@ Namespace Core
                 RequestStream = AddressOf GetResource
             Else
                 RequestStream = requestResource
+            End If
+
+            If cache Then
+                _cache = CachedFile.CacheAllFiles(HOME.FullName)
+                '    .ToDictionary(Function(x) x.Key.ToLower,
+                '                  Function(x) x.Value)
+                _cacheMode = True
+                _cacheUpdate = New UpdateThread(1000 * 60 * 30,
+                     Sub()
+                         For Each file In CachedFile.CacheAllFiles(HOME.FullName)
+                             _cache(file.Key) = file.Value
+                         Next
+                     End Sub)
+                _cacheUpdate.Start()
+
+                Call "Running in file system cache mode!".__DEBUG_ECHO
+            End If
+
+#If DEBUG Then
+            If cache Then
+                Call "Web Server running in debugging and cache mode these two options are both openned!".Warning
+            End If
+#End If
+        End Sub
+
+        Protected Overrides Sub Dispose(disposing As Boolean)
+            Call MyBase.Dispose(disposing)
+
+            If _cacheMode Then
+                Call _cacheUpdate.Dispose()
             End If
         End Sub
 
@@ -115,6 +150,8 @@ Namespace Core
                 End If
             End If
 
+            file = FileIO.FileSystem.GetFileInfo(file).FullName
+
             Return file
         End Function
 
@@ -130,6 +167,10 @@ Namespace Core
         ''' <returns></returns>
         Public Function GetResource(ByRef res As String) As Byte()
             Dim file As String = MapPath(res)
+
+            If _cacheMode AndAlso _cache.ContainsKey(file) Then
+                Return _cache(file).bufs
+            End If
 
             If file.FileExists Then
                 Return IO.File.ReadAllBytes(file)
@@ -335,5 +376,11 @@ Namespace Core
                 ._404Page = __request404()
             }
         End Function
+
+        Public Overrides Sub handleOtherMethod(p As HttpProcessor)
+            Dim msg As String = $"Unsupport {NameOf(p.http_method)}:={p.http_method}"
+            Call msg.__DEBUG_ECHO
+            Call p.writeFailure(msg)
+        End Sub
     End Class
 End Namespace

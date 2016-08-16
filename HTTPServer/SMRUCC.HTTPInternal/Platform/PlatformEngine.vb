@@ -58,9 +58,10 @@ Namespace Platform
                 Optional port As Integer = 80,
                 Optional nullExists As Boolean = False,
                 Optional appDll As String = "",
-                Optional threads As Integer = -1)
+                Optional threads As Integer = -1,
+                Optional cache As Boolean = False)
 
-            Call MyBase.New(port, root, nullExists, threads:=threads)
+            Call MyBase.New(port, root, nullExists, threads:=threads, cache:=cache)
             Call __init(appDll)
         End Sub
 
@@ -130,7 +131,7 @@ Namespace Platform
             Dim response As New HttpResponse(p.outputStream)
             Dim success As Boolean = AppManager.InvokePOST(request, response)
 
-            Call __finally(p, success)
+            Call __finally(request, success)
         End Sub
 
         ''' <summary>
@@ -141,10 +142,15 @@ Namespace Platform
             Dim request As New HttpRequest(p)
             Dim response As New HttpResponse(p.outputStream)
             Dim success As Boolean = AppManager.Invoke(request, response)
-            Call __finally(p, success)
+            Call __finally(request, success)
         End Sub
 
-        Private Sub __finally(p As HttpProcessor, success As Boolean)
+        Public Overrides Sub handleOtherMethod(p As HttpProcessor)
+            MyBase.handleOtherMethod(p)
+            Call __finally(New HttpRequest(p), False)
+        End Sub
+
+        Private Sub __finally(p As HttpRequest, success As Boolean)
             For Each plugin As PluginBase In EnginePlugins
                 Call plugin.handleVisit(p, success)
             Next

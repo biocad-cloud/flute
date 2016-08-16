@@ -29,6 +29,12 @@ Namespace AppEngine.APIMethods.Arguments
         Public ReadOnly Property HttpHeaders As Dictionary(Of String, String)
 
         ''' <summary>
+        ''' Remote client ip address
+        ''' </summary>
+        ''' <returns></returns>
+        Public ReadOnly Property Remote As String
+
+        ''' <summary>
         ''' If current request url is indicates the HTTP root:  index.html
         ''' </summary>
         ''' <returns></returns>
@@ -38,11 +44,14 @@ Namespace AppEngine.APIMethods.Arguments
             End Get
         End Property
 
+        Public Property URLParameters As Dictionary(Of String, String)
+
         Sub New(request As HttpProcessor)
             HTTPMethod = request.http_method
             URL = request.http_url
             version = request.http_protocol_versionstring
             HttpHeaders = request.httpHeaders
+            Remote = request.socket.Client.RemoteEndPoint.ToString.Split(":"c).First
         End Sub
 
         Sub New()

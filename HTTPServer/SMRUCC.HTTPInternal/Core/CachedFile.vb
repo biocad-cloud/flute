@@ -12,7 +12,14 @@ Namespace Core
         Sub New(path As String)
             Me.Path = FileIO.FileSystem.GetFileInfo(path).FullName
             Me.bufs = File.ReadAllBytes(Me.Path)
-            Me.content = MIME.ExtDict(path.Split("."c).Last)
+            Me.Path = Me.Path.ToLower
+
+            Dim ext As String = "." & Me.Path.Split("."c).Last
+
+            Me.content = If(
+                MIME.ExtDict.ContainsKey(ext),
+                MIME.ExtDict(ext),
+                MIME.UnknownType)
         End Sub
 
         Public Overrides Function ToString() As String
