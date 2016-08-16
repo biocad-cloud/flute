@@ -180,9 +180,10 @@ Namespace Core
                 HandlePOSTRequest()
 
             Else
-                Dim msg As String = $"Unsupport {NameOf(http_method)}:={http_method}"
-                Call msg.__DEBUG_ECHO
-                Call writeFailure(msg)
+                ' Dim msg As String = $"Unsupport {NameOf(http_method)}:={http_method}"
+                ' Call msg.__DEBUG_ECHO
+                ' Call writeFailure(msg)
+                Call srv.handleOtherMethod(Me)
             End If
         End Sub
 

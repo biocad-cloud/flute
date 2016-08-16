@@ -376,5 +376,11 @@ Namespace Core
                 ._404Page = __request404()
             }
         End Function
+
+        Public Overrides Sub handleOtherMethod(p As HttpProcessor)
+            Dim msg As String = $"Unsupport {NameOf(p.http_method)}:={p.http_method}"
+            Call msg.__DEBUG_ECHO
+            Call p.writeFailure(msg)
+        End Sub
     End Class
 End Namespace

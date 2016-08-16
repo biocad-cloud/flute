@@ -213,6 +213,7 @@ Namespace Core
         ''' </example>
         Public MustOverride Sub handleGETRequest(p As HttpProcessor)
         Public MustOverride Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
+        Public MustOverride Sub handleOtherMethod(p As HttpProcessor)
 
 #Region "IDisposable Support"
         Private disposedValue As Boolean ' To detect redundant calls
