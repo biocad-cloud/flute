@@ -110,7 +110,15 @@ Namespace Core
                          Next
                      End Sub)
                 _cacheUpdate.Start()
+
+                Call "Running in file system cache mode!".__DEBUG_ECHO
             End If
+
+#If DEBUG Then
+            If cache Then
+                Call "Web Server running in debugging and cache mode these two options are both openned!".Warning
+            End If
+#End If
         End Sub
 
         Protected Overrides Sub Dispose(disposing As Boolean)
