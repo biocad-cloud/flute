@@ -45,7 +45,6 @@ Namespace Core
         Protected Is_active As Boolean = True
 
         ReadOnly _httpListener As TcpListener
-        ReadOnly _homeShowOnStart As Boolean = False
 
         ''' <summary>
         ''' The network data port of this internal http server listen.
@@ -66,10 +65,8 @@ Namespace Core
         ''' 
         ''' </summary>
         ''' <param name="port">The network data port of this internal http server listen.</param>
-        ''' <param name="homeShowOnStart"></param>
-        Public Sub New(port As Integer, Optional homeShowOnStart As Boolean = False, Optional threads As Integer = -1)
+        Public Sub New(port As Integer, Optional threads As Integer = -1)
             Me._LocalPort = port
-            Me._homeShowOnStart = homeShowOnStart
             Me._httpListener = New TcpListener(IPAddress.Any, _LocalPort)
             '   Me._threadPool = New Threads.ThreadPool(If(threads = -1, LQuerySchedule.Recommended_NUM_THREADS * 8, threads))
 
@@ -108,8 +105,9 @@ Namespace Core
             End Try
 
             Call Console.WriteLine("Http Server Start listen at " & _httpListener.LocalEndpoint.ToString)
+#If DEBUG Then
             Call RunTask(AddressOf Me.OpenAPI_HOME)
-
+#End If
             While Is_active
                 If accept Then
                     Dim callback As New AsyncCallback(AddressOf AcceptCallback)
@@ -169,8 +167,7 @@ Namespace Core
         Private Sub OpenAPI_HOME()
             Call Thread.Sleep(10 * 1000)
 
-            If Environment.OSVersion.Platform = PlatformID.Win32NT AndAlso
-                _homeShowOnStart Then
+            If Environment.OSVersion.Platform = PlatformID.Win32NT Then
                 Dim uri As String = $"http://127.0.0.1:{_LocalPort}/"
                 Call Process.Start(uri)
             End If
