@@ -81,7 +81,7 @@ Namespace Core
                 Optional threads As Integer = -1,
                 Optional cache As Boolean = False)
 
-            Call MyBase.New(port, True, threads)
+            Call MyBase.New(port, threads)
 
             If Not FileIO.FileSystem.DirectoryExists(root) Then
                 Call FileIO.FileSystem.CreateDirectory(root)

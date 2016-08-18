@@ -143,7 +143,7 @@ Namespace Core
             ' we probably shouldn't be using a streamwriter for all output from handlers either
             outputStream = New StreamWriter(New BufferedStream(socket.GetStream()))
             Try
-                Call __processInvoker()  ' ??????http???????????????????????????????
+                Call __processInvoker()
             Catch e As Exception
                 Call e.PrintException
                 writeFailure(e.ToString)
@@ -152,10 +152,14 @@ Namespace Core
             Try
                 Call outputStream.Flush()
             Catch ex As Exception
-                ' ????????????????????????????????????
+                Call App.LogException(ex)
             Finally
-                Call outputStream.Close()
-                Call outputStream.Dispose()
+                Try
+                    Call outputStream.Close()
+                    Call outputStream.Dispose()
+                Catch ex As Exception
+                    Call App.LogException(ex)
+                End Try
             End Try
 
             ' bs.Flush(); // flush any remaining output
