@@ -216,7 +216,7 @@ Namespace Core
 
             Dim mapDIR As String = FileIO.FileSystem.GetParentPath(res).ToLower.Replace("\", "/")
             If _virtualMappings.ContainsKey(mapDIR) Then
-                res = Regex.Replace(res.Replace("\", "/"), mapDIR.Replace("\", "/"), "")
+                res = Mid(res, mapDIR.Length + 1)
                 mapDIR = _virtualMappings(mapDIR)
             Else
                 For Each map In _virtualMappings  ' 短
