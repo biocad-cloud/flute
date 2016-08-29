@@ -43,7 +43,8 @@ Module Program
             End Try
         End If
 
-        process = Process.Start(Ini.Default.Exe, Ini.Default.CLI)
+        Dim settings As Ini = Ini.Load
+        process = Process.Start(settings.Exe, settings.CLI)
     End Sub
 
     <ExportAPI("/interval", Usage:="/interval <hh:mm>")>
@@ -70,11 +71,10 @@ Public Class Ini
     Public Property CLI As String
 
     Public Shared ReadOnly Property DefaultFile As String = App.HOME & "/" & App.AssemblyName & ".json"
-    Public Shared ReadOnly Property [Default] As Ini
 
-    Public Shared Sub Load()
+    Public Shared Function Load() As Ini
         If DefaultFile.FileExists Then
-            _Default = DefaultFile.ReadAllText.LoadObject(Of Ini)
+            Return DefaultFile.ReadAllText.LoadObject(Of Ini)
         Else
             Dim ini As New Ini With {
                 .CLI = "Put the CLI argument at here",
@@ -83,6 +83,8 @@ Public Class Ini
             Call ini.GetJson.SaveTo(DefaultFile)
             Call "No profile was found, please modify the generated profile file and then run this command again.".__DEBUG_ECHO
             Call App.Exit(-10)
+
+            Return Nothing
         End If
-    End Sub
+    End Function
 End Class
