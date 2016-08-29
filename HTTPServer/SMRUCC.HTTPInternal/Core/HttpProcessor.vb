@@ -77,7 +77,7 @@ Namespace Core
         ''' 10MB
         ''' </summary>
         ''' <remarks></remarks>
-        Const MAX_POST_SIZE As Integer = 10 * 1024 * 1024
+        Const MAX_POST_SIZE As Integer = 128 * 1024 * 1024
 
         Public Sub New(s As TcpClient, srv As HttpServer)
             Me.socket = s

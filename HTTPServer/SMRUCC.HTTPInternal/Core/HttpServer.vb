@@ -68,12 +68,17 @@ Namespace Core
         Public Sub New(port As Integer, Optional threads As Integer = -1)
             Me._LocalPort = port
             Me._httpListener = New TcpListener(IPAddress.Any, _LocalPort)
-            '   Me._threadPool = New Threads.ThreadPool(If(threads = -1, LQuerySchedule.Recommended_NUM_THREADS * 8, threads))
-
-            '   Call Console.WriteLine("Web server threads_pool_size=" & _threadPool.NumOfThreads)
+            Me._threadPool = New Threads.ThreadPool(
+                If(threads = -1,
+                LQuerySchedule.Recommended_NUM_THREADS * 8,
+                threads))
+            Call Console.WriteLine("Web server threads_pool_size=" & _threadPool.NumOfThreads)
         End Sub
 
-        ' Dim _threadPool As Threads.ThreadPool
+        ''' <summary>
+        ''' 处理连接的线程池
+        ''' </summary>
+        Dim _threadPool As Threads.ThreadPool
 
         ''' <summary>
         ''' Running this http server. 
@@ -109,38 +114,26 @@ Namespace Core
             Call RunTask(AddressOf Me.OpenAPI_HOME)
 #End If
             While Is_active
-                If accept Then
-                    Dim callback As New AsyncCallback(AddressOf AcceptCallback)
-                    accept = False
-
-                    Try
-                        Call _httpListener.BeginAcceptTcpClient(callback, _httpListener)  ' Free 之后可能会出现空引用错误，则忽略掉这个错误，退出线程
-                    Catch ex As Exception
-                        Call App.LogException(ex)
-                    End Try
+                If Not _threadPool.FullCapacity Then
+                    Call _threadPool.RunTask(AddressOf __accept)
                 Else
-                    Call Thread.Sleep(1)
+                    Thread.Sleep(1)
                 End If
             End While
 
             Return 0
         End Function
 
-        Dim accept As Boolean = True
+        Private Sub __accept()
+            Try
+                Dim s As TcpClient = _httpListener.AcceptTcpClient
+                Dim processor As HttpProcessor = getProcessor(s)
 
-        Private Sub AcceptCallback(ar As IAsyncResult)
-            accept = True ' 放在处理代码之前，尽可能的提高线程并发效率
-
-            Dim s As TcpClient = _httpListener.EndAcceptTcpClient(ar)
-            Dim processor As HttpProcessor = getProcessor(s)
-
-            Call $"Process client from {s.Client.RemoteEndPoint.ToString}".__DEBUG_ECHO
-            ' Call _threadPool.RunTask(AddressOf processor.Process)
-            Call processor.Process()
-
-            '#If DEBUG Then
-            '            Console.Write(".")
-            '#End If
+                Call $"Process client from {s.Client.RemoteEndPoint.ToString}".__DEBUG_ECHO
+                Call processor.Process()
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
         End Sub
 
         Public Property BufferSize As Integer = 4096
