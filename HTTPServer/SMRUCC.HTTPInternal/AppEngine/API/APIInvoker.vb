@@ -109,6 +109,8 @@ Namespace AppEngine.APIMethods
                 result = Error404.Replace("%EXCEPTION%", $"<table><tr><td><font size=""2"">{result}</font></td></tr></table>")
             End If
 
+            Call App.LogException(ex)
+            Call ex.PrintException
             Call response.WriteHTML(result)
 
             Return False
