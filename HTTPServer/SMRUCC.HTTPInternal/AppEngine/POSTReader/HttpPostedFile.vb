@@ -104,7 +104,7 @@ Namespace AppEngine.POSTParser
                 File.Delete(filename)
                 Using fs As FileStream = File.Create(filename)
                     stream.Position = 0
-                    Dim n As New Value(Of Integer)
+                    Dim n As New int
 
                     While (n = stream.Read(buffer, 0, 16 * 1024)) <> 0
                         fs.Write(buffer, 0, n)
