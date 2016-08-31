@@ -25,7 +25,6 @@
 
 #End Region
 
-
 Imports Microsoft.VisualBasic.Language
 
 Namespace Platform

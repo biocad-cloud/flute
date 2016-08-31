@@ -1,27 +1,27 @@
 ﻿#Region "Microsoft.VisualBasic::dbda62ed14726f6506b0a9e6cb6886d0, ..\httpd\HTTPServer\SMRUCC.HTTPInternal\Platform\PlatformEngine.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2016 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2016 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #End Region
 
@@ -31,6 +31,7 @@ Imports System.Reflection
 Imports System.Text
 Imports Microsoft.VisualBasic.Language
 Imports SMRUCC.HTTPInternal.AppEngine
+Imports SMRUCC.HTTPInternal.AppEngine.APIMethods.Arguments
 Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
 Imports SMRUCC.HTTPInternal.Core
 Imports SMRUCC.HTTPInternal.Platform.Plugins
@@ -56,9 +57,11 @@ Namespace Platform
         Sub New(root As String,
                 Optional port As Integer = 80,
                 Optional nullExists As Boolean = False,
-                Optional appDll As String = "")
+                Optional appDll As String = "",
+                Optional threads As Integer = -1,
+                Optional cache As Boolean = False)
 
-            Call MyBase.New(port, root, nullExists)
+            Call MyBase.New(port, root, nullExists, threads:=threads, cache:=cache)
             Call __init(appDll)
         End Sub
 
@@ -67,10 +70,11 @@ Namespace Platform
         ''' </summary>
         ''' <param name="dll"></param>
         Private Sub __init(dll As String)
-            dll = FileIO.FileSystem.GetFileInfo(dll).FullName
             _AppManager = New AppEngine.APPManager(Me)
 
             If dll.FileExists Then
+                dll = FileIO.FileSystem.GetFileInfo(dll).FullName
+
                 Call AppEngine.ExternalCall.ParseDll(dll, Me)
                 Call __runDll(dll)
             Else
@@ -87,22 +91,25 @@ Namespace Platform
         Private Sub __runDll(dll As String)
             Dim assm As Assembly = Assembly.LoadFile(dll)
             Dim types As Type() = assm.GetTypes
-            Dim webApp As Type =
-                LinqAPI.DefaultFirst(Of Type) <= From type As Type
-                                                 In types
-                                                 Where String.Equals(type.Name, NameOf(AppEngine.WebApp), StringComparison.OrdinalIgnoreCase)
-                                                 Select type
+            Dim webApp As Type = LinqAPI.DefaultFirst(Of Type) <=
+ _
+                From type As Type
+                In types
+                Where String.Equals(type.Name, NameOf(AppEngine.WebApp), StringComparison.OrdinalIgnoreCase)
+                Select type
 
             If webApp Is Nothing Then
                 Return     ' 没有定义 Sub Main，则忽略掉这次调用
             End If
 
             Dim ms = webApp.GetMethods
-            Dim main As MethodInfo =
-                LinqAPI.DefaultFirst(Of MethodInfo) <= From m As MethodInfo
-                                                       In ms
-                                                       Where String.Equals(m.Name, "Main", StringComparison.OrdinalIgnoreCase)
-                                                       Select m
+            Dim main As MethodInfo = LinqAPI.DefaultFirst(Of MethodInfo) <=
+ _
+                From m As MethodInfo
+                In ms
+                Where String.Equals(m.Name, "Main", StringComparison.OrdinalIgnoreCase)
+                Select m
+
             If main Is Nothing Then
                 Return
             End If
@@ -117,14 +124,14 @@ Namespace Platform
             End If
         End Sub
 
-        Const contentType As String = "Content-Type"
+        Public Const contentType As String = "Content-Type"
 
         Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
-            Dim out As String = ""
-            Dim args As New PostReader(inputData, p.httpHeaders(contentType), Encoding.UTF8)
-            Dim success As Boolean = AppManager.InvokePOST(p.http_url, args, out)
+            Dim request As New HttpPOSTRequest(p, inputData)
+            Dim response As New HttpResponse(p.outputStream)
+            Dim success As Boolean = AppManager.InvokePOST(request, response)
 
-            Call __handleSend(p, success, out)
+            Call __finally(request, success)
         End Sub
 
         ''' <summary>
@@ -132,14 +139,18 @@ Namespace Platform
         ''' </summary>
         ''' <param name="p"></param>
         Protected Overrides Sub __handleREST(p As HttpProcessor)
-            Dim out As String = ""
-            Dim success As Boolean = AppManager.Invoke(p.http_url, out)
-            Call __handleSend(p, success, out)
+            Dim request As New HttpRequest(p)
+            Dim response As New HttpResponse(p.outputStream)
+            Dim success As Boolean = AppManager.Invoke(request, response)
+            Call __finally(request, success)
         End Sub
 
-        Private Sub __handleSend(p As HttpProcessor, success As Boolean, out As String)
-            Call p.outputStream.WriteLine(out)
+        Public Overrides Sub handleOtherMethod(p As HttpProcessor)
+            MyBase.handleOtherMethod(p)
+            Call __finally(New HttpRequest(p), False)
+        End Sub
 
+        Private Sub __finally(p As HttpRequest, success As Boolean)
             For Each plugin As PluginBase In EnginePlugins
                 Call plugin.handleVisit(p, success)
             Next

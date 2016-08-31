@@ -44,11 +44,11 @@ Namespace AppEngine
             End If
         End Function
 
-        Public Function GetAPIName(api As WebApp.GET_API) As String
+        Public Function GetAPIName(api As WebApp.IGET) As String
             Return api.Method.GetAPIName
         End Function
 
-        Public Function GetAPIName(api As WebApp.POST_API) As String
+        Public Function GetAPIName(api As WebApp.IPOST) As String
             Return api.Method.GetAPIName
         End Function
     End Module

@@ -1,27 +1,27 @@
 ﻿#Region "Microsoft.VisualBasic::9535ed4044f4a03205918b0af31169fe, ..\httpd\HTTPServer\SMRUCC.HTTPInternal\AppEngine\APPManager.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2016 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2016 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #End Region
 
@@ -29,6 +29,7 @@ Imports System.IO
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Language
 Imports SMRUCC.HTTPInternal.AppEngine.APIMethods
+Imports SMRUCC.HTTPInternal.AppEngine.APIMethods.Arguments
 Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
 Imports SMRUCC.HTTPInternal.Platform
 
@@ -87,12 +88,10 @@ Namespace AppEngine
         ''' <summary>
         '''
         ''' </summary>
-        ''' <param name="url"></param>
-        ''' <param name="inputs"></param>
-        ''' <param name="result">HTML输出页面或者json数据</param>
+        ''' <param name="response">HTML输出页面或者json数据</param>
         ''' <returns></returns>
-        Public Function InvokePOST(url As String, inputs As PostReader, ByRef result As String) As Boolean
-            Return APPEngine.InvokePOST(url, inputs, RunningAPP, result)
+        Public Function InvokePOST(request As HttpRequest, response As HttpResponse) As Boolean
+            Return APPEngine.InvokePOST(request, RunningAPP, response)
         End Function
 
         ''' <summary>
@@ -105,10 +104,8 @@ Namespace AppEngine
         ''' 默认是API执行失败
         ''' </summary>
         ''' <param name="api"></param>
-        ''' <param name="args"></param>
-        ''' <param name="out"></param>
         ''' <returns></returns>
-        Private Shared Function __defaultFailure(api As String, args As String, ByRef out As String) As Boolean
+        Private Shared Function __defaultFailure(api As String, request As HttpRequest, response As HttpResponse) As Boolean
             Return False
         End Function
 
@@ -119,24 +116,10 @@ Namespace AppEngine
         ''' <summary>
         '''
         ''' </summary>
-        ''' <param name="url"></param>
-        ''' <param name="result">HTML输出页面或者json数据</param>
+        ''' <param name="response">HTML输出页面或者json数据</param>
         ''' <returns></returns>
-        Public Function Invoke(url As String, ByRef result As String) As Boolean
-#Const DEBUG = 0
-
-#If DEBUG Then
-        Dim b As Boolean = APPEngine.Invoke(url, RunningAPP, result)
-        result = $"<!DOCTYPE html>
-            <html lang=""en"">
-            	<head><title>SiYuChuangXiang (Beihai) Open Platform API Debugger</title></head>
-            <body>
-{result}
-</body></html>"
-        Return b
-#Else
-            Return APPEngine.Invoke(url, RunningAPP, result, DefaultAPI)
-#End If
+        Public Function Invoke(request As HttpRequest, response As HttpResponse) As Boolean
+            Return APPEngine.Invoke(request, RunningAPP, response, DefaultAPI)
         End Function
 
         Public Function PrintHelp() As String
