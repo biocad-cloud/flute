@@ -116,7 +116,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|AnyCPU'">
-<<<<<<< HEAD
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\docs\</OutputPath>
     <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
@@ -145,7 +144,6 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-=======
     <OutputPath>bin\docs\</OutputPath>
     <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
   </PropertyGroup>
@@ -156,7 +154,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'docs|x86'">
     <OutputPath>bin\x86\docs\</OutputPath>
     <DocumentationFile>SMRUCC.HTTPInternal.xml</DocumentationFile>
->>>>>>> 666024ee191e3a96b3a91f1dd447406ef257eca3
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
