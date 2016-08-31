@@ -57,7 +57,9 @@ Namespace AppEngine
 
         Default Public ReadOnly Property App(name As String) As APPEngine
             Get
-                If RunningAPP.ContainsKey(name.ToLower.ShadowCopy(name)) Then
+                name = name.ToLower
+
+                If RunningAPP.ContainsKey(name) Then
                     Return RunningAPP(name)
                 Else
                     Return Nothing
