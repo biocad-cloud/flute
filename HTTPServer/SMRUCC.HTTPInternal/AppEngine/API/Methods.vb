@@ -37,6 +37,10 @@ Namespace AppEngine.APIMethods
     ''' </summary>
     Public Class [GET] : Inherits APIMethod
 
+        ''' <summary>
+        ''' type argument using for Build example json
+        ''' </summary>
+        ''' <param name="responseExample"></param>
         Sub New(responseExample As Type)
             Call MyBase.New(responseExample)
         End Sub
