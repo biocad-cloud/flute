@@ -109,6 +109,8 @@ Namespace AppEngine.APIMethods
                 result = Error404.Replace("%EXCEPTION%", $"<table><tr><td><font size=""2"">{result}</font></td></tr></table>")
             End If
 
+            Call App.LogException(ex)
+            Call ex.PrintException
             Call response.WriteHTML(result)
 
             Return False
@@ -123,8 +125,16 @@ Namespace AppEngine.APIMethods
                          Select source,
                              path
 
-            Dim LTokens = (From obj In LQuery Let tokens = obj.path.Split("\"c) Select tokens, obj.source).ToArray
+            Dim LTokens = (From obj
+                           In LQuery
+                           Let tokens As String() = obj.path.Split("\"c)
+                           Select tokens,
+                               obj.source).ToArray
             Dim p As Integer
+
+            If LTokens.Length = 0 Then
+                Return New Dictionary(Of String, String)
+            End If
 
             For i As Integer = 0 To (From obj In LTokens Select obj.tokens.Length).Min - 1
                 p = i
