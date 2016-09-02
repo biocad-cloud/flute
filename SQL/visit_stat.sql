@@ -1,8 +1,10 @@
--- MySQL dump 10.13  Distrib 5.7.9, for Win32 (AMD64)
+CREATE DATABASE  IF NOT EXISTS `zika_news` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `zika_news`;
+-- MySQL dump 10.13  Distrib 5.7.9, for Win64 (x86_64)
 --
--- Host: localhost    Database: smrucc_rest
+-- Host: localhost    Database: zika_news
 -- ------------------------------------------------------
--- Server version	5.6.27
+-- Server version	5.7.12-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -26,23 +28,16 @@ CREATE TABLE `visitor_stat` (
   `uid` int(11) NOT NULL AUTO_INCREMENT,
   `time` datetime NOT NULL,
   `ip` varchar(45) NOT NULL,
-  `url` tinytext,
-  `success` int(11) DEFAULT NULL,
-  `method` varchar(45) DEFAULT NULL,
-  `ua` varchar(1024) DEFAULT NULL,
+  `url` tinytext NOT NULL COMMENT 'Url that going to visit this web site',
+  `success` int(11) NOT NULL,
+  `method` varchar(45) DEFAULT NULL COMMENT 'GET/POST/PUT.....',
+  `ua` varchar(1024) DEFAULT NULL COMMENT 'User agent',
+  `ref` mediumtext COMMENT 'reference url, Referer',
+  `data` mediumtext COMMENT 'additional data notes',
   PRIMARY KEY (`ip`,`time`),
   UNIQUE KEY `uid_UNIQUE` (`uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1773 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `visitor_stat`
---
-
-LOCK TABLES `visitor_stat` WRITE;
-/*!40000 ALTER TABLE `visitor_stat` DISABLE KEYS */;
-/*!40000 ALTER TABLE `visitor_stat` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -53,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-01-19 16:36:03
+-- Dump completed on 2016-09-03  7:12:46
