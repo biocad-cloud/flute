@@ -63,6 +63,63 @@ CREATE TABLE `geolite2_city_locations` (
   PRIMARY KEY (`geoname_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='												\n';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `geolite2_country_blocks_ipv4`
+--
+
+DROP TABLE IF EXISTS `geolite2_country_blocks_ipv4`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `geolite2_country_blocks_ipv4` (
+  `network` varchar(32) NOT NULL,
+  `geoname_id` varchar(45) DEFAULT NULL,
+  `registered_country_geoname_id` varchar(45) DEFAULT NULL,
+  `represented_country_geoname_id` varchar(45) DEFAULT NULL,
+  `is_anonymous_proxy` varchar(45) DEFAULT NULL,
+  `is_satellite_provider` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`network`),
+  UNIQUE KEY `network_UNIQUE` (`network`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `geolite2_country_blocks_ipv6`
+--
+
+DROP TABLE IF EXISTS `geolite2_country_blocks_ipv6`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `geolite2_country_blocks_ipv6` (
+  `network` varchar(32) NOT NULL,
+  `geoname_id` varchar(45) DEFAULT NULL,
+  `registered_country_geoname_id` varchar(45) DEFAULT NULL,
+  `represented_country_geoname_id` varchar(45) DEFAULT NULL,
+  `is_anonymous_proxy` varchar(45) DEFAULT NULL,
+  `is_satellite_provider` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`network`),
+  UNIQUE KEY `network_UNIQUE` (`network`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `geolite2_country_locations`
+--
+
+DROP TABLE IF EXISTS `geolite2_country_locations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `geolite2_country_locations` (
+  `geoname_id` int(11) NOT NULL,
+  `locale_code` varchar(45) NOT NULL,
+  `continent_code` varchar(45) DEFAULT NULL,
+  `continent_name` varchar(45) DEFAULT NULL,
+  `country_iso_code` varchar(45) DEFAULT NULL,
+  `country_name` tinytext,
+  PRIMARY KEY (`geoname_id`,`locale_code`),
+  UNIQUE KEY `geoname_id_UNIQUE` (`geoname_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -73,4 +130,4 @@ CREATE TABLE `geolite2_city_locations` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-09-03  7:54:38
+-- Dump completed on 2016-09-03 11:39:47
