@@ -1,13 +1,15 @@
 ﻿Imports System.Net
+Imports System.Xml.Serialization
+Imports Microsoft.VisualBasic.Language
 
 Namespace MaxMind.Views
 
     Public Class Country
-        <Xml.Serialization.XmlAttribute> Public Property continent_code As String
-        <Xml.Serialization.XmlAttribute> Public Property continent_name As String
-        <Xml.Serialization.XmlAttribute> Public Property country_iso_code As String
-        <Xml.Serialization.XmlAttribute> Public Property country_name As String
-        <Xml.Serialization.XmlElement("city")> Public Property CityLocations As CityLocation()
+        <XmlAttribute> Public Property continent_code As String
+        <XmlAttribute> Public Property continent_name As String
+        <XmlAttribute> Public Property country_iso_code As String
+        <XmlAttribute> Public Property country_name As String
+        <XmlElement("city")> Public Property CityLocations As CityLocation()
 
         Public Overrides Function ToString() As String
             Return String.Format("({0}){1}", country_iso_code, country_name)
@@ -15,26 +17,29 @@ Namespace MaxMind.Views
     End Class
 
     Public Class CityLocation
-        <Xml.Serialization.XmlAttribute> Public Property geoname_id As Long
-        <Xml.Serialization.XmlAttribute> Public Property subdivision_1_iso_code As String
-        <Xml.Serialization.XmlAttribute> Public Property subdivision_1_name As String
-        <Xml.Serialization.XmlAttribute> Public Property subdivision_2_iso_code As String
-        <Xml.Serialization.XmlAttribute> Public Property subdivision_2_name As String
-        <Xml.Serialization.XmlAttribute> Public Property city_name As String
-        <Xml.Serialization.XmlAttribute> Public Property metro_code As String
-        <Xml.Serialization.XmlAttribute> Public Property time_zone As String
-        <Xml.Serialization.XmlElement("geoLoci")> Public Property GeographicLocations As GeographicLocation()
+        <XmlAttribute> Public Property geoname_id As Long
+        <XmlAttribute> Public Property subdivision_1_iso_code As String
+        <XmlAttribute> Public Property subdivision_1_name As String
+        <XmlAttribute> Public Property subdivision_2_iso_code As String
+        <XmlAttribute> Public Property subdivision_2_name As String
+        <XmlAttribute> Public Property city_name As String
+        <XmlAttribute> Public Property metro_code As String
+        <XmlAttribute> Public Property time_zone As String
+        <XmlElement("geoLoci")> Public Property GeographicLocations As GeographicLocation()
 
         Public Function IPLocatedAtCity(IPAddress As Net.IPAddress) As GeographicLocation
             If GeographicLocations.IsNullOrEmpty Then
                 Return Nothing
             End If
-            Dim LQuery = (From Location As GeographicLocation
-                          In Me.GeographicLocations
-                          Where Not Location Is Nothing AndAlso Location.Locating(IPAddress)
-                          Select Location).ToArray
 
-            Return LQuery.FirstOrDefault
+            Dim LQuery = LinqAPI.DefaultFirst(Of GeographicLocation) <=
+ _
+                From Location As GeographicLocation
+                In Me.GeographicLocations
+                Where Not Location Is Nothing AndAlso Location.Locating(IPAddress)
+                Select Location
+
+            Return LQuery
         End Function
 
         Public Overrides Function ToString() As String
@@ -44,28 +49,27 @@ Namespace MaxMind.Views
 
     Public Class GeographicLocation
 
-        Dim _InternalCIDRValue As CIDR
+        Dim __CIDR As CIDR
 
-        <Xml.Serialization.XmlAttribute("network")> Public Property CIDR As String
+        <XmlAttribute("network")> Public Property CIDR As String
             Get
-                If _InternalCIDRValue Is Nothing Then
+                If __CIDR Is Nothing Then
                     Return ""
                 End If
-                Return _InternalCIDRValue.CIDR
+                Return __CIDR.CIDR
             End Get
             Set(value As String)
                 If String.IsNullOrEmpty(value) Then
-                    _InternalCIDRValue = Nothing
+                    __CIDR = Nothing
                 Else
-                    _InternalCIDRValue = New CIDR(value)
+                    __CIDR = New CIDR(value)
                 End If
             End Set
         End Property
-        '<Xml.Serialization.XmlAttribute> Public Property is_anonymous_proxy As Integer
-        '<Xml.Serialization.XmlAttribute> Public Property is_satellite_provider As Integer
-        <Xml.Serialization.XmlAttribute> Public Property postal_code As String
-        <Xml.Serialization.XmlAttribute> Public Property latitude As Double
-        <Xml.Serialization.XmlAttribute> Public Property longitude As Double
+
+        <XmlAttribute> Public Property postal_code As String
+        <XmlAttribute> Public Property latitude As Double
+        <XmlAttribute> Public Property longitude As Double
 
         Public Overrides Function ToString() As String
             Return String.Format("[{0}, {1}]  {2}", latitude, longitude, CIDR)
@@ -78,19 +82,18 @@ Namespace MaxMind.Views
         ''' <returns></returns>
         ''' <remarks></remarks>
         Public Function Locating(IP As Net.IPAddress) As Boolean
-            If Me._InternalCIDRValue Is Nothing OrElse _InternalCIDRValue.Invalid Then
+            If Me.__CIDR Is Nothing OrElse __CIDR.Invalid Then
                 Return False
             End If
-            Return Me._InternalCIDRValue.Locating(IP)
+            Return Me.__CIDR.Locating(IP)
         End Function
-
     End Class
 
     Public Class CIDR
 
         Dim StartIP As IPAddress
         Dim EndIP As IPAddress
-        Dim _InternalMaskBytes As Byte()
+        Dim __maskBytes As Byte()
         Dim _CIDR_Mask As String
 
         Public ReadOnly Property CIDR As String
@@ -111,20 +114,22 @@ Namespace MaxMind.Views
         Sub New(CIDR_Mask As String)
             Dim CIDR As String() = CIDR_Mask.Split("/"c)
 
-            If CIDR.Length <> 2 Then Throw New Exception(String.Format("Target address value ""{0}"" is not a valid CIDR mask IPAddress value!", CIDR_Mask))
+            If CIDR.Length <> 2 Then
+                Throw New Exception($"Target address value ""{CIDR_Mask}"" is not a valid CIDR mask IPAddress value!")
+            End If
 
             'obviously some additional error checking would be delightful
             Dim ip As IPAddress = IPAddress.Parse(CIDR(0))
             Dim bits As Integer = CInt(CIDR(1))
             Dim mask As UInteger = Not (UInteger.MaxValue >> bits)
             Dim ipBytes() As Byte = ip.GetAddressBytes()
-            _InternalMaskBytes = BitConverter.GetBytes(mask).Reverse().ToArray()
+            __maskBytes = BitConverter.GetBytes(mask).Reverse().ToArray()
             Dim startIPBytes(ipBytes.Length - 1) As Byte
             Dim endIPBytes(ipBytes.Length - 1) As Byte
 
             For i As Integer = 0 To ipBytes.Length - 1
-                startIPBytes(i) = CByte(ipBytes(i) And _InternalMaskBytes(i))
-                endIPBytes(i) = CByte(ipBytes(i) Or (Not _InternalMaskBytes(i)))
+                startIPBytes(i) = CByte(ipBytes(i) And __maskBytes(i))
+                endIPBytes(i) = CByte(ipBytes(i) Or (Not __maskBytes(i)))
             Next i
 
             ' You can remove first and last (Network and Broadcast) here if desired
@@ -134,8 +139,8 @@ Namespace MaxMind.Views
             _CIDR_Mask = CIDR_Mask
 
             If Me.Invalid Then
-                'Call Console.WriteLine(CIDR_Mask & " is not valid!")
-                'StartIP = ip
+                Call (CIDR_Mask & " is not valid!").Warning
+                StartIP = ip
             End If
         End Sub
 
@@ -172,7 +177,7 @@ Namespace MaxMind.Views
 
         Public Overrides Function ToString() As String
             Return StartIP.ToString & " - " & EndIP.ToString & "   [subnet_mask = " &
-                _InternalMaskBytes(0).ToString & "." & _InternalMaskBytes(1).ToString & "." & _InternalMaskBytes(2).ToString & "." & _InternalMaskBytes(3).ToString & "]"
+                __maskBytes(0).ToString & "." & __maskBytes(1).ToString & "." & __maskBytes(2).ToString & "." & __maskBytes(3).ToString & "]"
         End Function
     End Class
 End Namespace
