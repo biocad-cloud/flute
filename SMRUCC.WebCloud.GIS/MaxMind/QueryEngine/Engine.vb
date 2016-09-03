@@ -17,10 +17,10 @@ Namespace MaxMind
 
         Private ReadOnly Mask As String() = {"255.0.0.0", "255.255.0.0", "255.255.255.0"}
 
-        Public Function LocationQuery(IPAddress As String) As Database.FindResult
+        Public Function LocationQuery(IPAddress As String) As FindResult
 
             If String.IsNullOrEmpty(IPAddress) OrElse Not Net.IPAddress.TryParse(IPAddress, Nothing) Then
-                Return Database.FindResult.Null
+                Return FindResult.Null
             End If
 
 
@@ -32,7 +32,7 @@ Namespace MaxMind
                           Where Not Query Is Nothing
                           Select Query).FirstOrDefault
             If LQuery Is Nothing Then
-                Return Database.FindResult.Null
+                Return FindResult.Null
             End If
 
             Dim CityLocation = MySQl.ExecuteScalar(Of geolite2_city_locations)($"SELECT * FROM geoip_services.geolite2_city_locations where geoname_id = '{LQuery.geoname_id}';")
@@ -41,7 +41,7 @@ Namespace MaxMind
                 CityLocation = New geolite2_city_locations
             End If
 
-            Return New Database.FindResult With {
+            Return New FindResult With {
             .CIDR = LQuery.network,
             .city_name = CityLocation.city_name,
             .continent_code = CityLocation.continent_code,

@@ -5,7 +5,7 @@ Imports SMRUCC.WebCloud.GIS.MaxMind.geolite2
 
 Namespace MaxMind
 
-    Public Module MYSQLExtensions
+    Public Module MySqlImports
 
         Public Function LoadCsv(path As String) As geolite2_city_blocks_ipv4()
             Return path.LoadCsv(Of geolite2_city_blocks_ipv4)(False).ToArray

@@ -64,8 +64,9 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MaxMind\Database.vb" />
-    <Compile Include="MaxMind\Engine.vb" />
+    <Compile Include="MaxMind\QueryEngine\QueryOut.vb" />
+    <Compile Include="MaxMind\QueryEngine\Database.vb" />
+    <Compile Include="MaxMind\QueryEngine\Engine.vb" />
     <Compile Include="Extensions.vb" />
     <Compile Include="MaxMind\Views.vb" />
     <Compile Include="MaxMind\Tables\GeoIP2\IPv4\geolite2_city_blocks_ipv4.vb" />
@@ -87,7 +88,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="MaxMind\MYSQLExtensions.vb" />
+    <Compile Include="MaxMind\MySqlImports.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
