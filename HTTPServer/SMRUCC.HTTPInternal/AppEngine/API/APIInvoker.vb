@@ -30,8 +30,8 @@ Imports System.Reflection
 Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
-Imports SMRUCC.HTTPInternal.AppEngine.APIMethods.Arguments
-Imports SMRUCC.HTTPInternal.AppEngine.POSTParser
+Imports SMRUCC.WebCloud.HTTPInternal.AppEngine.APIMethods.Arguments
+Imports SMRUCC.WebCloud.HTTPInternal.AppEngine.POSTParser
 
 Namespace AppEngine.APIMethods
 
