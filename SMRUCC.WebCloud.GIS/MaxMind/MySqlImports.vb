@@ -1,5 +1,9 @@
-﻿Imports System.Text
+﻿Imports System.Runtime.CompilerServices
+Imports System.Text
+Imports Microsoft.VisualBasic.DocumentFormat.Csv.DocumentStream.Linq
 Imports Microsoft.VisualBasic.DocumentFormat.Csv.Extensions
+Imports Microsoft.VisualBasic.Language.UnixBash
+Imports Microsoft.VisualBasic.Linq
 Imports Oracle.LinuxCompatibility.MySQL
 Imports SMRUCC.WebCloud.GIS.MaxMind.geolite2
 
@@ -7,36 +11,58 @@ Namespace MaxMind
 
     Public Module MySqlImports
 
-        Public Function LoadCsv(path As String) As geolite2_city_blocks_ipv4()
-            Return path.LoadCsv(Of geolite2_city_blocks_ipv4)(False).ToArray
-        End Function
+        ''' <summary>
+        ''' 
+        ''' </summary>
+        ''' <param name="mysql"></param>
+        ''' <param name="df">GeoLite2-Country-Blocks-IPv4.csv</param>
+        ''' <returns></returns>
+        ''' 
+        <Extension>
+        Public Function ImportsGeoLite2CountryBlocksIPv4(mysql As MySQL, df As String) As Boolean
+            Dim data As geolite2_country_blocks_ipv4() = df.LoadCsv(Of geolite2_country_blocks_ipv4)
 
-        Public Function LoadCsvCityLocations(path As String) As geolite2_city_locations()
-            Return path.LoadCsv(Of geolite2_city_locations)(False).ToArray
-        End Function
+            If data.IsNullOrEmpty Then
+                Return False
+            End If
 
-        Public Function GenerateInsertSQL(data As geolite2_city_locations()) As String
-            Return __insertSQLTransaction(data)
+            Call mysql.Execute(DropTableSQL(Of geolite2_country_blocks_ipv4))
+
+            For Each x As geolite2_country_blocks_ipv4 In data
+                Call mysql.ExecInsert(x)
+            Next
+
+            Return True
         End Function
 
         ''' <summary>
-        ''' 生成用于导入数据库的SQL插入脚本
+        ''' 
         ''' </summary>
-        ''' <param name="data"></param>
+        ''' <param name="mysql"></param>
+        ''' <param name="df">GeoLite2-Country-Blocks-IPv6.csv</param>
         ''' <returns></returns>
-        Public Function GenerateInsertSQL(data As geolite2_city_blocks_ipv4()) As String
-            Return __insertSQLTransaction(data)
+        ''' 
+        <Extension>
+        Public Function ImportsGeoLite2CountryBlocksIPv6(mysql As MySQL, df As String) As Boolean
+            Using reader As New DataStream(df,, 1024 * 1024 * 10)
+                Call mysql.Execute(DropTableSQL(Of geolite2_country_blocks_ipv6))
+                Call reader.ForEach(Of geolite2_country_blocks_ipv6)(Sub(x) Call mysql.ExecInsert(x))
+            End Using
+
+            Return True
         End Function
 
-        Private Function __insertSQLTransaction(data As IEnumerable(Of SQLTable)) As String
-            Dim LQuery = (From entry In data.AsParallel Select entry.GetInsertSQL).ToArray
-            Dim sBuilder As New StringBuilder(2 * 2048)
+        <Extension>
+        Public Function ImportsGeoLite2CountryLocations(mysql As MySQL, DIR As String) As Boolean
+            Call mysql.Execute(DropTableSQL(Of geolite2_country_locations))
 
-            For Each Line As String In LQuery
-                Call sBuilder.AppendLine(Line)
+            For Each df As String In ls - l - r - wildcards("GeoLite2-Country-Locations*.csv") <= DIR
+                Dim data = df.LoadCsv(Of geolite2_country_locations)
+                Dim trans As String = String.Join(vbLf, data.ToArray(Function(x) x.GetInsertSQL))
+                Call mysql.CommitTransaction(trans)
             Next
 
-            Return sBuilder.ToString
+            Return True
         End Function
     End Module
 End Namespace
