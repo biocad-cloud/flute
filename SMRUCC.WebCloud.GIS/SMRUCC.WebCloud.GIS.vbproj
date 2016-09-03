@@ -69,6 +69,7 @@
     <Compile Include="MaxMind\Tables\GeoIP2\IPv4\geolite2_city_blocks_ipv4.vb" />
     <Compile Include="MaxMind\Tables\GeoIP2\IPv4\geolite2_city_locations.vb" />
     <Compile Include="MaxMind\Tables\GeoIP2\IPv6.vb" />
+    <Compile Include="MaxMind\Tables\geolite\geolite_city.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -119,12 +120,7 @@
       <Name>+Microsoft.VisualBasic.Architecture.Framework</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="MaxMind\" />
-    <Folder Include="MaxMind\Tables" />
-    <Folder Include="MaxMind\Tables\GeoIP2" />
-    <Folder Include="MaxMind\Tables\GeoIP2\IPv4" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

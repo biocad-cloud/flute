@@ -1,12 +1,14 @@
-﻿
+﻿Imports Oracle.LinuxCompatibility.MySQL
+Imports SMRUCC.WebCloud.GIS.MaxMind.geolite2
+
 ''' <summary>
 ''' 地理位置服务查询引擎
 ''' </summary>
 Public Class Engine
 
-    Public ReadOnly Property MySQl As Oracle.LinuxCompatibility.MySQL.Client.MySQL
+    Public ReadOnly Property MySQl As MYSQL
 
-    Sub New(uri As Oracle.LinuxCompatibility.MySQL.Client.ConnectionUri)
+    Sub New(uri As ConnectionUri)
         Me.MySQl = uri
     End Sub
 
@@ -23,7 +25,7 @@ Public Class Engine
                                 In Me.Mask
                                 Select value = New IPv4(IPAddress, mask).CIDR).ToArray
         Dim LQuery = (From s_cidr As String In CIDR
-                      Let Query = MySQl.ExecuteScalar(Of Tables.GeoIP2.IPv4.geolite2_city_blocks_ipv4)($"SELECT * FROM geoip_services.geolite2_city_blocks_ipv4 where network = '{s_cidr}';")
+                      Let Query = MySQl.ExecuteScalar(Of geolite2_city_blocks_ipv4)($"SELECT * FROM geoip_services.geolite2_city_blocks_ipv4 where network = '{s_cidr}';")
                       Where Not Query Is Nothing
                       Select Query).FirstOrDefault
         If LQuery Is Nothing Then
@@ -33,7 +35,7 @@ Public Class Engine
         Dim CityLocation = MySQl.ExecuteScalar(Of Tables.GeoIP2.IPv4.geolite2_city_locations)($"SELECT * FROM geoip_services.geolite2_city_locations where geoname_id = '{LQuery.geoname_id}';")
 
         If CityLocation Is Nothing Then
-            CityLocation = New Tables.GeoIP2.IPv4.geolite2_city_locations
+            CityLocation = New geolite2_city_locations
         End If
 
         Return New Database.FindResult With {
