@@ -64,8 +64,10 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Database.vb" />
     <Compile Include="Engine.vb" />
     <Compile Include="Extensions.vb" />
+    <Compile Include="IPAddress2Country.vb" />
     <Compile Include="MaxMind\Tables\GeoIP2\IPv4\geolite2_city_blocks_ipv4.vb" />
     <Compile Include="MaxMind\Tables\GeoIP2\IPv4\geolite2_city_locations.vb" />
     <Compile Include="MaxMind\Tables\GeoIP2\IPv6.vb" />
@@ -118,6 +120,10 @@
     <ProjectReference Include="..\..\GCModeller\src\runtime\visualbasic_App\Microsoft.VisualBasic.Architecture.Framework\+Microsoft.VisualBasic.Architecture.Framework.vbproj">
       <Project>{fecce1fd-e1d4-49e3-a668-60bb5e7aed99}</Project>
       <Name>+Microsoft.VisualBasic.Architecture.Framework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\GCModeller\src\runtime\visualbasic_App\Microsoft.VisualBasic.NETProtocol\Microsoft.VisualBasic.NETProtocol.vbproj">
+      <Project>{a60240d1-e78b-4b96-85e3-45256571c2cb}</Project>
+      <Name>Microsoft.VisualBasic.NETProtocol</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
