@@ -7,4 +7,4 @@
 This product includes:
 
 + ``SMRUCC.WebCloud.HTTPInternal`` - A framework for develop the WebApp
-+ ``SMRUCC.WebCloud.GIS`` - GIS database services for build web app
++ ``SMRUCC.WebCloud.GIS`` - GIS database services for build web app that may
