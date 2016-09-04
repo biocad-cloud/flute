@@ -127,6 +127,12 @@ Namespace MaxMind
             Return True
         End Function
 
+        ''' <summary>
+        ''' 重新生成<see cref="geographical_information_view"/>表数据
+        ''' </summary>
+        ''' <param name="mysql"></param>
+        ''' <param name="locale"></param>
+        ''' <returns></returns>
         <Extension>
         Public Function UpdateGeographicalView(mysql As MySQL, Optional locale As String = "en") As String
             Dim indexed As New List(Of Long)
@@ -134,6 +140,9 @@ Namespace MaxMind
 
             If Not (err = mysql.ClearTable(Of geographical_information_view)) Is Nothing Then
                 Return err
+            Else
+                mysql = New MySQL(New ConnectionUri(mysql.UriMySQL))
+                mysql.UriMySQL.TimeOut = 0
             End If
 
             Dim geonames As geolite2_city_locations() = mysql.Query(Of geolite2_city_locations)(
@@ -150,7 +159,9 @@ Namespace MaxMind
                 "SELECT * FROM maxmind_geolite2.geolite2_city_blocks_ipv4;",
                 Sub(x)
                     If indexed.IndexOf(x.geoname_id) > -1 Then
-                        Return
+                        Return  ' 跳过已经存在的记录
+                    Else
+                        indexed += x.geoname_id
                     End If
                     If Not geoHash.ContainsKey(x.geoname_id) Then
                         Return
@@ -158,17 +169,18 @@ Namespace MaxMind
 
                     Dim info As geolite2_city_locations = geoHash(x.geoname_id)
                     Dim view As New geographical_information_view With {
-                        .city_name = info.city_name,
+                        .city_name = MySqlEscaping(info.city_name),
                         .country_iso_code = info.country_iso_code,
                         .geoname_id = x.geoname_id,
                         .country_name = info.country_name,
                         .latitude = x.latitude,
                         .longitude = x.longitude,
-                        .subdivision_1_name = info.subdivision_1_name,
-                        .subdivision_2_name = info.subdivision_2_name
+                        .subdivision_1_name = MySqlEscaping(info.subdivision_1_name),
+                        .subdivision_2_name = MySqlEscaping(info.subdivision_2_name)
                     }
 
                     Call mysql.ExecInsert(view)
+                    Call Console.Write(".")
                 End Sub)
 
             Return Nothing
