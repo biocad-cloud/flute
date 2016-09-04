@@ -107,8 +107,10 @@ Namespace MaxMind
 
             For Each df As String In files
                 Dim data = df.LoadCsv(Of T)
-                Dim trans As String = String.Join(vbLf, data.ToArray(Function(x) x.GetInsertSQL))
-                Call mysql.CommitTransaction(trans)
+
+                For Each x As T In data
+                    Call mysql.ExecInsert(x)
+                Next
             Next
 
             Return True
