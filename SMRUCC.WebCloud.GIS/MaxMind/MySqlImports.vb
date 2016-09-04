@@ -98,18 +98,29 @@ Namespace MaxMind
                 },
                 ls - l - r - wildcards("GeoLite2-City-Locations*.csv") <= DIR
             )
-            Return mysql.ImportsLocationFiles(Of geolite2_city_locations)(files)
+            Return mysql.ImportsLocationFiles(Of geolite2_city_locations)(
+                files, Sub(x)
+                           x.city_name = MySqlEscaping(x.city_name)
+                           x.subdivision_1_name = MySqlEscaping(x.subdivision_1_name)
+                           x.subdivision_2_name = MySqlEscaping(x.subdivision_2_name)
+
+                           Call mysql.ExecInsert(x)
+                       End Sub)
         End Function
 
         <Extension>
-        Public Function ImportsLocationFiles(Of T As SQLTable)(mysql As MySQL, files As IEnumerable(Of String)) As Boolean
+        Public Function ImportsLocationFiles(Of T As SQLTable)(mysql As MySQL, files As IEnumerable(Of String), Optional invoke As Action(Of T) = Nothing) As Boolean
             Call mysql.ClearTable(Of T)
+
+            If invoke Is Nothing Then
+                invoke = AddressOf mysql.ExecInsert
+            End If
 
             For Each df As String In files
                 Dim data = df.LoadCsv(Of T)
 
                 For Each x As T In data
-                    Call mysql.ExecInsert(x)
+                    Call invoke(x)
                 Next
             Next
 

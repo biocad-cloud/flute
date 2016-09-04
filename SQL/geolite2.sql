@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `maxmind_geolite2` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `maxmind_geolite2`;
--- MySQL dump 10.13  Distrib 5.7.9, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.12, for Win64 (x86_64)
 --
 -- Host: localhost    Database: maxmind_geolite2
 -- ------------------------------------------------------
--- Server version	5.7.12-log
+-- Server version	5.7.14-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -33,7 +33,6 @@ CREATE TABLE `geographical_information_view` (
   `city_name` varchar(128) DEFAULT NULL,
   `subdivision_1_name` varchar(128) DEFAULT NULL,
   `subdivision_2_name` varchar(128) DEFAULT NULL,
-  `subdivision_3_name` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`geoname_id`),
   UNIQUE KEY `geoname_id_UNIQUE` (`geoname_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -137,7 +136,7 @@ DROP TABLE IF EXISTS `geolite2_country_blocks_ipv6`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `geolite2_country_blocks_ipv6` (
-  `network` varchar(32) NOT NULL,
+  `network` varchar(128) NOT NULL,
   `geoname_id` varchar(45) DEFAULT NULL,
   `registered_country_geoname_id` varchar(45) DEFAULT NULL,
   `represented_country_geoname_id` varchar(45) DEFAULT NULL,
@@ -176,4 +175,4 @@ CREATE TABLE `geolite2_country_locations` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-09-04 21:51:26
+-- Dump completed on 2016-09-05  1:26:27
