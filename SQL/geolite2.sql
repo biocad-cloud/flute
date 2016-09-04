@@ -18,6 +18,28 @@ USE `maxmind_geolite2`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `geographical_information_view`
+--
+
+DROP TABLE IF EXISTS `geographical_information_view`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `geographical_information_view` (
+  `geoname_id` int(11) NOT NULL,
+  `latitude` double NOT NULL,
+  `longitude` double NOT NULL,
+  `country_iso_code` varchar(16) DEFAULT NULL,
+  `country_name` varchar(64) DEFAULT NULL,
+  `city_name` varchar(128) DEFAULT NULL,
+  `subdivision_1_name` varchar(128) DEFAULT NULL,
+  `subdivision_2_name` varchar(128) DEFAULT NULL,
+  `subdivision_3_name` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`geoname_id`),
+  UNIQUE KEY `geoname_id_UNIQUE` (`geoname_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `geolite2_city_blocks_ipv4`
 --
 
@@ -154,4 +176,4 @@ CREATE TABLE `geolite2_country_locations` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-09-03 11:48:28
+-- Dump completed on 2016-09-04 13:39:52
