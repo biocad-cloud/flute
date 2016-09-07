@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `maxmind_geolite2` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `maxmind_geolite2`;
--- MySQL dump 10.13  Distrib 5.7.9, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.12, for Win64 (x86_64)
 --
 -- Host: localhost    Database: maxmind_geolite2
 -- ------------------------------------------------------
--- Server version	5.7.12-log
+-- Server version	5.7.14-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -33,7 +33,6 @@ CREATE TABLE `geographical_information_view` (
   `city_name` varchar(128) DEFAULT NULL,
   `subdivision_1_name` varchar(128) DEFAULT NULL,
   `subdivision_2_name` varchar(128) DEFAULT NULL,
-  `subdivision_3_name` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`geoname_id`),
   UNIQUE KEY `geoname_id_UNIQUE` (`geoname_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -47,7 +46,7 @@ DROP TABLE IF EXISTS `geolite2_city_blocks_ipv4`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `geolite2_city_blocks_ipv4` (
-  `network` char(128) NOT NULL COMMENT 'This is the IPv4 or IPv6 network in CIDR format such as “2.21.92.0/29″ or “2001:4b0::/80″. We offer a utility to convert this column to start/end IPs or start/end integers. See the conversion utility section for details.',
+  `network` char(128) NOT NULL COMMENT 'This is the IPv4 or IPv6 network in CIDR format such as ''2.21.92.0/29'' or ''2001:4b0::/80''. We offer a utility to convert this column to start/end IPs or start/end integers. See the conversion utility section for details.',
   `geoname_id` int(11) DEFAULT NULL COMMENT 'A unique identifier for the network’s location as specified by GeoNames. This ID can be used to look up the location information in the Location file.',
   `registered_country_geoname_id` int(11) DEFAULT NULL COMMENT 'The registered country is the country in which the ISP has registered the network. This column contains a unique identifier for the network’s registered country as specified by GeoNames. This ID can be used to look up the location information in the Location file.',
   `represented_country_geoname_id` int(11) DEFAULT NULL COMMENT 'The represented country is the country which is represented by users of the IP\naddress. For instance, the country represented by an overseas military base. This column contains a unique identifier for the network’s registered country as specified by GeoNames. This ID can be used to look up the location information in the Location file.',
@@ -70,7 +69,7 @@ DROP TABLE IF EXISTS `geolite2_city_blocks_ipv6`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `geolite2_city_blocks_ipv6` (
-  `network` char(128) NOT NULL COMMENT 'This is the IPv4 or IPv6 network in CIDR format such as “2.21.92.0/29″ or “2001:4b0::/80″. We offer a utility to convert this column to start/end IPs or start/end integers. See the conversion utility section for details.',
+  `network` char(128) NOT NULL COMMENT 'This is the IPv4 or IPv6 network in CIDR format such as ''2.21.92.0/29'' or ''2001:4b0::/80''. We offer a utility to convert this column to start/end IPs or start/end integers. See the conversion utility section for details.',
   `geoname_id` int(11) DEFAULT NULL COMMENT 'A unique identifier for the network’s location as specified by GeoNames. This ID can be used to look up the location information in the Location file.',
   `registered_country_geoname_id` int(11) DEFAULT NULL COMMENT 'The registered country is the country in which the ISP has registered the network. This column contains a unique identifier for the network’s registered country as specified by GeoNames. This ID can be used to look up the location information in the Location file.',
   `represented_country_geoname_id` int(11) DEFAULT NULL COMMENT 'The represented country is the country which is represented by users of the IP\naddress. For instance, the country represented by an overseas military base. This column contains a unique identifier for the network’s registered country as specified by GeoNames. This ID can be used to look up the location information in the Location file.',
@@ -99,13 +98,13 @@ CREATE TABLE `geolite2_city_locations` (
   `continent_name` varchar(512) DEFAULT NULL COMMENT 'The continent name for this location in the file’s locale.',
   `country_iso_code` varchar(512) DEFAULT NULL COMMENT 'A two-character ISO 3166-1 country code for the country associated with the location.',
   `country_name` varchar(512) DEFAULT NULL COMMENT 'The country name for this location in the file’s locale.',
-  `subdivision_1_iso_code` varchar(512) DEFAULT NULL COMMENT 'A string of up to three characters containing the region-portion of the ISO 3166-2 code for the first level region associated with the IP address. Some countries have two levels of subdivisions, in which case this is the least specific. For example, in the United Kingdom this will be a country like “England”, not a county like “Devon”.',
+  `subdivision_1_iso_code` varchar(512) DEFAULT NULL COMMENT 'A string of up to three characters containing the region-portion of the ISO 3166-2 code for the first level region associated with the IP address. Some countries have two levels of subdivisions, in which case this is the least specific. For example, in the United Kingdom this will be a country like ''England'', not a county like ''Devon''.',
   `subdivision_1_name` varchar(512) DEFAULT NULL COMMENT 'The subdivision name for this location in the file’s locale. As with the subdivision code, this is the least specific subdivision for the location.',
-  `subdivision_2_iso_code` varchar(512) DEFAULT NULL COMMENT 'A string of up to three characters containing the region-portion of the ISO 3166-2 code for the second level region associated with the IP address. Some countries have two levels of subdivisions, in which case this is the most specific. For example, in the United Kingdom this will be a a county like “Devon”, not a country like “England”.',
+  `subdivision_2_iso_code` varchar(512) DEFAULT NULL COMMENT 'A string of up to three characters containing the region-portion of the ISO 3166-2 code for the second level region associated with the IP address. Some countries have two levels of subdivisions, in which case this is the most specific. For example, in the United Kingdom this will be a a county like ''Devon'', not a country like ''England''.',
   `subdivision_2_name` varchar(512) DEFAULT NULL COMMENT 'The subdivision name for this location in the file’s locale. As with the subdivision code, this is the most specific subdivision for the location.',
   `city_name` varchar(512) DEFAULT NULL COMMENT 'The city name for this location in the file’s locale.',
   `metro_code` int(11) DEFAULT NULL COMMENT 'The metro code associated with the IP address. These are only available for networks in the US. MaxMind provides the same metro codes as the Google AdWords API.',
-  `time_zone` varchar(128) DEFAULT NULL COMMENT 'The time zone associated with location, as specified by the IANA Time Zone Database, e.g., “America/New_York”.',
+  `time_zone` varchar(128) DEFAULT NULL COMMENT 'The time zone associated with location, as specified by the IANA Time Zone Database, e.g., ''America/New_York''.',
   PRIMARY KEY (`geoname_id`,`locale_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='												\n';
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -137,7 +136,7 @@ DROP TABLE IF EXISTS `geolite2_country_blocks_ipv6`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `geolite2_country_blocks_ipv6` (
-  `network` varchar(32) NOT NULL,
+  `network` varchar(128) NOT NULL,
   `geoname_id` varchar(45) DEFAULT NULL,
   `registered_country_geoname_id` varchar(45) DEFAULT NULL,
   `represented_country_geoname_id` varchar(45) DEFAULT NULL,
@@ -176,4 +175,4 @@ CREATE TABLE `geolite2_country_locations` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-09-04 13:39:52
+-- Dump completed on 2016-09-05  1:26:27
