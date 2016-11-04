@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{01A97EB9-4860-4DF9-871B-A49E1B53545B}</ProjectGuid>
+    <ProjectGuid>{E550923F-89C0-4C51-A6FF-240DB7EF843B}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>SMRUCC.WebCloud.GIS</RootNamespace>
-    <AssemblyName>SMRUCC.WebCloud.GIS</AssemblyName>
+    <RootNamespace>VisitStat</RootNamespace>
+    <AssemblyName>VisitStat</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
@@ -19,7 +19,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>SMRUCC.WebCloud.GIS.xml</DocumentationFile>
+    <DocumentationFile>VisitStat.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -28,7 +28,7 @@
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>SMRUCC.WebCloud.GIS.xml</DocumentationFile>
+    <DocumentationFile>VisitStat.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
@@ -43,31 +43,9 @@
   <PropertyGroup>
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineDebug>true</DefineDebug>
-    <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DocumentationFile>SMRUCC.WebCloud.GIS.xml</DocumentationFile>
-    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DocumentationFile>SMRUCC.WebCloud.GIS.xml</DocumentationFile>
-    <Optimize>true</Optimize>
-    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -86,20 +64,8 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="markmarkoh_datamaps\fills.vb" />
-    <Compile Include="MaxMind\MySQL\geolite2\geographical_information_view.vb" />
-    <Compile Include="MaxMind\MySQL\geolite2\geolite2_city_blocks_ipv6.vb" />
-    <Compile Include="MaxMind\MySQL\geolite2\geolite2_country_blocks_ipv4.vb" />
-    <Compile Include="MaxMind\MySQL\geolite2\geolite2_country_blocks_ipv6.vb" />
-    <Compile Include="MaxMind\MySQL\geolite2\geolite2_country_locations.vb" />
-    <Compile Include="MaxMind\QueryEngine\QueryOut.vb" />
-    <Compile Include="MaxMind\QueryEngine\Database.vb" />
-    <Compile Include="MaxMind\QueryEngine\Engine.vb" />
-    <Compile Include="Extensions.vb" />
-    <Compile Include="MaxMind\Views.vb" />
-    <Compile Include="MaxMind\MySQL\geolite2\geolite2_city_blocks_ipv4.vb" />
-    <Compile Include="MaxMind\MySQL\geolite2\geolite2_city_locations.vb" />
-    <Compile Include="MaxMind\MySQL\geolite\geolite_city.vb" />
+    <Compile Include="visitor_stat.vb" />
+    <Compile Include="VisitStat.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -115,7 +81,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="MaxMind\MySqlImports.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -137,24 +102,19 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\visualbasic.DBI\LibMySQL\LibMySQL.vbproj">
-      <Project>{2c34a044-1bde-44e8-a86e-e9971c87da21}</Project>
-      <Name>LibMySQL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\visualbasic_App\Data\DataFrame\+VB_DataFrame.vbproj">
-      <Project>{7283c179-f852-4ead-8d8f-b82ef2cbd7db}</Project>
-      <Name>+VB_DataFrame</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\visualbasic_App\Microsoft.VisualBasic.Architecture.Framework\+Microsoft.VisualBasic.Architecture.Framework.vbproj">
+    <ProjectReference Include="..\..\..\sciBASIC#\Microsoft.VisualBasic.Architecture.Framework\+Microsoft.VisualBasic.Architecture.Framework.vbproj">
       <Project>{fecce1fd-e1d4-49e3-a668-60bb5e7aed99}</Project>
       <Name>+Microsoft.VisualBasic.Architecture.Framework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\visualbasic_App\www\Microsoft.VisualBasic.NETProtocol\Microsoft.VisualBasic.NETProtocol.vbproj">
-      <Project>{a60240d1-e78b-4b96-85e3-45256571c2cb}</Project>
-      <Name>Microsoft.VisualBasic.NETProtocol</Name>
+    <ProjectReference Include="..\..\..\visualbasic.DBI\LibMySQL\LibMySQL.vbproj">
+      <Project>{2c34a044-1bde-44e8-a86e-e9971c87da21}</Project>
+      <Name>LibMySQL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SMRUCC.HTTPInternal\SMRUCC.WebCloud.HTTPInternal.vbproj">
+      <Project>{fbfc1455-b232-4f16-afc7-4054a8b864ab}</Project>
+      <Name>SMRUCC.WebCloud.HTTPInternal</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
