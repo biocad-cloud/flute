@@ -9,6 +9,7 @@ This product includes:
 
 + ``SMRUCC.WebCloud.HTTPInternal`` - A framework for develop the WebApp
 + ``SMRUCC.WebCloud.GIS`` - GIS database services for build web app that may associate with the Geographic Information likes the population genetics data.
++ ``SMRUCC.WebCloud.d3js`` - d3js extensions for VisualBasic data system
 
 ##### Runtime
 
