@@ -26,6 +26,7 @@
 #End Region
 
 Imports System.IO
+Imports System.Reflection
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Language
 Imports SMRUCC.WebCloud.HTTPInternal.AppEngine.APIMethods
@@ -46,6 +47,7 @@ Namespace AppEngine
         ''' 键名要求是小写的
         ''' </summary>
         Dim RunningAPP As New Dictionary(Of String, APPEngine)
+        Dim dynamics As New Dictionary(Of String, APIInvoker)
 
         ''' <summary>
         ''' 生成帮助文档所需要的
@@ -69,6 +71,16 @@ Namespace AppEngine
                 End If
             End Get
         End Property
+
+        Public Sub Join(url$, method As APIMethod, API As MethodInfo, Optional help$ = "No help info...")
+            dynamics(url.ToLower) = New APIInvoker With {
+                .EntryPoint = API,
+                .Error404 = "",
+                .Help = help,
+                .Method = method,
+                .Name = url
+            }
+        End Sub
 
         ''' <summary>
         ''' Get running app by type.
