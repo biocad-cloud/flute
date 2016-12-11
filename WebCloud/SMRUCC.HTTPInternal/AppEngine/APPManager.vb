@@ -47,7 +47,7 @@ Namespace AppEngine
         ''' 键名要求是小写的
         ''' </summary>
         Dim RunningAPP As New Dictionary(Of String, APPEngine)
-        Dim dynamics As New Dictionary(Of String, APIInvoker)
+        Dim dynamics As New Dictionary(Of String, (App As Object, API As APIInvoker))
 
         ''' <summary>
         ''' 生成帮助文档所需要的
@@ -72,14 +72,22 @@ Namespace AppEngine
             End Get
         End Property
 
-        Public Sub Join(url$, method As APIMethod, API As MethodInfo, Optional help$ = "No help info...")
-            dynamics(url.ToLower) = New APIInvoker With {
+        ''' <summary>
+        ''' 
+        ''' </summary>
+        ''' <param name="url$"></param>
+        ''' <param name="method"></param>
+        ''' <param name="API"></param>
+        ''' <param name="APP">假若是模块Module，则使用这个默认的空值，假若是Class中的实例方法，则还需要把那个Class对象传递进来</param>
+        ''' <param name="help$"></param>
+        Public Sub Join(url$, method As APIMethod, API As MethodInfo, Optional APP As Object = Nothing, Optional help$ = "No help info...")
+            dynamics(url.ToLower) = (APP, New APIInvoker With {
                 .EntryPoint = API,
                 .Error404 = "",
                 .Help = help,
                 .Method = method,
                 .Name = url
-            }
+            })
         End Sub
 
         ''' <summary>
@@ -113,7 +121,7 @@ Namespace AppEngine
         ''' <param name="response">HTML输出页面或者json数据</param>
         ''' <returns></returns>
         Public Function InvokePOST(request As HttpPOSTRequest, response As HttpResponse) As Boolean
-            Return APPEngine.InvokePOST(request, RunningAPP, response)
+            Return APPEngine.InvokePOST(request, RunningAPP, response, dynamics)
         End Function
 
         ''' <summary>
@@ -141,7 +149,7 @@ Namespace AppEngine
         ''' <param name="response">HTML输出页面或者json数据</param>
         ''' <returns></returns>
         Public Function Invoke(request As HttpRequest, response As HttpResponse) As Boolean
-            Return APPEngine.Invoke(request, RunningAPP, response, DefaultAPI)
+            Return APPEngine.Invoke(request, RunningAPP, response, dynamics, DefaultAPI)
         End Function
 
         Public Function PrintHelp() As String
