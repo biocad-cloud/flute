@@ -1,5 +1,7 @@
 ﻿Imports System.IO
 Imports Microsoft.VisualBasic.CommandLine.Reflection
+Imports Microsoft.VisualBasic.Language.UnixBash
+Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Serialization.JSON
 Imports SMRUCC.WebCloud.HTTPInternal.AppEngine
 Imports SMRUCC.WebCloud.HTTPInternal.AppEngine.APIMethods
@@ -26,19 +28,34 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
 
     <ExportAPI("/file/ls.vbs", Usage:="/file/ls.vbs?d=<DIR_name>")>
     <[GET](GetType(String()))>
-    Public Function lsDIR(request As HttpRequest, response As HttpResponse) As Boolean
+    Public Function listDIR(request As HttpRequest, response As HttpResponse) As Boolean
         Dim d$ = request.URLParameters(NameOf(d))
+        Dim folder As String
 
         If d.IsBlank Then
             d = "/"
         End If
         If d = "/" Then
-            d = DIR
+            folder = DIR
         Else
-            d = (DIR & "/" & d).GetDirectoryFullPath
+            folder = (DIR & "/" & d).GetDirectoryFullPath
         End If
 
-        Dim f As FileInfo
+        Dim files As File() =
+            (ls - l - "*.*" <= folder) _
+            .ToArray(Function(path$) File.Create(path))
+        Dim folders As File() =
+            (ls - l - lsDIR - "*.*" <= folder) _
+            .ToArray(Function(path$) File.Create(path, isDIR:=True))
+        Dim json As New ListResponse With {
+            .DIR = d,
+            .DIRs = folders,
+            .Files = files
+        }
+
+        Call response.WriteJSON(json)
+
+        Return True
     End Function
 
     Public Overrides Function Page404() As String
@@ -47,9 +64,28 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
 End Class
 
 Public Structure File
+
     Public Property FileName As String
     Public Property Length As Long
     Public Property [Date] As Date
+
+    Public Shared Function Create(path$, Optional isDIR As Boolean = False) As File
+        If isDIR Then
+            Dim dir As New DirectoryInfo(path)
+            Return New File With {
+                .Date = dir.LastWriteTime,
+                .FileName = dir.Name,
+                .Length = 0
+            }
+        Else
+            Dim file As New FileInfo(path)
+            Return New File With {
+                .Date = file.LastWriteTime,
+                .FileName = file.Name,
+                .Length = file.Length
+            }
+        End If
+    End Function
 
     Public Overrides Function ToString() As String
         Return Me.GetJson
