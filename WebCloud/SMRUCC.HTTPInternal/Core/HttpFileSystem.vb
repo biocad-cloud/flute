@@ -173,7 +173,14 @@ Namespace Core
         ''' <param name="res"></param>
         ''' <returns></returns>
         Public Function GetResource(ByRef res As String) As Byte()
-            Dim file As String = MapPath(res)
+            Dim file$
+
+            Try
+                file = MapPath(res)
+            Catch ex As Exception
+                ex = New Exception(res, ex)
+                Throw ex
+            End Try
 
             If _cacheMode AndAlso _cache.ContainsKey(file) Then
                 Return _cache(file).bufs

@@ -45,7 +45,7 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
             (ls - l - "*.*" <= folder) _
             .ToArray(Function(path$) File.Create(path))
         Dim folders As File() =
-            (ls - l - lsDIR - "*.*" <= folder) _
+            (ls - l - lsDIR - ".+" <= folder) _
             .ToArray(Function(path$) File.Create(path, isDIR:=True))
         Dim json As New ListResponse With {
             .DIR = d,
