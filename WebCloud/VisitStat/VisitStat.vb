@@ -51,6 +51,7 @@ Public Class VisitStat : Inherits Plugins.PluginBase
         _commitThread = New UpdateThread(60 * 1000, AddressOf __commits)
 
 #Region "通过环境变量来初始化mysql连接"
+
         If _mySQL <= New ConnectionUri With {
             .Database = App.GetVariable("database"),
             .IPAddress = App.GetVariable("host"),
@@ -58,6 +59,7 @@ Public Class VisitStat : Inherits Plugins.PluginBase
             .ServicesPort = App.GetVariable("mysql_port"),
             .User = App.GetVariable("user")
         } = -1.0R Then
+
 #Disable Warning
             Dim ex As New Exception("Unable establish mysql connection!")
             Dim environment$ = App _
@@ -68,6 +70,7 @@ Public Class VisitStat : Inherits Plugins.PluginBase
 
             Throw New ExecutionEngineException(environment, ex)
 #Enable Warning
+
         End If
 #End Region
     End Sub
