@@ -26,13 +26,11 @@
 
 #End Region
 
-Imports Microsoft.VisualBasic.Net
 Imports Microsoft.VisualBasic.Parallel.Tasks
-Imports Oracle.LinuxCompatibility.MySQL
-Imports SMRUCC.WebCloud.HTTPInternal.Platform
-Imports SMRUCC.WebCloud.HTTPInternal
-Imports SMRUCC.WebCloud.HTTPInternal.AppEngine.APIMethods.Arguments
 Imports Microsoft.VisualBasic.Serialization.JSON
+Imports Oracle.LinuxCompatibility.MySQL
+Imports SMRUCC.WebCloud.HTTPInternal.AppEngine.APIMethods.Arguments
+Imports SMRUCC.WebCloud.HTTPInternal.Platform
 
 Public Class VisitStat : Inherits Plugins.PluginBase
 
@@ -42,7 +40,7 @@ Public Class VisitStat : Inherits Plugins.PluginBase
 
     ''' <summary>
     ''' ```bash
-    ''' /@set "host=localhost,mysql_port=3306,user=root,password=1234,database=test"
+    ''' /@set "host=localhost;mysql_port=3306;user=root;password=1234;database=test"
     ''' ```
     ''' </summary>
     ''' <param name="platform"></param>
