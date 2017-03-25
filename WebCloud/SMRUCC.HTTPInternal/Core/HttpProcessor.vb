@@ -196,16 +196,36 @@ Namespace Core
         End Sub
 
         Public Sub parseRequest()
-            Dim request As [String] = __streamReadLine(_inputStream)
-            Dim tokens As String() = request.Split(" "c)
-            If tokens.Length <> 3 Then
-                Throw New Exception("invalid http request line")
+            Dim request As String = __streamReadLine(_inputStream)
+
+            If request.StringEmpty Then
+                Dim wait% = 10
+
+                Do While request.StringEmpty
+                    ' 可能是网络传输速度比较慢，在这里等待一段时间再解析流之中的数据
+                    ' 但是当前的这条处理线程最多只等待wait次数
+                    Call Thread.Sleep(5)
+
+                    If wait <= 0 Then
+                        Exit Do
+                    Else
+                        request = __streamReadLine(_inputStream)
+                        wait -= 1
+                    End If
+                Loop
             End If
+
+            Dim tokens As String() = request.Split(" "c)
+
+            If tokens.Length <> 3 Then
+                Throw New Exception("invalid http request line: " & request)
+            End If
+
             http_method = tokens(0).ToUpper()
             http_url = tokens(1)
             http_protocol_versionstring = tokens(2)
 
-            ' Console.WriteLine("starting: " & request)
+            Call $"starting: {request}".__INFO_ECHO
         End Sub
 
         Public Sub readHeaders()
@@ -214,8 +234,8 @@ Namespace Core
             Call NameOf(readHeaders).__DEBUG_ECHO
 
             While (s = __streamReadLine(_inputStream)) IsNot Nothing
-                If s.value.Equals("") Then
-                    ' Console.WriteLine("got headers")
+                If s.value.StringEmpty Then
+                    Call "got headers".__DEBUG_ECHO
                     Return
                 Else
                     line = s.value
