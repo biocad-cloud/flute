@@ -201,7 +201,9 @@ Namespace Core
             Dim request As String = __streamReadLine(_inputStream)
 
             If request.StringEmpty Then
-                Dim wait% = 10
+                ' 2017-3-25 因为在__streamReadLine函数之中可能会出现没有数据导致休眠时间长度可能会超过1024ms
+                ' 所以在这里只需要等待3次就行了，以避免当前线程占用系统资源的时间过长而导致对其他的请求响应过低
+                Dim wait% = 3
 
                 Do While request.StringEmpty
                     ' 可能是网络传输速度比较慢，在这里等待一段时间再解析流之中的数据
