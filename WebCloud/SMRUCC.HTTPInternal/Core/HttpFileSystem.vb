@@ -291,7 +291,9 @@ Namespace Core
             Dim buf As Byte() = RequestStream(res) ' 由于子文件夹可能会是以/的方式请求index.html，所以在这里res的值可能会变化，文件拓展名放在变化之后再解析
             Dim ext As String = GetFileInfo(res).Extension.ToLower
 
-            If ext.TextEquals(".html") OrElse ext.TextEquals(".htm") Then ' Transfer HTML document.
+            If ext.TextEquals(".html") OrElse
+               ext.TextEquals(".htm") OrElse
+               ext.TextEquals(".vbhtml") Then ' Transfer HTML document.
 
                 If buf.Length = 0 Then
                     Dim html$ = __request404()
