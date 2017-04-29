@@ -1,6 +1,8 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports System.Text.RegularExpressions
+Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
+Imports Microsoft.VisualBasic.Scripting.Expressions
 Imports Microsoft.VisualBasic.Text
 
 Namespace Scripting
@@ -8,6 +10,7 @@ Namespace Scripting
     Public Module Interpolate
 
         Const Expression$ = "<%= [^>]+? %>"
+        Const ValueExpression$ = "<\?vb\s+[$].+?=\s*""[^""]*""\s+\?>"
 
         ''' <summary>
         ''' ``&lt;%= relative_path %>``
@@ -22,6 +25,20 @@ Namespace Scripting
             Dim includes$() = Regex _
                 .Matches(html.ToString, Interpolate.Expression, RegexICSng) _
                 .ToArray
+            Dim values$() = Regex _
+                .Matches(html.ToString, Interpolate.ValueExpression, RegexICMul) _
+                .ToArray
+            Dim table As (raw$, exp As NamedValue(Of String))() = values _
+                .Select(Function(s)
+                            Dim exp = Mid(s.Trim("<"c, ">"c, "?"c), 4) _
+                                .Trim _
+                                .GetTagValue("=", trim:=True)
+                            With exp
+                                .Value = .Value.GetStackValue("""", """")
+                                .Name = .Name.Trim("$"c, " "c)
+                            End With
+                            Return (s, exp)
+                        End Function).ToArray
 
             ' <%= include_path %>
 
@@ -33,6 +50,24 @@ Namespace Scripting
                 Dim content$ = rel_path.ReadAllText(codepage)
                 Call html.Replace(include, content)
             Next
+
+            If table.Length > 0 Then
+                Dim exp = table _
+                    .Select(Function(e) e.exp) _
+                    .ToDictionary
+                Dim getValue = Function(name$)
+                                   If exp.ContainsKey(name) Then
+                                       Return exp(name).Value
+                                   Else
+                                       Return ""
+                                   End If
+                               End Function
+                Call html.Interpolate(getValue)
+
+                For Each t In table
+                    Call html.Replace(t.raw, "")
+                Next
+            End If
 
             Return html.ToString
         End Function
