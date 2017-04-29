@@ -62,11 +62,13 @@ Namespace Scripting
                                        Return ""
                                    End If
                                End Function
-                Call html.Interpolate(getValue)
-
+                ' 替换操作应该放在插值操作前面，否则后面将无法清除掉这些原始
+                ' 的插值标记， 因为标记里面的$变量都会被替换为值了
                 For Each t In table
                     Call html.Replace(t.raw, "")
                 Next
+
+                Call html.Interpolate(getValue)
             End If
 
             Return html.ToString
