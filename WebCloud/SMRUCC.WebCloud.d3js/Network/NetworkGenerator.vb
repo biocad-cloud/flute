@@ -47,8 +47,9 @@ Namespace Network
         ''' Creates network data from network model
         ''' </summary>
         ''' <param name="net"></param>
+        ''' <param name="indent">默认值False是为了网络传输所优化的无换行的格式</param>
         ''' <returns></returns>
-        <Extension> Public Function FromNetwork(net As NetGraph) As String
+        <Extension> Public Function FromNetwork(net As NetGraph, Optional indent As Boolean = False) As String
             Dim types$() = net.Nodes _
                 .Select(Function(x) x.NodeType) _
                 .Distinct _
@@ -57,11 +58,13 @@ Namespace Network
  _
                 From x As FileStream.Node
                 In net.Nodes
+                Let color As String = x("color")
                 Select New node With {
                     .name = x.ID,
                     .group = Array.IndexOf(types, x.NodeType),
                     .type = x.NodeType,
-                    .size = net.Links(x.ID)
+                    .size = net.Links(x.ID),
+                    .color = color
                 }
 
             Dim nodeTable As Dictionary(Of node) = nodes _
@@ -80,7 +83,7 @@ Namespace Network
             Dim JSON$ = New out With {
                 .nodes = nodes,
                 .links = links
-            }.GetJson
+            }.GetJson(indent:=indent)
             Return JSON
         End Function
 

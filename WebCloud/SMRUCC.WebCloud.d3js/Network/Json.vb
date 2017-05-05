@@ -30,7 +30,7 @@ Namespace Network.JSON
         ''' 节点之间的边链接
         ''' </summary>
         ''' <returns></returns>
-        Public Property links As link()
+        Public Property links As link()       
 
         Public Overrides Function ToString() As String
             Return Me.GetJson
@@ -44,6 +44,7 @@ Namespace Network.JSON
         Public Property size As Integer
         Public Property type As String
         Public Property Address As Integer Implements IAddressOf.Address
+        Public Property color As String 
 
         Public Overrides Function ToString() As String
             Return Me.GetJson
