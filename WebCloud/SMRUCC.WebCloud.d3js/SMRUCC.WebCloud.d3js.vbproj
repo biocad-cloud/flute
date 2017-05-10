@@ -107,6 +107,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Network\htmlwidget\JSON.vb" />
     <Compile Include="Network\Json.vb" />
     <Compile Include="Network\NetworkGenerator.vb" />
     <Compile Include="Scatter.vb" />
