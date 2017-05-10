@@ -17,7 +17,7 @@ Namespace Network.htmlwidget
         ''' <param name="html$"></param>
         ''' <returns></returns>
         Public Function ParseHTML(html$) As String
-            If Not html.FileExists Then
+            If html.FileExists Then
                 html = html.GET
             End If
 
