@@ -1,4 +1,4 @@
-﻿Namespace Network.htmlwidget.JSON
+﻿Namespace Network.htmlwidget
 
     Public Class JSON
         Public Property x As NetGraph
