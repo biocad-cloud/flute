@@ -1,4 +1,6 @@
 ﻿Imports System.Text.RegularExpressions
+Imports Microsoft.VisualBasic.Data.visualize.Network.FileStream
+Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Serialization.JSON
 Imports NetGraphData = Microsoft.VisualBasic.Data.visualize.Network.FileStream.Network
 
@@ -30,7 +32,39 @@ Namespace Network.htmlwidget
         Public Function BuildGraph(html$) As NetGraphData
             Dim json$ = BuildData.ParseHTML(html)
             Dim data As htmlwidget.NetGraph = json.LoadObject(Of htmlwidget.JSON).x
+            Dim nodes As New List(Of Node)
+            Dim edges As New List(Of NetworkEdge)
 
+            For i As Integer = 0 To data.nodes.name.Length - 1
+                Dim name$ = data.nodes.name(i)
+                Dim type$ = data.nodes.group(i)
+
+                nodes += New Node With {
+                    .ID = name,
+                    .NodeType = type
+                }
+            Next
+
+            Dim nodesVector As Node() = nodes.ToArray
+
+            For i As Integer = 0 To data.links.source.Length - 1
+                Dim src = nodesVector(data.links.source(i)).ID
+                Dim tar = nodesVector(data.links.target(i)).ID
+                Dim type = data.links.colour(i)
+
+                edges += New NetworkEdge With {
+                    .FromNode = src, 
+                    .ToNode = tar, 
+                    .Confidence = 1, 
+                    .InteractionType = type
+                }
+            Next
+
+            Dim net As New NetGraphData With {
+                .Nodes = nodes,
+                .Edges = edges
+            }
+            Return net
         End Function
     End Module
 End Namespace
