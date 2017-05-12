@@ -6,11 +6,18 @@
 
         Protected MustOverride Function contents() As String()
 
+        ''' <summary>
+        ''' Public interface for invoke this task
+        ''' </summary>
+        ''' <returns></returns>
+        Public MustOverride Function GetTask() As Action
+
         Public Function GetProgress() As TaskProgress
-            Return New TaskProgress With {
-                .current = current,
-                .progress = contents()
+            Dim o As New TaskProgress With {
+                .progress = contents(),
+                .current = current
             }
+            Return o
         End Function
 
         Public Overrides Function ToString() As String
