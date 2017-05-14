@@ -45,7 +45,20 @@ Namespace Platform
         ''' </summary>
         ''' <returns></returns>
         Public Property uid As String Implements IReadOnlyId.Identity
+            Get
+                Return TaskData.md5
+            End Get
+            Set(value As String)
+                With TaskData
+                    .md5 = value
+                    .uid = .md5.StringHash
+                End With
+            End Set
+        End Property
+
         Public ReadOnly Property Complete As Boolean
+        Public Property TaskData As mysql.task_pool
+        Public MustOverride ReadOnly Property MyWorkspace As String
 
         Sub New(callback As Callback)
             _callback = callback
@@ -96,7 +109,7 @@ Namespace Platform
             _Complete = True
             Return Me
         End Function
-        
+
 #Region "IDisposable Support"
         Private disposedValue As Boolean ' To detect redundant calls
 
