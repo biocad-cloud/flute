@@ -27,6 +27,7 @@
 #End Region
 
 Imports Microsoft.VisualBasic.ComponentModel.Collection.Generic
+Imports TaskData = SMRUCC.WebCloud.DataCenter.mysql.task_pool
 
 Namespace Platform
 
@@ -38,7 +39,12 @@ Namespace Platform
 
         Dim _callback As Callback
 
-        Public Delegate Sub Callback(success As Boolean)
+        ''' <summary>
+        ''' 
+        ''' </summary>
+        ''' <param name="success"></param>
+        ''' <param name="task">可能是写数据库所需要的</param>
+        Public Delegate Sub Callback(success As Boolean, task As TaskData)
 
         ''' <summary>
         ''' 任务的编号
@@ -57,8 +63,8 @@ Namespace Platform
         End Property
 
         Public ReadOnly Property Complete As Boolean
-        Public Property TaskData As mysql.task_pool
-        Public MustOverride ReadOnly Property MyWorkspace As String
+        Public Property TaskData As TaskData
+        Public MustOverride ReadOnly Property Workspace As String
 
         Sub New(callback As Callback)
             _callback = callback
@@ -94,18 +100,26 @@ Namespace Platform
         End Function
 
         Public Function Start() As Task
-            Dim success As Boolean
-
             _Complete = False
-            Try
-                Call RunTask()
-                success = True
-            Catch ex As Exception
-                success = False
-                Call ex.PrintException
-                Call App.LogException(ex)
-            End Try
-            Call _callback(success)
+
+            With TaskData
+                Dim success As Boolean
+                Try
+                    Call RunTask()
+                    .status = 1
+                Catch ex As Exception
+                    success = False
+                    .status = -100
+                    Call ex.PrintException
+                    Call App.LogException(ex)
+                Finally
+                    .time_complete = Now
+                    .workspace = Workspace
+                End Try
+
+                Call _callback(success, TaskData)
+            End With
+
             _Complete = True
             Return Me
         End Function
