@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::51c205bfb875dd2ab2efc74817d33284, ..\httpd\WebCloud\SMRUCC.HTTPInternal\AppEngine\API\Arguments.vb"
+﻿#Region "Microsoft.VisualBasic::8c722b2a8ff75afa33041a5cb274fa4c, ..\httpd\WebCloud\SMRUCC.HTTPInternal\AppEngine\API\Arguments.vb"
 
 ' Author:
 ' 
@@ -31,9 +31,9 @@ Imports System.IO
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Threading
+Imports Microsoft.VisualBasic.Language.C
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 Imports Microsoft.VisualBasic.Serialization.JSON
-Imports Microsoft.VisualBasic.Terminal.STDIO__
 Imports SMRUCC.WebCloud.HTTPInternal.AppEngine.POSTParser
 Imports SMRUCC.WebCloud.HTTPInternal.Core
 Imports SMRUCC.WebCloud.HTTPInternal.Platform
@@ -106,13 +106,23 @@ Namespace AppEngine.APIMethods.Arguments
         Implements IDisposable
 
         ReadOnly response As StreamWriter
+        ReadOnly writeFailed As Action(Of String)
 
-        Sub New(rep As StreamWriter)
+        Sub New(rep As StreamWriter, write404 As Action(Of String))
             response = rep
+            writeFailed = write404
         End Sub
 
         Dim __writeHTML As Boolean = False
         Dim __writeData As Boolean = False
+
+        ''' <summary>
+        ''' 在这里只需要将错误消息放进来就行了，页面使用自定义的模板
+        ''' </summary>
+        ''' <param name="message$"></param>
+        Public Sub Write404(message$)
+            Call writeFailed(message)
+        End Sub
 
         Public Sub Redirect(url As String)
             Call WriteHTML(<script>window.location='%s';</script>, url)
@@ -138,6 +148,14 @@ Namespace AppEngine.APIMethods.Arguments
 
             Return True
         End Function
+
+        ''' <summary>
+        ''' 将需要保存到浏览器的数据通过response header的形式返回
+        ''' </summary>
+        ''' <param name="cookies"></param>
+        Public Sub SetCookies(cookies As Dictionary(Of String, String))
+
+        End Sub
 
         Public Sub WriteHeader(content_type$, Length&)
             ' this is the successful HTTP response line
@@ -186,7 +204,7 @@ Namespace AppEngine.APIMethods.Arguments
                 Call WriteHeader(MIME.Json, bytes.Length)
             End If
 
-            Call response.WriteLine(obj.GetJson)
+            Call response.WriteLine(json)
         End Sub
 
         Public Sub WriteXML(Of T)(obj As T)
@@ -503,6 +521,12 @@ Namespace AppEngine.APIMethods.Arguments
             Return response.WriteLineAsync(buffer, index, count)
         End Function
 
+        ''' <summary>
+        ''' url重定向跳转操作
+        ''' </summary>
+        ''' <param name="rep"></param>
+        ''' <param name="url"></param>
+        ''' <returns></returns>
         Public Shared Operator <=(rep As HttpResponse, url As String) As Boolean
             Call rep.Redirect(url)
             Return True

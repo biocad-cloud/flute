@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::cfa34b7277be6aa37add664f9cf0d694, ..\httpd\WebCloud\SMRUCC.HTTPInternal\AppEngine\CookieParser.vb"
+﻿#Region "Microsoft.VisualBasic::e8a8e98c27b73fb37afc6b0b3255d893, ..\httpd\WebCloud\SMRUCC.HTTPInternal\AppEngine\CookieParser.vb"
 
     ' Author:
     ' 
@@ -51,6 +51,8 @@ Namespace AppEngine
     Public Module CookieParser
 
 #Region "Cookies解析（为的是解决 .Net 3.5 CookieContainer 的Bug）"
+
+        ' SRCHD=AF=NOFORM; SRCHUID=V=2&GUID=8CA00ACCC1FE417A96610C0CDAC0DD82; SRCHUSR=DOB=20170427; _EDGE_V=1; MUIDB=1E08CF2211AF66DA1AAEC553100E6705; MUID=1E08CF2211AF66DA1AAEC553100E6705; _ITAB=STAB=TR; _FP=hta=on; ipv6=hit=1; RMS=A=gUACEAAAAAAQ; _FS=intlF=0; SRCHS=PC=MOZI; _EDGE_S=mkt=zh-cn&SID=39A0C061AA5764150154CA14ABF665D7; WLS=TS=63630019569; SNRHOP=I=&TS=; _SS=SID=39A0C061AA5764150154CA14ABF665D7&HV=1494422774&bIm=126497&PC=MOZI; SRCHHPGUSR=CW=596&CH=957&DPR=1&UTC=480
 
         ''' <summary>
         ''' 把服务器返回的Set-Cookie标头信息翻译成
@@ -165,4 +167,3 @@ Namespace AppEngine
 #End Region
     End Module
 End Namespace
-

@@ -1,28 +1,28 @@
-﻿#Region "Microsoft.VisualBasic::d006a809a73cfd12cd1a70e9bce22e0e, ..\httpd\WebCloud\SMRUCC.HTTPInternal\Core\HttpFileSystem.vb"
+﻿#Region "Microsoft.VisualBasic::d85fc9b2c304ad82676249bb66c09ac5, ..\httpd\WebCloud\SMRUCC.HTTPInternal\Core\HttpFileSystem.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xieguigang (xie.guigang@live.com)
-    '       xie (genetics@smrucc.org)
-    ' 
-    ' Copyright (c) 2016 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xieguigang (xie.guigang@live.com)
+'       xie (genetics@smrucc.org)
+' 
+' Copyright (c) 2016 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #End Region
 
@@ -31,12 +31,12 @@ Imports System.Net.Sockets
 Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
+Imports Microsoft.VisualBasic.FileIO.FileSystem
 Imports Microsoft.VisualBasic.Net.Protocols
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 Imports Microsoft.VisualBasic.Parallel.Tasks
-Imports Microsoft.VisualBasic.Scripting.MetaData
 Imports Microsoft.VisualBasic.Serialization.JSON
-Imports Microsoft.VisualBasic.Text
+Imports SMRUCC.WebCloud.HTTPInternal.Scripting
 
 Namespace Core
 
@@ -59,7 +59,7 @@ Namespace Core
         ''' {url, mapping path}
         ''' </summary>
         ReadOnly _virtualMappings As Dictionary(Of String, String)
-        ReadOnly _nullExists As Boolean
+        ReadOnly _nullAsExists As Boolean
         ReadOnly _cache As Dictionary(Of String, CachedFile)
         ReadOnly _cacheMode As Boolean
         ReadOnly _cacheUpdate As UpdateThread
@@ -94,7 +94,7 @@ Namespace Core
                 Call FileIO.FileSystem.CreateDirectory(root)
             End If
 
-            _nullExists = nullExists
+            _nullAsExists = nullExists
             wwwroot = FileIO.FileSystem.GetDirectoryInfo(root)
             FileIO.FileSystem.CurrentDirectory = root
             _virtualMappings = New Dictionary(Of String, String)
@@ -153,11 +153,17 @@ Namespace Core
                     If index.FileExists Then
                         res = file
                         file = index
+                    Else
+                        index = file & "/index.vbhtml"
+                        If index.FileExists Then
+                            res = file
+                            file = index
+                        End If
                     End If
                 End If
             End If
 
-            file = FileIO.FileSystem.GetFileInfo(file).FullName
+            file = GetFileInfo(file).FullName
 
             Return file
         End Function
@@ -168,15 +174,16 @@ Namespace Core
         Const NoData As String = "[ERR_EMPTY_RESPONSE::No data send]"
 
         ''' <summary>
-        ''' 默认是获取文件数据
+        ''' 默认的资源获取函数:<see cref="HttpFileSystem.GetResource(ByRef String)"/>.(默认是获取文件数据)
         ''' </summary>
         ''' <param name="res"></param>
         ''' <returns></returns>
-        Public Function GetResource(ByRef res As String) As Byte()
+        Public Function GetResource(ByRef res$) As Byte()
             Dim file$
 
             Try
                 file = MapPath(res)
+                res = file
             Catch ex As Exception
                 ex = New Exception(res, ex)
                 Throw ex
@@ -187,14 +194,20 @@ Namespace Core
             End If
 
             If file.FileExists Then
-                Return IO.File.ReadAllBytes(file)
+                ' 判断是否为vbhtml文件？
+                If file.ExtensionSuffix.TextEquals("vbhtml") Then
+                    Dim html$ = Scripting.ReadHTML(wwwroot.FullName, file)
+                    Return Encoding.UTF8.GetBytes(html)
+                Else
+                    Return IO.File.ReadAllBytes(file)
+                End If
             Else
-                If _nullExists Then
+                If _nullAsExists Then
                     Call $"{NoData} {file.ToFileURL}".__DEBUG_ECHO
                     Return New Byte() {}
                 Else
-                    Dim url As String = (New String() {res, file}).GetJson
-                    Throw New NullReferenceException(url)
+                    Dim message$ = New String() {res, file}.GetJson
+                    Throw New NullReferenceException(message)
                 End If
             End If
         End Function
@@ -221,14 +234,12 @@ Namespace Core
         ''' <param name="res"></param>
         ''' <returns></returns>
         Private Function __getMapDIR(ByRef res As String) As String
-            Dim rm As String = Regex.Match(res, ".+?\/[~]\/").Value
-
-            If Not String.IsNullOrEmpty(rm) Then
-                res = res.Replace(rm, "")
-                Return wwwroot.FullName
+            If res = "/" OrElse res = "\" Then
+                res = wwwroot.FullName
             End If
 
-            Dim mapDIR As String = FileIO.FileSystem.GetParentPath(res).ToLower.Replace("\", "/")
+            Dim mapDIR As String = GetParentPath(res).ToLower.Replace("\", "/")
+
             If _virtualMappings.ContainsKey(mapDIR) Then
                 res = Mid(res, mapDIR.Length + 1)
                 mapDIR = _virtualMappings(mapDIR)
@@ -243,6 +254,12 @@ Namespace Core
                 Next
                 mapDIR = wwwroot.FullName
             End If
+
+            ' 2017-4-30 这里还需要替换回去，否则会出现两个wwwroot连接在一起的情况
+            If res = wwwroot.FullName Then
+                res = "/"
+            End If
+
             Return mapDIR
         End Function
 
@@ -263,19 +280,11 @@ Namespace Core
         Public Overrides Sub handleGETRequest(p As HttpProcessor)
             Dim res As String = p.http_url
 
-            If String.Equals(res, "/") Then   ' 在这里首先会检查是否是以/符号结束的，假若是，则可能是暗指该文件夹之下的index.html主页文件
-                res = "index.html"
-            End If
-
             ' The file content is null or not exists, that possible means this is a GET REST request not a Get file request.
             ' This if statement makes the file GET request compatible with the REST API
             If res.PathIllegal Then
                 Call __handleREST(p)
             Else
-                If res.Last = "\"c OrElse res.Last = "/"c Then
-                    res = res & "index.html"
-                End If
-
                 If Not __handleFileGET(res, p) Then
                     Call __handleREST(p)
                 End If
@@ -284,22 +293,23 @@ Namespace Core
 
         Private Function __handleFileGET(res As String, p As HttpProcessor) As Boolean
             Dim buf As Byte() = RequestStream(res) ' 由于子文件夹可能会是以/的方式请求index.html，所以在这里res的值可能会变化，文件拓展名放在变化之后再解析
+            Dim ext As String = GetFileInfo(res).Extension.ToLower
 
-            If buf.Length = 0 Then Return False
+            If ext.TextEquals(".html") OrElse
+               ext.TextEquals(".htm") OrElse
+               ext.TextEquals(".vbhtml") Then ' Transfer HTML document.
 
-            Dim ext As String = FileIO.FileSystem.GetFileInfo(res).Extension.ToLower
-
-            If String.Equals(ext, ".html", StringComparison.OrdinalIgnoreCase) OrElse
-                String.Equals(ext, ".htm", StringComparison.OrdinalIgnoreCase) Then ' Transfer HTML document.
-
-                If String.IsNullOrEmpty(buf.Length = 0) Then
+                If buf.Length = 0 Then
                     Dim html$ = __request404()
-                    html = html.Replace("%EXCEPTION%", res)
+                    html = html.Replace("%404%", res)
                     buf = Encoding.UTF8.GetBytes(html)
                 End If
 
+                ' response的头部默认是html文件类型
                 Call p.writeSuccess(buf.Length,)
                 Call p.outputStream.BaseStream.Write(buf, Scan0, buf.Length)
+            ElseIf buf.Length = 0 Then
+                Return False
             Else
                 Call __transferData(p, ext, buf, res.BaseName)
             End If
@@ -312,24 +322,7 @@ Namespace Core
         ''' </summary>
         ''' <param name="p"></param>
         Protected Overridable Sub __handleREST(p As HttpProcessor)
-            Dim pos As Integer = InStr(p.http_url, "?")
-            If pos <= 0 Then
-                Call p.writeFailure($"{p.http_url} have no parameter!")
-                Return
-            End If
-
-            ' Gets the argument value, value is after the API name from the ? character
-            ' Actually the Reflection operations method can be used at here to calling 
-            ' the different API 
-            Dim args As String = Mid(p.http_url, pos + 1)
-            Dim Tokens = args.RequestParser
-            Dim query As String = Tokens("query")
-            Dim subject As String = Tokens("subject")
-            Dim result = LevenshteinDistance.ComputeDistance(query, subject)
-
-            ' write API compute result to the browser
-            Call p.writeSuccess(0)
-            Call p.outputStream.WriteLine(result.Visualize)
+            ' Do Nothing
         End Sub
 
         ''' <summary>
@@ -341,10 +334,10 @@ Namespace Core
         Private Sub __transferData(p As HttpProcessor, ext As String, buf As Byte(), name As String)
             Dim type As ContentType
 
-            If Not ContentTypes.ExtDict.ContainsKey(ext) Then
-                type = ContentTypes.ExtDict(".bin")
+            If Not ContentTypes.SuffixTable.ContainsKey(ext) Then
+                type = ContentTypes.SuffixTable(".bin")
             Else
-                type = ContentTypes.ExtDict(ext)
+                type = ContentTypes.SuffixTable(ext)
             End If
 
             'Dim chead As New Content With {
@@ -362,11 +355,15 @@ Namespace Core
 
         End Sub
 
+        ''' <summary>
+        ''' 页面之中必须要有一个``%404%``占位符来让服务器放置错误信息
+        ''' </summary>
+        ''' <returns></returns>
         Private Function __request404() As String
-            Dim _404 As String = wwwroot.FullName & "/404.html"
+            Dim _404 As String = (wwwroot.FullName & "/404.vbhtml")
 
-            If _404.FileExists Then
-                _404 = FileIO.FileSystem.ReadAllText(_404)
+            If _404.FileExists(True) Then
+                _404 = wwwroot.FullName.ReadHTML(path:=_404)
             Else
                 _404 = ""
             End If
@@ -386,7 +383,7 @@ Namespace Core
 
         Protected Overrides Function __httpProcessor(client As TcpClient) As HttpProcessor
             Return New HttpProcessor(client, Me) With {
-                ._404Page = __request404()
+                ._404Page = AddressOf __request404
             }
         End Function
 

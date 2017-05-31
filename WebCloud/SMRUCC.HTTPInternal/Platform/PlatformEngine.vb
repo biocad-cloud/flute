@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::df818b73e81b01a4133d649248975c60, ..\httpd\WebCloud\SMRUCC.HTTPInternal\Platform\PlatformEngine.vb"
+﻿#Region "Microsoft.VisualBasic::d3e76d4c77090c87719d922f9c7f14f1, ..\httpd\WebCloud\SMRUCC.HTTPInternal\Platform\PlatformEngine.vb"
 
     ' Author:
     ' 
@@ -27,13 +27,10 @@
 #End Region
 
 Imports System.IO
-Imports System.Net.Sockets
 Imports System.Reflection
-Imports System.Text
 Imports Microsoft.VisualBasic.Language
 Imports SMRUCC.WebCloud.HTTPInternal.AppEngine
 Imports SMRUCC.WebCloud.HTTPInternal.AppEngine.APIMethods.Arguments
-Imports SMRUCC.WebCloud.HTTPInternal.AppEngine.POSTParser
 Imports SMRUCC.WebCloud.HTTPInternal.Core
 Imports SMRUCC.WebCloud.HTTPInternal.Platform.Plugins
 
@@ -45,7 +42,6 @@ Namespace Platform
     Public Class PlatformEngine : Inherits HttpFileSystem
 
         Public ReadOnly Property AppManager As AppEngine.APPManager
-        Public ReadOnly Property TaskPool As New TaskPool
         Public ReadOnly Property EnginePlugins As Plugins.PluginBase()
 
         ''' <summary>
@@ -82,7 +78,8 @@ Namespace Platform
                 Call AppEngine.ExternalCall.Scan(Me)
             End If
 
-            Me._EnginePlugins = Plugins.ExternalCall.Scan(Me)
+            _EnginePlugins = Plugins.ExternalCall.Scan(Me)
+            Call "Web App engine initialized!".__DEBUG_ECHO
         End Sub
 
         ''' <summary>
@@ -129,7 +126,7 @@ Namespace Platform
 
         Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
             Dim request As New HttpPOSTRequest(p, inputData)
-            Dim response As New HttpResponse(p.outputStream)
+            Dim response As New HttpResponse(p.outputStream, AddressOf p.writeFailure)
             Dim success As Boolean = AppManager.InvokePOST(request, response)
 
             Call __finally(request, success)
@@ -141,7 +138,7 @@ Namespace Platform
         ''' <param name="p"></param>
         Protected Overrides Sub __handleREST(p As HttpProcessor)
             Dim request As New HttpRequest(p)
-            Dim response As New HttpResponse(p.outputStream)
+            Dim response As New HttpResponse(p.outputStream, AddressOf p.writeFailure)
             Dim success As Boolean = AppManager.Invoke(request, response)
             Call __finally(request, success)
         End Sub
