@@ -20,7 +20,7 @@ Module Module1
         Call graph.doForceLayout(showProgress:=True, Repulsion:=1800, Stiffness:=50, Damping:=0.45, iterations:=1500)
         Call graph.Tabular.Save("./test")
         Call graph.DrawImage(
-            New Size(1200, 1200),
+            "1200,1200",
             scale:=3.5,
             labelColorAsNodeColor:=True).Save("../../..\/viewer.png")
     End Sub
