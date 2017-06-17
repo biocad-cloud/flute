@@ -44,6 +44,11 @@ Module Module1
                     .Select(Function(node) nodePoints(node)) _
                     .ToArray
 
+                ' 只有两个点或者一个点是无法计算凸包的，则跳过这些点
+                If polygon.Length < 3 Then
+                    Continue For
+                End If
+
                 ' 凸包算法计算出边界
                 polygon = ConvexHull.GrahamScan(polygon)
 
