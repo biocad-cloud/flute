@@ -78,17 +78,22 @@ Namespace Platform
                 Call AppEngine.ExternalCall.ParseDll(dll, Me)
                 Call __runDll(dll)
             Else
-                Call AppEngine.ExternalCall.Scan(Me)
+                For Each dll$ In AppEngine.ExternalCall.Scan(Me)
+                    Call __runDll(dll)
+                Next
             End If
 
             _EnginePlugins = Plugins.ExternalCall.Scan(Me)
+
             Call "Web App engine initialized!".__DEBUG_ECHO
         End Sub
 
         ''' <summary>
         ''' Call sub main in the <see cref="WebApp"/> dll
         ''' 
-        ''' ###### 单独运行的条件
+        ''' 尝试运行dll文件之中的``Main``函数，可能会执行一些初始化的程序
+        ''' 
+        ''' ###### 运行的条件
         ''' 
         ''' + assembly之中包含有一个容器类型，该容器的名称为``WebApp``
         ''' + 并且在该容器之中存在着一个名称为``Main``的静态共享方法
