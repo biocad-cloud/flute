@@ -27,6 +27,7 @@
 #End Region
 
 Imports System.Runtime.CompilerServices
+Imports Microsoft.VisualBasic.ComponentModel.Collection
 Imports Microsoft.VisualBasic.Data.csv
 Imports Microsoft.VisualBasic.Data.visualize.Network
 Imports Microsoft.VisualBasic.Language
@@ -117,7 +118,7 @@ Namespace Network
                 Call nodesTable.Add(tf, NameOf(tf))
             Next
 
-            net += nodes.Distinct.ToArray(Function(x) New FileStream.Node(x, nodesTable(x)))
+            net += nodes.Distinct.Select(Function(x) New FileStream.Node(x, nodesTable(x)))
             net += From o In (From x As Regulation
                               In regs
                               Select x

@@ -64,9 +64,9 @@ Namespace My
     Friend Module MySettingsProperty
         
         <Global.System.ComponentModel.Design.HelpKeywordAttribute("My.Settings")>  _
-        Friend ReadOnly Property Settings() As Global.SMRUCC.WebCloud.DataCenter.My.MySettings
+        Friend ReadOnly Property Settings() As Global.SMRUCC.WebCloud.VBScript.My.MySettings
             Get
-                Return Global.SMRUCC.WebCloud.DataCenter.My.MySettings.Default
+                Return Global.SMRUCC.WebCloud.VBScript.My.MySettings.Default
             End Get
         End Property
     End Module
