@@ -294,7 +294,6 @@
     <Compile Include="AppEngine\POSTReader\HttpPostedFile.vb" />
     <Compile Include="AppEngine\POSTReader\PostReader.vb" />
     <Compile Include="AppEngine\POSTReader\ReadSubStream.vb" />
-    <Compile Include="Scripting\vbhtml.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
