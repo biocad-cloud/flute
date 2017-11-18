@@ -8,11 +8,11 @@ Imports System.Runtime.InteropServices
 
 '查看程序集特性的值
 
-<Assembly: AssemblyTitle("SMRUCC.WebCloud.VBScript")>
-<Assembly: AssemblyDescription("")>
-<Assembly: AssemblyCompany("HP Inc.")>
+<Assembly: AssemblyTitle("VB server script")>
+<Assembly: AssemblyDescription("VB server script")>
+<Assembly: AssemblyCompany("SMRUCC")>
 <Assembly: AssemblyProduct("SMRUCC.WebCloud.VBScript")>
-<Assembly: AssemblyCopyright("Copyright © HP Inc. 2017")>
+<Assembly: AssemblyCopyright("Copyright © I@xieguigang.me. 2017")>
 <Assembly: AssemblyTrademark("")>
 
 <Assembly: ComVisible(False)>
