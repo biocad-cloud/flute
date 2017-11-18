@@ -1,4 +1,5 @@
 ﻿Imports Microsoft.VisualBasic.Serialization.JSON
+Imports Microsoft.VisualBasic.Text
 
 Namespace Platform.Plugins
 
@@ -6,6 +7,8 @@ Namespace Platform.Plugins
     Public Class ScriptingAttribute : Inherits Attribute
 
         Public ReadOnly Property FileTypes As String()
+
+        Public Delegate Function ScriptHandler(wwwroot$, path$, encoding As Encodings) As String
 
         ''' <summary>
         ''' ``*.vbhtml`` etc.
@@ -23,4 +26,8 @@ Namespace Platform.Plugins
             Return FileTypes.GetJson
         End Function
     End Class
+
+    Public Module ScriptingExtensions
+
+    End Module
 End Namespace
