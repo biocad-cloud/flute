@@ -56,7 +56,7 @@ Namespace Platform.Plugins
             Dim types As Type() = LinqAPI.Exec(Of Type) _
  _
                 () <= From typeDef As Type
-                      In assm.GetTypes
+                      In EmitReflection.GetTypesHelper(assm)
                       Where typeDef.IsInheritsFrom(GetType(PluginBase)) AndAlso
                           Not typeDef.IsAbstract
                       Select typeDef
