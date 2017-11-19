@@ -78,6 +78,14 @@ Public Module vbhtml
     End Function
 
     <Extension>
+    Public Function GetIncludesPath(ref As String) As String
+        Dim rel_path$ = ref.Trim("<"c, ">"c, "%"c)
+        ' 去除等号
+        rel_path = Mid(rel_path, 2).Trim
+        Return rel_path
+    End Function
+
+    <Extension>
     Public Function TemplateInterplot(vbhtml As StringBuilder, parent$, args As InterpolateArgs) As String
         Dim html As StringBuilder = vbhtml.Iterates(parent, args)
         Dim includes$() = r _
@@ -88,12 +96,9 @@ Public Module vbhtml
 
         ' <%= include_path %>
         For Each include As String In includes
-            Dim rel_path$ = include.Trim("<"c, ">"c, "%"c)
-            ' 去除等号
-            rel_path = Mid(rel_path, 2).Trim
+            Dim rel_path As String = include.GetIncludesPath
 
             If rel_path.First = "@"c Then
-
                 ' 因为对资源的引用可能会在多处有重复的引用
                 ' 所以在这里不能够直接进行添加
 

@@ -1,6 +1,8 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports System.Text
+Imports Microsoft.VisualBasic.ComponentModel.Collection.Generic
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
+Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Text
 Imports r = System.Text.RegularExpressions.Regex
 
@@ -37,11 +39,38 @@ Partial Module vbhtml
     End Function
 
     <Extension>
+    Public Function GetVariables(def As Type, obj As Object) As NamedValueList(Of String)
+
+    End Function
+
+    <Extension>
     Public Function Iterates(html As StringBuilder, parent$, args As InterpolateArgs) As StringBuilder
         Dim expressions = ParseForEach(html.ToString)
 
         For Each exp As NamedValue(Of String) In expressions
+            Dim path$ = parent & "/" & exp.Value.GetIncludesPath
+            Dim pathParent$ = path.ParentPath
+            Dim template$ = path.ReadAllText(args.codepage)
+            Dim source As IEnumerable = args.data(exp.Name)
+            Dim list As New List(Of String)
+            Dim variables As New Dictionary(Of String, String)(args.variables)
+            Dim type As Type = source.GetType.GetTypeElement(True)
 
+            For Each obj As Object In source
+                Dim vbhtml As New StringBuilder(template)
+                Dim stackArgvs As New InterpolateArgs With {
+                    .codepage = args.codepage,
+                    .data = args.data,
+                    .resource = args.resource,
+                    .variables = variables + type.GetVariables(obj),
+                    .wwwroot = args.wwwroot
+                }
+
+                list += vbhtml.TemplateInterplot(parent, args)
+            Next
+
+            ' 从模板生成html之后开始进行替换
+            html.Replace(exp.Description, list.JoinBy(vbCrLf & vbCrLf))
         Next
 
         Return html
