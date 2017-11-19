@@ -1,6 +1,6 @@
-﻿Imports System.Text
+﻿Imports System.Runtime.CompilerServices
+Imports System.Text
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
-Imports Microsoft.VisualBasic.Text
 Imports r = System.Text.RegularExpressions.Regex
 
 Partial Module vbhtml
@@ -35,14 +35,14 @@ Partial Module vbhtml
         }
     End Function
 
-    Public Function Iterates(wwwroot$, vbhtml$, encoding As Encodings) As String
-        Dim expressions = ParseForEach(vbhtml)
-        Dim html As New StringBuilder(vbhtml)
+    <Extension>
+    Public Function Iterates(html As StringBuilder, args As InterpolateArgs) As StringBuilder
+        Dim expressions = ParseForEach(html.ToString)
 
         For Each exp As NamedValue(Of String) In expressions
 
         Next
 
-        Return html.ToString
+        Return html
     End Function
 End Module
