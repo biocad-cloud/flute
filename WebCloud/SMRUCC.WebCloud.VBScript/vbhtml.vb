@@ -78,9 +78,10 @@ Public Module vbhtml
     End Function
 
     <Extension>
-    Public Function TemplateInterplot(html As StringBuilder, parent$, args As InterpolateArgs) As String
+    Public Function TemplateInterplot(vbhtml As StringBuilder, parent$, args As InterpolateArgs) As String
+        Dim html As StringBuilder = vbhtml.Iterates(parent, args)
         Dim includes$() = r _
-            .Matches(html.Iterates(args).ToString, vbhtml.PartialIncludes, RegexICSng) _
+            .Matches(html.ToString, PartialIncludes, RegexICSng) _
             .ToArray
         Dim table = ParseVariables(html.ToString)
         Dim strings As New Dictionary(Of String, String)
@@ -150,20 +151,24 @@ Public Module vbhtml
     End Function
 
     <Extension> Public Function LoadStrings(pathXML As String) As Dictionary(Of String, String)
-        Dim xml As XmlDocument = pathXML.LoadXmlDocument
-        Dim XmlNodeList As XmlNodeList = xml.GetElementsByTagName("string")
-        Dim values As New Dictionary(Of String, String)
+        If pathXML.FileExists Then
+            Dim xml As XmlDocument = pathXML.LoadXmlDocument
+            Dim XmlNodeList As XmlNodeList = xml.GetElementsByTagName("string")
+            Dim values As New Dictionary(Of String, String)
 
-        For Each xmlNode As XmlNode In XmlNodeList
-            For Each a As XmlAttribute In xmlNode.Attributes
-                If a.Name = "name" Then
-                    values.Add(a.InnerText, xmlNode.InnerText)
-                    Exit For
-                End If
+            For Each xmlNode As XmlNode In XmlNodeList
+                For Each a As XmlAttribute In xmlNode.Attributes
+                    If a.Name = "name" Then
+                        values.Add(a.InnerText, xmlNode.InnerText)
+                        Exit For
+                    End If
+                Next
             Next
-        Next
 
-        Return values
+            Return values
+        Else
+            Return New Dictionary(Of String, String)
+        End If
     End Function
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
