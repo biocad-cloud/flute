@@ -3,11 +3,11 @@ Imports System.Drawing.Imaging
 Imports System.Text
 
 ''' <summary>
-''' A QR symbol
+''' A QR symbol creator
 ''' 
 ''' > https://github.com/jtdubs/QRCode/blob/master/QRCode/QRCode.cs
 ''' </summary>
-Public Class QRCode
+Public Class QRCodeCreator
 
 #Region "Construction"
     ''' <summary>
