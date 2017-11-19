@@ -1,16 +1,16 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports System.Text
-Imports System.Text.RegularExpressions
 Imports System.Xml
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
 Imports Microsoft.VisualBasic.Scripting.Expressions
 Imports Microsoft.VisualBasic.Text
 Imports Microsoft.VisualBasic.Text.Xml.Linq
 Imports SMRUCC.WebCloud.HTTPInternal.Platform.Plugins
+Imports r = System.Text.RegularExpressions.Regex
 
 Public Module vbhtml
 
-    Const Expression$ = "<%= [^>]+? %>"
+    Const PartialIncludes$ = "<%= [^>]+? %>"
     Const ValueExpression$ = "<\?vb\s+[$].+?=\s*""[^""]*""\s+\?>"
 
     ''' <summary>
@@ -24,10 +24,10 @@ Public Module vbhtml
         Dim codepage As Encoding = encoding.CodePage
         Dim parent$ = path.ParentPath
         Dim html As New StringBuilder(path.ReadAllText(codepage))
-        Dim includes$() = Regex _
-            .Matches(html.ToString, vbhtml.Expression, RegexICSng) _
+        Dim includes$() = r _
+            .Matches(html.ToString, vbhtml.PartialIncludes, RegexICSng) _
             .ToArray
-        Dim values$() = Regex _
+        Dim values$() = r _
             .Matches(html.ToString, vbhtml.ValueExpression, RegexICMul) _
             .ToArray
         Dim table As (raw$, exp As NamedValue(Of String))() = values _
@@ -40,7 +40,8 @@ Public Module vbhtml
                             .Name = .Name.Trim("$"c, " "c)
                         End With
                         Return (s, exp)
-                    End Function).ToArray
+                    End Function) _
+            .ToArray
 
         ' <%= @Key %>
         Dim strings As New Dictionary(Of String, String)

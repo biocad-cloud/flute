@@ -49,7 +49,10 @@ Using string resource in vbhtml:
     Will iterates all of the collection member element in the $post variable 
 	and write property value to the template ``../includes/article.vbhtml``
 -->
-<?vb
-	For $post As <%= ../includes/article.vbhtml %>
+<?vb For $post As <%= ../includes/article.vbhtml %> ?>
+
+<!-- Or --> 
+<?vb 
+	For $post As <%= ../includes/article.vbhtml %> 
 ?>
 ```
