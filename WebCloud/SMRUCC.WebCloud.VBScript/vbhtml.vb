@@ -49,7 +49,8 @@ Public Module vbhtml
 
         For Each include As String In includes
             Dim rel_path$ = include.Trim("<"c, ">"c, "%"c)
-            rel_path = Mid(rel_path, 2).Trim  ' 去除等号
+            ' 去除等号
+            rel_path = Mid(rel_path, 2).Trim
 
             If rel_path.First = "@"c Then
                 ' 因为对资源的引用可能会在多处有重复的引用
