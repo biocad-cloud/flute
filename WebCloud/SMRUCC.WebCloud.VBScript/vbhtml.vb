@@ -103,7 +103,9 @@ Public Module vbhtml
                 .ReadAllText(args.codepage) _
                 .CreateBuilder
 
-            Call content.TemplateInterplot(rel_path.ParentPath, args)
+            rel_path = rel_path.ParentPath
+
+            Call content.TemplateInterplot(rel_path, args)
             Call html.Replace(include, content.ToString)
         Next
 
