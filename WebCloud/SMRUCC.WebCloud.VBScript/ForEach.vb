@@ -46,7 +46,9 @@ Partial Module vbhtml
         For Each [property] In schema
             Dim propertyName$ = name & "." & [property].Key
             Dim o As Object = [property].Value.GetValue(obj)
-            Dim value$ = Scripting.ToString(o, "null")
+            Dim value$ = Scripting.ToString(
+                o, $"[TypeCastError(""{name}->{propertyName}"")]"
+            )
 
             list += New NamedValue(Of String) With {
                 .Name = propertyName,
