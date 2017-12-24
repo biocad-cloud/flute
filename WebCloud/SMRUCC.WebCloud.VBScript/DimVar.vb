@@ -25,11 +25,15 @@ Partial Module vbhtml
     <Extension>
     Public Function InterplotDimVar(html As StringBuilder, parent$, args As InterpolateArgs) As StringBuilder
         Dim expressions = ParseDimVar(html.ToString)
+        Dim content$
 
         ' 在这里只生成variable，可能不会进行模板字符串的替换
         For Each var As NamedValue(Of String) In expressions
             With var
-                Call args.variables.Add(Mid(.Name, 2), .Value)
+                content = New StringBuilder(.Value) _
+                    .TemplateInterplot(parent, args)
+
+                Call args.variables.Add(Mid(.Name, 2), content)
                 Call html.Replace(.Description, "")
             End With
         Next
