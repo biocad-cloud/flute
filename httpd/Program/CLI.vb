@@ -68,10 +68,15 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
 #If DEBUG Then
         threads = 2
 #End If
-        Return New PlatformEngine(HOME, port,
-                                  True,
-                                  threads:=threads,
-                                  cache:=cacheMode).Run
+
+        Dim server As New PlatformEngine(
+            HOME, port,
+            nullExists:=True,
+            threads:=threads,
+            cache:=cacheMode
+        )
+
+        Return server.Run()
     End Function
 
     <ExportAPI("/run",
