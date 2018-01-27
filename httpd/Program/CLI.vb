@@ -63,11 +63,7 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
         Dim port As Integer = args.GetValue("/port", 80)
         Dim HOME As String = args("/wwwroot") Or App.CurrentDirectory
         Dim threads As Integer = args.GetValue("/threads", -1)
-        Dim cacheMode As Boolean = args("/cache")
-
-#If DEBUG Then
-        threads = 2
-#End If
+        Dim cacheMode As Boolean = args.IsTrue("/cache")
 
         Dim server As New PlatformEngine(
             HOME, port,
