@@ -61,9 +61,9 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
     <Group(httpdServerCLI)>
     Public Function Start(args As CommandLine) As Integer
         Dim port As Integer = args.GetValue("/port", 80)
-        Dim HOME As String = args.GetValue("/wwwroot", App.CurrentDirectory)
+        Dim HOME As String = args("/wwwroot") Or App.CurrentDirectory
         Dim threads As Integer = args.GetValue("/threads", -1)
-        Dim cacheMode As Boolean = args.GetBoolean("/cache")
+        Dim cacheMode As Boolean = args("/cache")
 
 #If DEBUG Then
         threads = 2
