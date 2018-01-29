@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::339ff77560b98a7622788488f4ec9b51, ..\httpd\httpd\Program\CLI.vb"
+﻿#Region "Microsoft.VisualBasic::e5eca7eebc7d22dcc3a36efc714c8a9e, ..\httpd\httpd\Program\CLI.vb"
 
     ' Author:
     ' 
@@ -6,7 +6,7 @@
     '       xieguigang (xie.guigang@live.com)
     '       xie (genetics@smrucc.org)
     ' 
-    ' Copyright (c) 2016 GPL3 Licensed
+    ' Copyright (c) 2018 GPL3 Licensed
     ' 
     ' 
     ' GNU GENERAL PUBLIC LICENSE (GPL3)
@@ -45,7 +45,7 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
 
     <ExportAPI("/start",
                Info:="Run start the httpd web server.",
-               Usage:="/start [/port 80 /wwwroot <wwwroot_DIR> /threads -1 /cache]")>
+               Usage:="/start [/port 80 /wwwroot <wwwroot_DIR> /threads <default=-1> /cache]")>
     <Argument("/port", True, CLITypes.Integer,
               AcceptTypes:={GetType(Integer)},
               Description:="The server port of this httpd web server to listen.")>
@@ -61,22 +61,23 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
     <Group(httpdServerCLI)>
     Public Function Start(args As CommandLine) As Integer
         Dim port As Integer = args.GetValue("/port", 80)
-        Dim HOME As String = args.GetValue("/wwwroot", App.CurrentDirectory)
+        Dim HOME As String = args("/wwwroot") Or App.CurrentDirectory
         Dim threads As Integer = args.GetValue("/threads", -1)
-        Dim cacheMode As Boolean = args.GetBoolean("/cache")
+        Dim cacheMode As Boolean = args.IsTrue("/cache")
 
-#If DEBUG Then
-        threads = 2
-#End If
-        Return New PlatformEngine(HOME, port,
-                                  True,
-                                  threads:=threads,
-                                  cache:=cacheMode).Run
+        Dim server As New PlatformEngine(
+            HOME, port,
+            nullExists:=True,
+            threads:=threads,
+            cache:=cacheMode
+        )
+
+        Return server.Run()
     End Function
 
     <ExportAPI("/run",
                Info:="Run start the web server with specific Web App.",
-               Usage:="/run /dll <app.dll> [/port <80> /wwwroot <wwwroot_DIR>]")>
+               Usage:="/run /dll <app.dll> [/port <default=80> /wwwroot <wwwroot_DIR>]")>
     <Group(httpdServerCLI)>
     Public Function RunApp(args As CommandLine) As Integer
         Dim port As Integer = args.GetValue("/port", 80)
@@ -87,7 +88,7 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
 
     <ExportAPI("/GET",
                Info:="Tools for http get request the content of a specific url.",
-               Usage:="/GET /url [<url>/std_in] [/out <file/std_out>]")>
+               Usage:="/GET /url <url, /std_in> [/out <file/std_out>]")>
     <Argument("/url", False, CLITypes.File, PipelineTypes.std_in,
               AcceptTypes:={GetType(String)},
               Description:="The resource URL on the web.")>

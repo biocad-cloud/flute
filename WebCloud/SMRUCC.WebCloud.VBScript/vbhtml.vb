@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::270588b9b00d89e36a6ccac69670a7e8, ..\httpd\WebCloud\SMRUCC.WebCloud.VBScript\vbhtml.vb"
+﻿#Region "Microsoft.VisualBasic::008a2f2664779b9aade8ca26081ece81, ..\httpd\WebCloud\SMRUCC.WebCloud.VBScript\vbhtml.vb"
 
     ' Author:
     ' 
@@ -6,7 +6,7 @@
     '       xieguigang (xie.guigang@live.com)
     '       xie (genetics@smrucc.org)
     ' 
-    ' Copyright (c) 2016 GPL3 Licensed
+    ' Copyright (c) 2018 GPL3 Licensed
     ' 
     ' 
     ' GNU GENERAL PUBLIC LICENSE (GPL3)
@@ -103,7 +103,9 @@ Public Module vbhtml
 
     <Extension>
     Public Function TemplateInterplot(vbhtml As StringBuilder, parent$, args As InterpolateArgs) As String
-        Dim html As StringBuilder = vbhtml.Iterates(parent, args)
+        Dim html As StringBuilder = vbhtml _
+            .Iterates(parent, args) _
+            .InterplotDimVar(parent, args)
         Dim includes$() = r _
             .Matches(html.ToString, PartialIncludes, RegexICSng) _
             .ToArray
@@ -148,7 +150,12 @@ Public Module vbhtml
                            If exp.ContainsKey(name) Then
                                Return exp(name).Value
                            Else
-                               Return ""
+                               ' 2017-12-30
+                               '
+                               ' 因为假若使用的是jquery的话，会因为可能出现$u.<blabla>
+                               ' 这样子的情况，所以在这里不可以返回空字符串，而应该是空值
+                               ' 这样子就不会错误的将javascript里面的jQuery代码给替换掉了
+                               Return Nothing
                            End If
                        End Function
 
@@ -158,7 +165,7 @@ Public Module vbhtml
                 Call html.Replace(t.raw, "")
             Next
 
-            Call html.Interpolate(getValue)
+            Call html.Interpolate(getValue, nullAsEmpty:=False)
         End If
 
         ' variables主要是为ForLoop表达式所准备的
