@@ -54,6 +54,7 @@ Namespace Core
         ''' </summary>
         ''' <returns></returns>
         Public ReadOnly Property LocalPort As Integer
+
         ''' <summary>
         ''' Indicates this http server is running status or not. 
         ''' </summary>
