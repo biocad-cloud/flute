@@ -66,6 +66,17 @@ Namespace Core
             End Get
         End Property
 
+        ''' <summary>
+        ''' ``http://localhost:<see cref="LocalPort"/>``
+        ''' </summary>
+        ''' <returns></returns>
+        Public ReadOnly Property localhost As String
+            <MethodImpl(MethodImplOptions.AggressiveInlining)>
+            Get
+                Return $"http://localhost:{LocalPort}"
+            End Get
+        End Property
+
         Shared ReadOnly defaultThreads As DefaultValue(Of Integer) = (LQuerySchedule.Recommended_NUM_THREADS * 8).AsDefault(Function(n) CInt(n) <= 0)
 
         ''' <summary>
@@ -163,7 +174,7 @@ Namespace Core
         Private Function getProcessor(client As TcpClient) As HttpProcessor
             With __httpProcessor(client)
                 .BUF_SIZE = BufferSize
-                Return .ref
+                Return .ByRef
             End With
         End Function
 
