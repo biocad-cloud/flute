@@ -1,15 +1,16 @@
-﻿#Region "Microsoft.VisualBasic::a4a277a4fda343ec3ce98987cbc625a1, ..\httpd\WebCloud\SMRUCC.WebCloud.VBScript\ReflectionExtensions.vb"
+﻿#Region "Microsoft.VisualBasic::3c90cb3f11c64c8b0931aad9c1d73a5a, WebCloud\SMRUCC.WebCloud.VBScript\ReflectionExtensions.vb"
 
     ' Author:
     ' 
     '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xieguigang (xie.guigang@live.com)
     '       xie (genetics@smrucc.org)
+    '       xieguigang (xie.guigang@live.com)
     ' 
     ' Copyright (c) 2018 GPL3 Licensed
     ' 
     ' 
     ' GNU GENERAL PUBLIC LICENSE (GPL3)
+    ' 
     ' 
     ' This program is free software: you can redistribute it and/or modify
     ' it under the terms of the GNU General Public License as published by
@@ -24,6 +25,18 @@
     ' You should have received a copy of the GNU General Public License
     ' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
+
+    ' /********************************************************************************/
+
+    ' Summaries:
+
+    ' Module ReflectionExtensions
+    ' 
+    '     Function: CreateVariables, FlatObject, IsCollectionType, IsVariableType
+    ' 
+    ' /********************************************************************************/
+
 #End Region
 
 Imports System.Runtime.CompilerServices
@@ -35,7 +48,7 @@ Module ReflectionExtensions
 
     Public Function IsVariableType(obj As Object) As Boolean
         With obj.GetType
-            If .ref Is GetType(String) Then
+            If .ByRef Is GetType(String) Then
                 Return True
             ElseIf Not .ImplementInterface(GetType(IEnumerable)) Then
                 Return True
@@ -47,7 +60,7 @@ Module ReflectionExtensions
 
     Public Function IsCollectionType(obj As Object) As Boolean
         With obj.GetType
-            If Not .ref Is GetType(String) AndAlso .ImplementInterface(GetType(IEnumerable)) Then
+            If Not .ByRef Is GetType(String) AndAlso .ImplementInterface(GetType(IEnumerable)) Then
                 Return True
             Else
                 Return False
