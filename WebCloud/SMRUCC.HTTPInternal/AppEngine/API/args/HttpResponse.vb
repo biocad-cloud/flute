@@ -1,48 +1,48 @@
 ﻿#Region "Microsoft.VisualBasic::a638d997cdf6551871380fd46784384f, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\args\HttpResponse.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xie (genetics@smrucc.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2018 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xie (genetics@smrucc.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2018 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-    ' /********************************************************************************/
+' /********************************************************************************/
 
-    ' Summaries:
+' Summaries:
 
-    '     Class HttpResponse
-    ' 
-    '         Function: FlushAsync, (+3 Overloads) WriteAsync, (+4 Overloads) WriteLineAsync, writeSuccess
-    ' 
-    '         Sub: __writeSuccess, Close, (+2 Overloads) Dispose, Flush, New
-    '              Redirect, SetCookies, (+6 Overloads) Write, Write404, WriteHeader
-    '              (+3 Overloads) WriteHTML, WriteJSON, WriteLine, WriteXML
-    ' 
-    '         Operators: <=, >=
-    ' 
-    ' 
-    ' /********************************************************************************/
+'     Class HttpResponse
+' 
+'         Function: FlushAsync, (+3 Overloads) WriteAsync, (+4 Overloads) WriteLineAsync, writeSuccess
+' 
+'         Sub: __writeSuccess, Close, (+2 Overloads) Dispose, Flush, New
+'              Redirect, SetCookies, (+6 Overloads) Write, Write404, WriteHeader
+'              (+3 Overloads) WriteHTML, WriteJSON, WriteLine, WriteXML
+' 
+'         Operators: <=, >=
+' 
+' 
+' /********************************************************************************/
 
 #End Region
 
@@ -51,9 +51,11 @@ Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Threading
+Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.Language.C
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 Imports Microsoft.VisualBasic.Serialization.JSON
+Imports Microsoft.VisualBasic.Text
 Imports SMRUCC.WebCloud.HTTPInternal.Core
 
 Namespace AppEngine.APIMethods.Arguments
@@ -85,6 +87,11 @@ Namespace AppEngine.APIMethods.Arguments
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub Redirect(url As String)
             Call WriteHTML(<script>window.location='%s';</script>, url)
+        End Sub
+
+        Public Sub SendFile(path As String)
+            Dim contentType$ = path.FileMimeType.MIMEType
+            Call path.TransferBinary(contentType, Me)
         End Sub
 
         Public Sub WriteHTML(html As String)
@@ -164,14 +171,15 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <param name="obj"></param>
         Public Sub WriteJSON(Of T)(obj As T)
             Dim json As String = obj.GetJson
-            Dim bytes As Byte() = Encoding.UTF8.GetBytes(json)
+            Dim bytes As Byte() = TextEncodings.UTF8WithoutBOM.GetBytes(json)
 
             If Not __writeData Then
                 __writeData = True
                 Call WriteHeader(MIME.Json, bytes.Length)
             End If
 
-            Call response.WriteLine(json)
+            Call response.BaseStream.Write(bytes, Scan0, bytes.Length)
+            Call response.BaseStream.Flush()
         End Sub
 
         Public Sub WriteXML(Of T)(obj As T)
