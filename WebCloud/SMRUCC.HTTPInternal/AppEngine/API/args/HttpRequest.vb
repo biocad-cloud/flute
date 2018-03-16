@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::826b38ff2746e549ffd2e35f951afbf7, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\args\HttpRequest.vb"
+﻿#Region "Microsoft.VisualBasic::a2a4c17ed751b5274e7787b7d92ab0d2, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\args\HttpRequest.vb"
 
     ' Author:
     ' 
@@ -36,15 +36,14 @@
     '         Properties: HttpHeaders, HTTPMethod, IsWWWRoot, Remote, URL
     '                     URLParameters, version
     ' 
+    '         Constructor: (+2 Overloads) Sub New
     '         Function: ToString
-    ' 
-    '         Sub: (+2 Overloads) New
     ' 
     '     Class HttpPOSTRequest
     ' 
     '         Properties: POSTData
     ' 
-    '         Sub: New
+    '         Constructor: (+1 Overloads) Sub New
     ' 
     ' 
     ' /********************************************************************************/
@@ -55,6 +54,7 @@ Imports System.Collections.Specialized
 Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports System.Text
+Imports Microsoft.VisualBasic.Language.Default
 Imports Microsoft.VisualBasic.Serialization.JSON
 Imports SMRUCC.WebCloud.HTTPInternal.AppEngine.POSTParser
 Imports SMRUCC.WebCloud.HTTPInternal.Core
@@ -96,10 +96,10 @@ Namespace AppEngine.APIMethods.Arguments
             End Get
         End Property
 
-        Default Public Overridable ReadOnly Property Argument(name As String) As String
+        Default Public Overridable ReadOnly Property Argument(name As String) As DefaultString
             <MethodImpl(MethodImplOptions.AggressiveInlining)>
             Get
-                Return URLParameters(name)
+                Return New DefaultString(URLParameters(name))
             End Get
         End Property
 
@@ -125,13 +125,13 @@ Namespace AppEngine.APIMethods.Arguments
 
         Public ReadOnly Property POSTData As PostReader
 
-        Default Public Overrides ReadOnly Property Argument(name As String) As String
+        Default Public Overrides ReadOnly Property Argument(name As String) As DefaultString
             <MethodImpl(MethodImplOptions.AggressiveInlining)>
             Get
                 If URLParameters.ContainsKey(name) Then
-                    Return URLParameters(name)
+                    Return New DefaultString(URLParameters(name))
                 Else
-                    Return POSTData(name)
+                    Return New DefaultString(POSTData.Form(name))
                 End If
             End Get
         End Property

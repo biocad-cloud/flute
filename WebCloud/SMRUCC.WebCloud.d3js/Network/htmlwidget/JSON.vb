@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::8792c53243d93ea9afebd7cc956d969c, WebCloud\SMRUCC.WebCloud.d3js\Network\htmlwidget\JSON.vb"
+﻿#Region "Microsoft.VisualBasic::fea3898a643ed32d13ff097efde347fc, WebCloud\SMRUCC.WebCloud.d3js\Network\htmlwidget\JSON.vb"
 
     ' Author:
     ' 
@@ -33,7 +33,7 @@
 
     '     Class JSON
     ' 
-    '         Properties: x
+    '         Properties: evals, jsHooks, x
     ' 
     '     Class NetGraph
     ' 
@@ -41,10 +41,10 @@
     ' 
     '     Class Options
     ' 
-    '         Properties: bounded, charge, clickAction, clickTextSize, colourScale
-    '                     fontFamily, fontSize, Group, legend, linkDistance
-    '                     linkWidth, NodeID, nodesize, opacity, opacityNoHover
-    '                     radiusCalculation, zoom
+    '         Properties: arrows, bounded, charge, clickAction, clickTextSize
+    '                     colourScale, fontFamily, fontSize, Group, legend
+    '                     linkDistance, linkWidth, NodeID, nodesize, opacity
+    '                     opacityNoHover, radiusCalculation, zoom
     ' 
     '     Class Links
     ' 
@@ -63,6 +63,8 @@ Namespace Network.htmlwidget
 
     Public Class JSON
         Public Property x As NetGraph
+        Public Property evals As String()
+        Public Property jsHooks As String()
     End Class
 
     Public Class NetGraph
@@ -84,6 +86,7 @@ Namespace Network.htmlwidget
         Public Property opacity As Double
         Public Property zoom As Boolean
         Public Property legend As Boolean
+        Public Property arrows As Boolean
         Public Property nodesize As Boolean
         Public Property radiusCalculation As String
         Public Property bounded As Boolean
@@ -99,6 +102,6 @@ Namespace Network.htmlwidget
 
     Public Class Nodes
         Public Property name As String()
-        Public Property group As Integer()
+        Public Property group As String()
     End Class
 End Namespace

@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::a638d997cdf6551871380fd46784384f, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\args\HttpResponse.vb"
+﻿#Region "Microsoft.VisualBasic::8acb9794f328af8a66ff41b724fc8d5b, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\args\HttpResponse.vb"
 
     ' Author:
     ' 
@@ -33,10 +33,12 @@
 
     '     Class HttpResponse
     ' 
+    '         Constructor: (+1 Overloads) Sub New
+    ' 
     '         Function: FlushAsync, (+3 Overloads) WriteAsync, (+4 Overloads) WriteLineAsync, writeSuccess
     ' 
-    '         Sub: __writeSuccess, Close, (+2 Overloads) Dispose, Flush, New
-    '              Redirect, SetCookies, (+6 Overloads) Write, Write404, WriteHeader
+    '         Sub: __writeSuccess, Close, (+2 Overloads) Dispose, Flush, Redirect
+    '              SendFile, SetCookies, (+6 Overloads) Write, Write404, WriteHeader
     '              (+3 Overloads) WriteHTML, WriteJSON, WriteLine, WriteXML
     ' 
     '         Operators: <=, >=
@@ -51,9 +53,11 @@ Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Threading
+Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.Language.C
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 Imports Microsoft.VisualBasic.Serialization.JSON
+Imports Microsoft.VisualBasic.Text
 Imports SMRUCC.WebCloud.HTTPInternal.Core
 
 Namespace AppEngine.APIMethods.Arguments
@@ -85,6 +89,11 @@ Namespace AppEngine.APIMethods.Arguments
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub Redirect(url As String)
             Call WriteHTML(<script>window.location='%s';</script>, url)
+        End Sub
+
+        Public Sub SendFile(path As String)
+            Dim contentType$ = path.FileMimeType.MIMEType
+            Call path.TransferBinary(contentType, Me)
         End Sub
 
         Public Sub WriteHTML(html As String)
@@ -164,14 +173,15 @@ Namespace AppEngine.APIMethods.Arguments
         ''' <param name="obj"></param>
         Public Sub WriteJSON(Of T)(obj As T)
             Dim json As String = obj.GetJson
-            Dim bytes As Byte() = Encoding.UTF8.GetBytes(json)
+            Dim bytes As Byte() = TextEncodings.UTF8WithoutBOM.GetBytes(json)
 
             If Not __writeData Then
                 __writeData = True
                 Call WriteHeader(MIME.Json, bytes.Length)
             End If
 
-            Call response.WriteLine(json)
+            Call response.BaseStream.Write(bytes, Scan0, bytes.Length)
+            Call response.BaseStream.Flush()
         End Sub
 
         Public Sub WriteXML(Of T)(obj As T)
