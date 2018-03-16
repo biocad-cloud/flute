@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::d76fb7c5e574d9a3c8e2443a562a330e, WebCloud\SMRUCC.WebCloud.d3js\Network\htmlwidget\BuildData.vb"
+﻿#Region "Microsoft.VisualBasic::f1437959b8e7e819cc9160c4ea27dc39, WebCloud\SMRUCC.WebCloud.d3js\Network\htmlwidget\BuildData.vb"
 
     ' Author:
     ' 
@@ -40,11 +40,11 @@
 
 #End Region
 
-Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.Data.visualize.Network.FileStream
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Serialization.JSON
 Imports NetGraphData = Microsoft.VisualBasic.Data.visualize.Network.FileStream.NetworkTables
+Imports r = System.Text.RegularExpressions.Regex
 
 Namespace Network.htmlwidget
 
@@ -65,7 +65,7 @@ Namespace Network.htmlwidget
                 html = html.GET
             End If
 
-            html = Regex.Match(html, BuildData.JSON, RegexICSng).Value
+            html = r.Match(html, BuildData.JSON, RegexICSng).Value
             html = html.GetStackValue(">", "<")
 
             Return html
