@@ -1,62 +1,62 @@
 ﻿#Region "Microsoft.VisualBasic::357a2b2076e485b6ae3a750a0cc44807, WebCloud\SMRUCC.HTTPInternal\Core\HttpFileSystem.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xie (genetics@smrucc.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2018 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xie (genetics@smrucc.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2018 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-    ' /********************************************************************************/
+' /********************************************************************************/
 
-    ' Summaries:
+' Summaries:
 
-    '     Class HttpFileSystem
-    ' 
-    ' 
-    '     Class HttpFileSystem
-    ' 
-    '         Properties: RequestStream, wwwroot
-    ' 
-    '         Constructor: (+1 Overloads) Sub New
-    ' 
-    '         Function: AddMappings, GetResource, MapPath
-    ' 
-    '         Sub: Dispose
-    '         Delegate Function
-    ' 
-    '             Properties: Page404
-    ' 
-    '             Function: __getMapDIR, __handleFileGET, __httpProcessor, __request404, Open
-    ' 
-    '             Sub: __handleREST, __transferData, handleGETRequest, handleOtherMethod, handlePOSTRequest
-    '                  RunServer, SetGetRequest
-    ' 
-    ' 
-    ' 
-    ' 
-    ' 
-    ' /********************************************************************************/
+'     Class HttpFileSystem
+' 
+' 
+'     Class HttpFileSystem
+' 
+'         Properties: RequestStream, wwwroot
+' 
+'         Constructor: (+1 Overloads) Sub New
+' 
+'         Function: AddMappings, GetResource, MapPath
+' 
+'         Sub: Dispose
+'         Delegate Function
+' 
+'             Properties: Page404
+' 
+'             Function: __getMapDIR, __handleFileGET, __httpProcessor, __request404, Open
+' 
+'             Sub: __handleREST, __transferData, handleGETRequest, handleOtherMethod, handlePOSTRequest
+'                  RunServer, SetGetRequest
+' 
+' 
+' 
+' 
+' 
+' /********************************************************************************/
 
 #End Region
 
@@ -74,6 +74,7 @@ Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 Imports Microsoft.VisualBasic.Parallel.Tasks
 Imports Microsoft.VisualBasic.Serialization.JSON
 Imports SMRUCC.WebCloud.HTTPInternal.Platform.Plugins
+Imports SMRUCC.WebCloud.HTTPInternal.Core.Cache
 Imports fs = Microsoft.VisualBasic.FileIO.FileSystem
 
 Namespace Core
@@ -98,10 +99,10 @@ Namespace Core
         ''' </summary>
         ReadOnly _virtualMappings As Dictionary(Of String, String)
         ReadOnly _nullAsExists As Boolean
-        ReadOnly _cache As Dictionary(Of String, CachedFile)
+        ReadOnly _cache As VirtualFileSystem
         ReadOnly _cacheMode As Boolean
         ReadOnly _cacheUpdate As UpdateThread
-        ReadOnly _defaultFavicon As Byte() = My.Resources.favicon.UnzipStream.ToArray
+        ReadOnly _defaultFavicon As Byte() = My.Resources.favicon.UnZipStream.ToArray
 
         Public Function AddMappings(DIR As String, url As String) As Boolean
             url = url & "/index.html"
