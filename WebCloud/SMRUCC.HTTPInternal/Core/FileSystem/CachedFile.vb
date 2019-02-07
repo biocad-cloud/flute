@@ -46,7 +46,7 @@
 Imports System.IO
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 
-Namespace Core
+Namespace Core.Cache
 
     Public Class CachedFile
 

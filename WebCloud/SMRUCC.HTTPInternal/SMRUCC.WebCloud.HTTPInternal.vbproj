@@ -440,6 +440,8 @@
     <Compile Include="AppEngine\ExternalCall.vb" />
     <Compile Include="AppEngine\WebApp.vb" />
     <Compile Include="AppEngine\API\APIInvoker.vb" />
+    <Compile Include="Core\FileSystem\FileNode.vb" />
+    <Compile Include="Core\FileSystem\VirtualFileSystem.vb" />
     <Compile Include="Extensions.vb" />
     <Compile Include="Core\FileSystem\CachedFile.vb" />
     <Compile Include="Core\Content.vb" />
