@@ -100,9 +100,21 @@ Namespace Core
         ReadOnly _virtualMappings As Dictionary(Of String, String)
         ReadOnly _nullAsExists As Boolean
         ReadOnly _cache As VirtualFileSystem
-        ReadOnly _cacheMode As Boolean
-        ReadOnly _cacheUpdate As UpdateThread
         ReadOnly _defaultFavicon As Byte() = My.Resources.favicon.UnZipStream.ToArray
+
+        ''' <summary>
+        ''' Current http filesystem is running in cache mode?
+        ''' </summary>
+        ''' <returns></returns>
+        ''' <remarks>
+        ''' 在缓存模式下，因为减少了IO，所以可以提升服务器的性能，物理文件系统的文件变化
+        ''' 可能会延迟一段时间才会更新到内存缓存之中
+        ''' </remarks>
+        Public ReadOnly Property InMemoryCacheMode As Boolean
+            Get
+                Return New _Cache Is Nothing
+            End Get
+        End Property
 
         Public Function AddMappings(DIR As String, url As String) As Boolean
             url = url & "/index.html"
@@ -227,7 +239,7 @@ Namespace Core
         ''' </summary>
         Const NoData As String = "[ERR_EMPTY_RESPONSE::No data send]"
 
-        ReadOnly defaultResource As DefaultValue(Of IGetResource) = New IGetResource(AddressOf GetResource)
+        ReadOnly defaultResource As [Default](Of IGetResource) = New IGetResource(AddressOf GetResource)
 
         ''' <summary>
         ''' 默认的资源获取函数:<see cref="HttpFileSystem.GetResource(ByRef String)"/>.(默认是获取文件数据)

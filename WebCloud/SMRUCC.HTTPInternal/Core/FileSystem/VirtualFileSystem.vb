@@ -8,5 +8,8 @@
         ''' </summary>
         ReadOnly fileTree As FileNode
 
+        ReadOnly _cacheMode As Boolean
+        ReadOnly _cacheUpdate As UpdateThread
+
     End Class
 End Namespace
