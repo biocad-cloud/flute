@@ -156,18 +156,6 @@ Namespace Core
 
             If cache Then
                 _cache = CachedFile.CacheAllFiles(wwwroot.FullName)
-                '    .ToDictionary(Function(x) x.Key.ToLower,
-                '                  Function(x) x.Value)
-                _cacheMode = True
-                _cacheUpdate = New UpdateThread(1000 * 60 * 30,
-                     Sub()
-                         For Each file In CachedFile.CacheAllFiles(wwwroot.FullName)
-                             _cache(file.Key) = file.Value
-                         Next
-                     End Sub)
-                _cacheUpdate.Start()
-
-                Call "Running in file system cache mode!".__DEBUG_ECHO
             End If
 
 #If DEBUG Then

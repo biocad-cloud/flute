@@ -76,7 +76,7 @@ Namespace Core.Cache
         ''' </summary>
         ''' <param name="wwwroot"></param>
         ''' <returns></returns>
-        Public Shared Function CacheAllFiles(wwwroot As String) As Dictionary(Of String, CachedFile)
+        Public Shared Function CacheAllFiles(wwwroot As String) As VirtualFileSystem
             Dim allFiles As IEnumerable(Of String) = FileIO.FileSystem.GetFiles(
                 wwwroot,
                 FileIO.SearchOption.SearchAllSubDirectories,

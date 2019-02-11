@@ -5,6 +5,8 @@ Namespace Core.Cache
     Public Class FileNode : Inherits TreeNodeBase(Of FileNode)
         Implements ITreeNode(Of FileNode)
 
+        Public ReadOnly Property File As CachedFile
+
         ''' <summary>
         ''' 
         ''' </summary>
@@ -15,7 +17,7 @@ Namespace Core.Cache
 
         Public ReadOnly Property isDirectory As Boolean
             Get
-                Return ChildNodes > 0
+                Return ChildNodes.Count > 0
             End Get
         End Property
 
