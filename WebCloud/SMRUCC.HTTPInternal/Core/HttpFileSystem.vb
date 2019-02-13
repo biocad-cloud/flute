@@ -168,8 +168,8 @@ Namespace Core
         Protected Overrides Sub Dispose(disposing As Boolean)
             Call MyBase.Dispose(disposing)
 
-            If _cacheMode Then
-                Call _cacheUpdate.Dispose()
+            If InMemoryCacheMode Then
+                Call _cache.Dispose()
             End If
         End Sub
 
@@ -255,8 +255,9 @@ Namespace Core
                 Throw New Exception(res, ex)
             End Try
 
-            If _cacheMode AndAlso _cache.ContainsKey(file) Then
-                Return _cache(file).bufs
+            ' 在缓存模式下，将不会再读取物理文件系统
+            If InMemoryCacheMode Then
+                Return _cache.GetFileBuffer(file)
             End If
 
             If file.FileExists Then
