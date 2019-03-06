@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::5c5273a8a1e52042dbc3e64c1bb82c8e, WebCloud\SMRUCC.HTTPInternal\AppEngine\WebApp.vb"
+﻿#Region "Microsoft.VisualBasic::d0be2226ffb7adc23137977ad5e4a369, WebCloud\SMRUCC.HTTPInternal\AppEngine\WebApp.vb"
 
     ' Author:
     ' 
@@ -102,7 +102,7 @@ Namespace AppEngine
         ''' </summary>
         ''' <param name="request"></param>
         ''' <returns></returns>
-        Public Delegate Function IGET(request As HttpRequest, response As StreamWriter) As Boolean
+        Public Delegate Function IGET(request As HttpRequest, response As HttpResponse) As Boolean
 
         ''' <summary>
         ''' <see cref="APIMethods.POST"/>
@@ -110,7 +110,7 @@ Namespace AppEngine
         ''' <param name="request"></param>
         ''' <param name="response"></param>
         ''' <returns></returns>
-        Public Delegate Function IPOST(request As HttpPOSTRequest, response As StreamWriter) As Boolean
+        Public Delegate Function IPOST(request As HttpPOSTRequest, response As HttpResponse) As Boolean
 
         ''' <summary>
         ''' 只会加载有<see cref="APIMethod"/>属性标记的实例方法
