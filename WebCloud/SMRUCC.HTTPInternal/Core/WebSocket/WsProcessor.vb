@@ -45,6 +45,7 @@ Namespace Core.WebSocket
             While Me.tcpClient.Connected
                 While (stream.DataAvailable)
                     ReDim bytes(Me.tcpClient.Client.Available)
+
                     stream.Read(bytes, 0, bytes.Length)
                     data = Encoding.UTF8.GetString(bytes)
 
@@ -58,8 +59,11 @@ Namespace Core.WebSocket
 
                         Return
                     Else
-                        'We're going to disconnect the client here, because he's not handshacking properly (or at least to the scope of this code sample)
-                        Me.tcpClient.Close() 'The next While Me._TcpClient.Connected Loop Check should fail.. and raise the onClientDisconnect Event Thereafter
+                        ' We're going to disconnect the client here, because he's not handshacking properly 
+                        ' (or at least to the scope of this code sample)
+                        ' The next While Me._TcpClient.Connected Loop Check should fail.. 
+                        ' And raise the onClientDisconnect Event Thereafter
+                        Me.tcpClient.Close()
                     End If
                 End While
             End While
@@ -88,12 +92,20 @@ Namespace Core.WebSocket
 
         Sub doChecks()
             Dim stream As NetworkStream = Me.tcpClient.GetStream()
-            Dim bytes As Byte()
+            Dim bufferSize As Integer = tcpClient.Client.Available
+            Dim bytes As Byte() = New Byte(bufferSize - 1) {}
+            Dim decoded As Byte() = Nothing
+            Dim operation As Operations
 
-            ReDim bytes(Me.tcpClient.Client.Available)
-            stream.Read(bytes, 0, bytes.Length) 'Read the stream, don't close it.. 
+            ' Read the stream, don't close it.. 
+            Call stream.Read(bytes, 0, bytes.Length)
+            Call DecodeFrame(bytes, operation, decoded)
+            Call Response(operation, decoded, stream)
+        End Sub
 
-            Dim length As UInteger = bytes(1) - 128 'this should obviously be a byte (unsigned 8bit value)
+        Private Shared Sub DecodeFrame(bytes As Byte(), ByRef operation As Operations, ByRef decoded As Byte())
+            ' this should obviously be a byte (unsigned 8bit value)
+            Dim length As UInteger = bytes(1) - 128
 
             If length > -1 Then
                 If length = 126 Then
@@ -103,25 +115,23 @@ Namespace Core.WebSocket
                 End If
             End If
 
-            'the following is very inefficient and likely unnecessary.. 
-            'the main purpose is to just get the lower 4 bits of byte(0) - which is the OPCODE
-
+            ' the following is very inefficient and likely unnecessary.. 
+            ' the main purpose is to just get the lower 4 bits of byte(0) - which is the OPCODE
             Dim value As Integer = bytes(0)
-            Dim bitArray As New BitArray(8)
+            Dim bits As New BitArray(8)
 
             For c As Integer = 0 To 7 Step 1
                 If value - (2 ^ (7 - c)) >= 0 Then
-                    bitArray.Item(c) = True
+                    bits.Item(c) = True
                     value -= (2 ^ (7 - c))
                 Else
-                    bitArray.Item(c) = False
+                    bits.Item(c) = False
                 End If
             Next
 
-
             Dim FRRR_OPCODE As String = ""
 
-            For Each bit As Boolean In bitArray
+            For Each bit As Boolean In bits
                 If bit Then
                     FRRR_OPCODE &= "1"
                 Else
@@ -133,8 +143,9 @@ Namespace Core.WebSocket
             Dim RSV1 As Integer = FRRR_OPCODE.Substring(1, 1)
             Dim RSV2 As Integer = FRRR_OPCODE.Substring(2, 1)
             Dim RSV3 As Integer = FRRR_OPCODE.Substring(3, 1)
-            Dim operation As Operations = Convert.ToInt32(FRRR_OPCODE.Substring(4, 4), 2)
-            Dim decoded(bytes.Length - (frameCount + 4)) As Byte
+
+            operation = Convert.ToInt32(FRRR_OPCODE.Substring(4, 4), 2)
+            decoded = New Byte(bytes.Length - (frameCount + 4) - 1) {}
 
             ' 20190628 原来这里的变量名是key
             ' 并且下面的masks变量是丢失的
@@ -150,8 +161,6 @@ Namespace Core.WebSocket
             For i As Integer = (frameCount + 4) To (bytes.Length - 2) Step 1
                 decoded(j) = Convert.ToByte((bytes(i) Xor masks(++j Mod 4)))
             Next
-
-            Call Response(operation, decoded, stream)
         End Sub
 
         Private Sub Response(code As Operations, decoded As Byte(), stream As NetworkStream)
@@ -184,8 +193,9 @@ Namespace Core.WebSocket
             Dim index As Integer = 0
 
             ReDim ResponseData((header.Length + Payload.Length) - 1)
-            'NOTEWORTHY: if you Redim ResponseData(header.length + Payload.Length).. you'll add a 0 value byte at the end of the response data.. 
-            'which tells the client that your next stream write will be a continuation frame..
+            ' NOTEWORTHY: if you Redim ResponseData(header.length + Payload.Length).. 
+            ' you 'll add a 0 value byte at the end of the response data.. 
+            ' which tells the client that your next stream write will be a continuation frame..
             Buffer.BlockCopy(header, 0, ResponseData, index, header.Length)
             index += header.Length
 
