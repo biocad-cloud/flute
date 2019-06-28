@@ -40,9 +40,8 @@
 
 #End Region
 
-Imports System.Net.Sockets
 Imports System.Net
-Imports System
+Imports System.Net.Sockets
 Imports System.Text
 Imports System.Text.RegularExpressions
 
@@ -51,13 +50,13 @@ Namespace Core
     ' https://developer.mozilla.org/zh-CN/docs/Web/API/WebSockets_API/WebSocket_Server_Vb.NET
 
     Public Class WebSocketClient
-        Dim _TcpClient As System.Net.Sockets.TcpClient
+        Dim _TcpClient As TcpClient
 
         Public Delegate Sub OnClientDisconnectDelegateHandler()
         Public Event onClientDisconnect As OnClientDisconnectDelegateHandler
 
 
-        Sub New(ByVal tcpClient As System.Net.Sockets.TcpClient)
+        Sub New(ByVal tcpClient As TcpClient)
             Me._TcpClient = tcpClient
         End Sub
 
@@ -76,11 +75,11 @@ Namespace Core
                 While (stream.DataAvailable)
                     ReDim bytes(Me._TcpClient.Client.Available)
                     stream.Read(bytes, 0, bytes.Length)
-                    data = System.Text.Encoding.UTF8.GetString(bytes)
+                    data = Encoding.UTF8.GetString(bytes)
 
-                    If (New System.Text.RegularExpressions.Regex("^GET").IsMatch(data)) Then
+                    If (New Regex("^GET").IsMatch(data)) Then
 
-                        Dim response As Byte() = System.Text.Encoding.UTF8.GetBytes("HTTP/1.1 101 Switching Protocols" & Environment.NewLine & "Connection: Upgrade" & Environment.NewLine & "Upgrade: websocket" & Environment.NewLine & "Sec-WebSocket-Accept: " & Convert.ToBase64String(System.Security.Cryptography.SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(New Regex("Sec-WebSocket-Key: (.*)").Match(data).Groups(1).Value.Trim() & "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"))) & Environment.NewLine & Environment.NewLine)
+                        Dim response As Byte() = Encoding.UTF8.GetBytes("HTTP/1.1 101 Switching Protocols" & Environment.NewLine & "Connection: Upgrade" & Environment.NewLine & "Upgrade: websocket" & Environment.NewLine & "Sec-WebSocket-Accept: " & Convert.ToBase64String(System.Security.Cryptography.SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(New Regex("Sec-WebSocket-Key: (.*)").Match(data).Groups(1).Value.Trim() & "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"))) & Environment.NewLine & Environment.NewLine)
 
                         stream.Write(response, 0, response.Length)
                         Exit Sub
@@ -214,8 +213,8 @@ Namespace Core
         Event OnClientConnect As OnClientConnectDelegate
 
 
-        Dim WithEvents PendingCheckTimer As Timers.Timer = New Timers.Timer(500)
-        Dim WithEvents ClientDataAvailableTimer As Timers.Timer = New Timers.Timer(50)
+        Dim WithEvents PendingCheckTimer As New Timers.Timer(500)
+        Dim WithEvents ClientDataAvailableTimer As New Timers.Timer(50)
         Property ClientCollection As New List(Of WebSocketClient)
 
 
