@@ -1,7 +1,9 @@
 ﻿
 Imports System.Net.Sockets
+Imports System.Security.Cryptography
 Imports System.Text
 Imports System.Text.RegularExpressions
+Imports Microsoft.VisualBasic.Language
 
 Namespace Core.WebSocket
     ' https://developer.mozilla.org/zh-CN/docs/Web/API/WebSockets_API/WebSocket_Server_Vb.NET
@@ -10,53 +12,84 @@ Namespace Core.WebSocket
     ''' A websocket client
     ''' </summary>
     Public Class WsProcessor
-        Dim _TcpClient As TcpClient
+        Dim tcpClient As TcpClient
 
         Public Delegate Sub OnClientDisconnectDelegateHandler()
         Public Event onClientDisconnect As OnClientDisconnectDelegateHandler
 
+        ''' <summary>
+        ''' ^GET
+        ''' </summary>
+        ReadOnly HttpGet As New Regex("^GET")
+        ReadOnly WsSeckey As New Regex("Sec-WebSocket-Key: (.*)")
+        ReadOnly sha1 As SHA1 = SHA1.Create()
+
+        Const WsMagic As String = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+
         Public ReadOnly Property isConnected As Boolean
             Get
-                Return Me._TcpClient.Connected
+                Return tcpClient.Connected
             End Get
         End Property
 
         Sub New(tcpClient As TcpClient)
-            Me._TcpClient = tcpClient
+            Me.tcpClient = tcpClient
         End Sub
 
         Sub HandShake()
-            Dim stream As NetworkStream = Me._TcpClient.GetStream()
+            Dim stream As NetworkStream = Me.tcpClient.GetStream()
             Dim bytes As Byte()
             Dim data As String
 
-            While Me._TcpClient.Connected
+            While Me.tcpClient.Connected
                 While (stream.DataAvailable)
-                    ReDim bytes(Me._TcpClient.Client.Available)
+                    ReDim bytes(Me.tcpClient.Client.Available)
                     stream.Read(bytes, 0, bytes.Length)
                     data = Encoding.UTF8.GetString(bytes)
 
-                    If (New Regex("^GET").IsMatch(data)) Then
+                    If (HttpGet.IsMatch(data)) Then
+                        Dim response As Byte()
 
-                        Dim response As Byte() = Encoding.UTF8.GetBytes("HTTP/1.1 101 Switching Protocols" & Environment.NewLine & "Connection: Upgrade" & Environment.NewLine & "Upgrade: websocket" & Environment.NewLine & "Sec-WebSocket-Accept: " & Convert.ToBase64String(System.Security.Cryptography.SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(New Regex("Sec-WebSocket-Key: (.*)").Match(data).Groups(1).Value.Trim() & "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"))) & Environment.NewLine & Environment.NewLine)
+                        SyncLock sha1
+                            response = handshakePayload(data)
+                            stream.Write(response, 0, response.Length)
+                        End SyncLock
 
-                        stream.Write(response, 0, response.Length)
-                        Exit Sub
+                        Return
                     Else
                         'We're going to disconnect the client here, because he's not handshacking properly (or at least to the scope of this code sample)
-                        Me._TcpClient.Close() 'The next While Me._TcpClient.Connected Loop Check should fail.. and raise the onClientDisconnect Event Thereafter
+                        Me.tcpClient.Close() 'The next While Me._TcpClient.Connected Loop Check should fail.. and raise the onClientDisconnect Event Thereafter
                     End If
                 End While
             End While
             RaiseEvent onClientDisconnect()
         End Sub
 
+        Private Function handshakePayload(data As String) As Byte()
+            Dim magicKey$ = WsSeckey.Match(data).Groups(1).Value.Trim() & WsMagic
+            Dim verify$ = Convert.ToBase64String(sha1.ComputeHash(Encoding.UTF8.GetBytes(magicKey)))
+            ' 下面的headers的文本最末尾必须以两个newline结束
+            ' 所以在下面的数组之中最末尾以两个空白行结束
+            Dim httpHeaders = {
+                "HTTP/1.1 101 Switching Protocols",
+                "Connection: Upgrade",
+                "Upgrade: websocket",
+                "Sec-WebSocket-Accept: " & verify,
+                "",
+                ""
+            }
+
+            Return Encoding.UTF8.GetBytes(httpHeaders.JoinBy(Environment.NewLine))
+        End Function
+
+        Const frameCount = 2
+
         Sub doChecks()
-            Dim stream As NetworkStream = Me._TcpClient.GetStream()
-            Dim frameCount = 2
+            Dim stream As NetworkStream = Me.tcpClient.GetStream()
+
             Dim bytes As Byte()
 
-            ReDim bytes(Me._TcpClient.Client.Available)
+            ReDim bytes(Me.tcpClient.Client.Available)
             stream.Read(bytes, 0, bytes.Length) 'Read the stream, don't close it.. 
 
             Dim length As UInteger = bytes(1) - 128 'this should obviously be a byte (unsigned 8bit value)
@@ -73,7 +106,7 @@ Namespace Core.WebSocket
             'the main purpose is to just get the lower 4 bits of byte(0) - which is the OPCODE
 
             Dim value As Integer = bytes(0)
-            Dim bitArray As BitArray = New BitArray(8)
+            Dim bitArray As New BitArray(8)
 
             For c As Integer = 0 To 7 Step 1
                 If value - (2 ^ (7 - c)) >= 0 Then
@@ -100,36 +133,38 @@ Namespace Core.WebSocket
             Dim RSV1 As Integer = FRRR_OPCODE.Substring(1, 1)
             Dim RSV2 As Integer = FRRR_OPCODE.Substring(2, 1)
             Dim RSV3 As Integer = FRRR_OPCODE.Substring(3, 1)
-            Dim opCode As Integer = Convert.ToInt32(FRRR_OPCODE.Substring(4, 4), 2)
-
-
-
+            Dim operation As Operations = Convert.ToInt32(FRRR_OPCODE.Substring(4, 4), 2)
             Dim decoded(bytes.Length - (frameCount + 4)) As Byte
 
             ' 20190628 原来这里的变量名是key
             ' 并且下面的masks变量是丢失的
-            Dim masks As Byte() = {bytes(frameCount), bytes(frameCount + 1), bytes(frameCount + 2), bytes(frameCount + 3)}
+            Dim masks As Byte() = {
+                bytes(frameCount),
+                bytes(frameCount + 1),
+                bytes(frameCount + 2),
+                bytes(frameCount + 3)
+            }
 
-            Dim j As Integer = 0
+            Dim j As VBInteger = Scan0
+
             For i As Integer = (frameCount + 4) To (bytes.Length - 2) Step 1
-                decoded(j) = Convert.ToByte((bytes(i) Xor masks(j Mod 4)))
-                j += 1
+                decoded(j) = Convert.ToByte((bytes(i) Xor masks(++j Mod 4)))
             Next
 
-            Call Response(opCode, decoded, stream)
+            Call Response(operation, decoded, stream)
         End Sub
 
-        Private Sub Response(opCode As Integer, decoded As Byte(), stream As NetworkStream)
+        Private Sub Response(code As Operations, decoded As Byte(), stream As NetworkStream)
             Dim data As String
 
-            Select Case opCode
-                Case Is = 1
+            Select Case code
+                Case Is = Operations.TextRecieved
                     'Text Data Sent From Client
 
-                    data = System.Text.Encoding.UTF8.GetString(decoded)
+                    data = Encoding.UTF8.GetString(decoded)
                     'handle this data
 
-                    Dim Payload As Byte() = System.Text.Encoding.UTF8.GetBytes("Text Recieved: " & data)
+                    Dim Payload As Byte() = Encoding.UTF8.GetBytes("Text Recieved: " & data)
                     Dim FRRROPCODE As Byte = Convert.ToByte("10000001", 2) 'FIN is set, and OPCODE is 1 or Text
                     Dim header As Byte() = {FRRROPCODE, Convert.ToByte(Payload.Length)}
 
@@ -147,25 +182,25 @@ Namespace Core.WebSocket
                     Buffer.BlockCopy(Payload, 0, ResponseData, index, Payload.Length)
                     index += Payload.Length
                     stream.Write(ResponseData, 0, ResponseData.Length)
-                Case Is = 2
+                Case Is = Operations.BinaryRecieved
                     '// Binary Data Sent From Client 
-                    data = System.Text.Encoding.UTF8.GetString(decoded)
-                    Dim response As Byte() = System.Text.Encoding.UTF8.GetBytes("Binary Recieved")
+                    data = Encoding.UTF8.GetString(decoded)
+                    Dim response As Byte() = Encoding.UTF8.GetBytes("Binary Recieved")
                     stream.Write(response, 0, response.Length)
-                Case Is = 9 '// Ping Sent From Client 
-                Case Is = 10 '// Pong Sent From Client 
+                Case Is = Operations.Ping  '// Ping Sent From Client 
+                Case Is = Operations.Pong  '// Pong Sent From Client 
                 Case Else '// Improper opCode.. disconnect the client 
-                    _TcpClient.Close()
+                    tcpClient.Close()
                     RaiseEvent onClientDisconnect()
             End Select
         End Sub
 
         Sub CheckForDataAvailability()
-            If (Me._TcpClient.GetStream().DataAvailable) Then
+            If (Me.tcpClient.GetStream().DataAvailable) Then
                 Try
                     Call doChecks()
                 Catch ex As Exception
-                    _TcpClient.Close()
+                    tcpClient.Close()
                     RaiseEvent onClientDisconnect()
                 End Try
             End If
