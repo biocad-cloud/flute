@@ -6,15 +6,14 @@ Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.Language
 
 Namespace Core.WebSocket
+
     ' https://developer.mozilla.org/zh-CN/docs/Web/API/WebSockets_API/WebSocket_Server_Vb.NET
 
     ''' <summary>
     ''' A websocket client
     ''' </summary>
     Public Class WsProcessor
-        Dim tcpClient As TcpClient
 
-        Public Delegate Sub OnClientDisconnectDelegateHandler()
         Public Event onClientDisconnect As OnClientDisconnectDelegateHandler
 
         ''' <summary>
@@ -23,6 +22,8 @@ Namespace Core.WebSocket
         ReadOnly HttpGet As New Regex("^GET")
         ReadOnly WsSeckey As New Regex("Sec-WebSocket-Key: (.*)")
         ReadOnly sha1 As SHA1 = SHA1.Create()
+
+        Dim tcpClient As TcpClient
 
         Const WsMagic As String = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
@@ -62,6 +63,7 @@ Namespace Core.WebSocket
                     End If
                 End While
             End While
+
             RaiseEvent onClientDisconnect()
         End Sub
 
@@ -86,7 +88,6 @@ Namespace Core.WebSocket
 
         Sub doChecks()
             Dim stream As NetworkStream = Me.tcpClient.GetStream()
-
             Dim bytes As Byte()
 
             ReDim bytes(Me.tcpClient.Client.Available)
@@ -127,7 +128,6 @@ Namespace Core.WebSocket
                     FRRR_OPCODE &= "0"
                 End If
             Next
-
 
             Dim FIN As Integer = FRRR_OPCODE.Substring(0, 1)
             Dim RSV1 As Integer = FRRR_OPCODE.Substring(1, 1)
