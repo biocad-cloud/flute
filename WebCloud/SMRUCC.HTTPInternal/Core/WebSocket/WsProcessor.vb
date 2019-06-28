@@ -15,16 +15,15 @@ Namespace Core.WebSocket
         Public Delegate Sub OnClientDisconnectDelegateHandler()
         Public Event onClientDisconnect As OnClientDisconnectDelegateHandler
 
+        Public ReadOnly Property isConnected As Boolean
+            Get
+                Return Me._TcpClient.Connected
+            End Get
+        End Property
 
-        Sub New(ByVal tcpClient As TcpClient)
+        Sub New(tcpClient As TcpClient)
             Me._TcpClient = tcpClient
         End Sub
-
-
-        Function isConnected() As Boolean
-            Return Me._TcpClient.Connected
-        End Function
-
 
         Sub HandShake()
             Dim stream As NetworkStream = Me._TcpClient.GetStream()
