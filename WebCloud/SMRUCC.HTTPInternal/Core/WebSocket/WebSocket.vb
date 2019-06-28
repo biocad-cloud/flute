@@ -50,10 +50,14 @@ Namespace Core.WebSocket
 
         Public Event OnClientConnect As OnClientConnectDelegate
 
-        Dim WithEvents PendingCheckTimer As New Timer(500)
-        Dim WithEvents ClientDataAvailableTimer As New Timer(50)
+        Dim WithEvents pendingCheckTimer As New Timer(500)
 
-        Dim ClientCollection As New List(Of WsProcessor)
+        ''' <summary>
+        ''' Use this timer thread for read new data that send from client
+        ''' </summary>
+        Dim WithEvents listener As New Timer(50)
+
+        Dim connected As New List(Of WsProcessor)
 
         Sub New(url As String, port As Integer)
             MyBase.New(IPAddress.Parse(url), port)
@@ -61,14 +65,14 @@ Namespace Core.WebSocket
 
         Sub StartServer()
             Me.Start()
-            PendingCheckTimer.Start()
+            pendingCheckTimer.Start()
         End Sub
 
         Sub Client_Connected(sender As Object, ByRef client As WsProcessor) Handles Me.OnClientConnect
-            Me.ClientCollection.Add(client)
+            connected.Add(client)
             AddHandler client.onClientDisconnect, AddressOf Client_Disconnected
             client.HandShake()
-            ClientDataAvailableTimer.Start()
+            listener.Start()
         End Sub
 
         Sub Client_Disconnected()
@@ -77,6 +81,7 @@ Namespace Core.WebSocket
 
         Function isClientDisconnected(client As WsProcessor) As Boolean
             isClientDisconnected = False
+
             If Not client.isConnected Then
                 Return True
             End If
@@ -84,23 +89,27 @@ Namespace Core.WebSocket
 
         Function isClientConnected(client As WsProcessor) As Boolean
             isClientConnected = False
+
             If client.isConnected Then
                 Return True
             End If
         End Function
 
-        Private Sub PendingCheckTimer_Elapsed(sender As Object, e As ElapsedEventArgs) Handles PendingCheckTimer.Elapsed
+        Private Sub PendingCheckTimer_Elapsed(sender As Object, e As ElapsedEventArgs) Handles pendingCheckTimer.Elapsed
             If Pending() Then
                 RaiseEvent OnClientConnect(Me, New WsProcessor(Me.AcceptTcpClient()))
             End If
         End Sub
 
-        Private Sub ClientDataAvailableTimer_Elapsed(sender As Object, e As ElapsedEventArgs) Handles ClientDataAvailableTimer.Elapsed
-            Me.ClientCollection.RemoveAll(AddressOf isClientDisconnected)
-            If Me.ClientCollection.Count < 1 Then ClientDataAvailableTimer.Stop()
+        Private Sub ClientDataAvailableTimer_Elapsed(sender As Object, e As ElapsedEventArgs) Handles listener.Elapsed
+            Call connected.RemoveAll(AddressOf isClientDisconnected)
 
-            For Each Client As WsProcessor In Me.ClientCollection
-                Client.CheckForDataAvailability()
+            If Me.connected.Count < 1 Then
+                Call listener.Stop()
+            End If
+
+            For Each client As WsProcessor In Me.connected
+                client.CheckForDataAvailability()
             Next
         End Sub
     End Class

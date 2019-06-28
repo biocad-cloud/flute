@@ -155,46 +155,49 @@ Namespace Core.WebSocket
         End Sub
 
         Private Sub Response(code As Operations, decoded As Byte(), stream As NetworkStream)
-            Dim data As String
-
             Select Case code
                 Case Is = Operations.TextRecieved
-                    'Text Data Sent From Client
+                    Call handleText(Encoding.UTF8.GetString(decoded), stream)
 
-                    data = Encoding.UTF8.GetString(decoded)
-                    'handle this data
-
-                    Dim Payload As Byte() = Encoding.UTF8.GetBytes("Text Recieved: " & data)
-                    Dim FRRROPCODE As Byte = Convert.ToByte("10000001", 2) 'FIN is set, and OPCODE is 1 or Text
-                    Dim header As Byte() = {FRRROPCODE, Convert.ToByte(Payload.Length)}
-
-
-                    Dim ResponseData As Byte()
-                    ReDim ResponseData((header.Length + Payload.Length) - 1)
-                    'NOTEWORTHY: if you Redim ResponseData(header.length + Payload.Length).. you'll add a 0 value byte at the end of the response data.. 
-                    'which tells the client that your next stream write will be a continuation frame..
-
-                    Dim index As Integer = 0
-
-                    Buffer.BlockCopy(header, 0, ResponseData, index, header.Length)
-                    index += header.Length
-
-                    Buffer.BlockCopy(Payload, 0, ResponseData, index, Payload.Length)
-                    index += Payload.Length
-                    stream.Write(ResponseData, 0, ResponseData.Length)
                 Case Is = Operations.BinaryRecieved
-                    '// Binary Data Sent From Client 
-                    data = Encoding.UTF8.GetString(decoded)
-                    Dim response As Byte() = Encoding.UTF8.GetBytes("Binary Recieved")
-                    stream.Write(response, 0, response.Length)
-                Case Is = Operations.Ping  '// Ping Sent From Client 
-                Case Is = Operations.Pong  '// Pong Sent From Client 
-                Case Else '// Improper opCode.. disconnect the client 
-                    tcpClient.Close()
+                    Call handleBinary(decoded, stream)
+
+                Case Is = Operations.Ping
+                Case Is = Operations.Pong
+                Case Else
+                    ' Improper opCode.. disconnect the client 
+                    Call tcpClient.Close()
                     RaiseEvent onClientDisconnect()
             End Select
         End Sub
 
+        Private Sub handleBinary(decoded As Byte(), stream As NetworkStream)
+            Dim response As Byte() = Encoding.UTF8.GetBytes("Binary Recieved")
+            stream.Write(response, 0, response.Length)
+        End Sub
+
+        Private Sub handleText(data As String, stream As NetworkStream)
+            Dim Payload As Byte() = Encoding.UTF8.GetBytes("Text Recieved: " & data)
+            Dim FRRROPCODE As Byte = Convert.ToByte("10000001", 2) 'FIN is set, and OPCODE is 1 or Text
+            Dim header As Byte() = {FRRROPCODE, Convert.ToByte(Payload.Length)}
+            Dim ResponseData As Byte()
+            Dim index As Integer = 0
+
+            ReDim ResponseData((header.Length + Payload.Length) - 1)
+            'NOTEWORTHY: if you Redim ResponseData(header.length + Payload.Length).. you'll add a 0 value byte at the end of the response data.. 
+            'which tells the client that your next stream write will be a continuation frame..
+            Buffer.BlockCopy(header, 0, ResponseData, index, header.Length)
+            index += header.Length
+
+            Buffer.BlockCopy(Payload, 0, ResponseData, index, Payload.Length)
+            index += Payload.Length
+
+            Call stream.Write(ResponseData, 0, ResponseData.Length)
+        End Sub
+
+        ''' <summary>
+        ''' Check for new data that send from browser
+        ''' </summary>
         Sub CheckForDataAvailability()
             If (Me.tcpClient.GetStream().DataAvailable) Then
                 Try
