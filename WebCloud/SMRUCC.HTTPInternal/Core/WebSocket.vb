@@ -169,7 +169,7 @@ Namespace Core
                             data = System.Text.Encoding.UTF8.GetString(decoded)
                             'handle this data
 
-                            Dim Payload As Byte() = System.Text.Encoding.UTF8.GetBytes("Text Recieved")
+                            Dim Payload As Byte() = System.Text.Encoding.UTF8.GetBytes("Text Recieved: " & data)
                             Dim FRRROPCODE As Byte = Convert.ToByte("10000001", 2) 'FIN is set, and OPCODE is 1 or Text
                             Dim header As Byte() = {FRRROPCODE, Convert.ToByte(Payload.Length)}
 
