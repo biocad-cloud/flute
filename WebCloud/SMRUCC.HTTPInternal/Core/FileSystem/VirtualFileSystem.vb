@@ -17,6 +17,9 @@ Imports fs = Microsoft.VisualBasic.FileIO.FileSystem
 
 Namespace Core.Cache
 
+    ''' <summary>
+    ''' 缓存在内存中的虚拟文件系统
+    ''' </summary>
     Public Class VirtualFileSystem : Implements IDisposable
 
 #Region "两种数据组织的方式"
@@ -27,17 +30,24 @@ Namespace Core.Cache
         ReadOnly fileTree As FileNode
 #End Region
 
+        ''' <summary>
+        ''' 文件更新
+        ''' </summary>
         ReadOnly _cacheUpdate As UpdateThread
         ReadOnly wwwroot As DirectoryInfo
 
-        Sub New()
-            _cacheUpdate = New UpdateThread(1000 * 60 * 30,
-                  Sub()
-                      For Each file In CachedFile.CacheAllFiles(wwwroot.FullName)
-                          files(file.Key) = file.Value
-                      Next
-                  End Sub)
-            _cacheUpdate.Start()
+        Sub New(updateMode As Boolean, wwwroot As DirectoryInfo)
+            If updateMode Then
+                _cacheUpdate = New UpdateThread(1000 * 60 * 30,
+                      Sub()
+                          For Each file In CachedFile.CacheAllFiles(wwwroot.FullName)
+                              files(file.Key) = file.Value
+                          Next
+                      End Sub)
+                _cacheUpdate.Start()
+            End If
+
+            Me.wwwroot = wwwroot
 
             Call "Running in file system cache mode!".__DEBUG_ECHO
         End Sub
@@ -48,6 +58,10 @@ Namespace Core.Cache
             Else
                 Return {}
             End If
+        End Function
+
+        Public Overrides Function ToString() As String
+            Return $"memory://{wwwroot.FullName}"
         End Function
 
 #Region "IDisposable Support"
