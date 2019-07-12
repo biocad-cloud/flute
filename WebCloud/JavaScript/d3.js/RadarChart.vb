@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::3e215e743e98910bbdebefa32dc77f1e, WebCloud\JavaScript\d3.js\RadarChart.vb"
+﻿#Region "Microsoft.VisualBasic::3b665d6cea135aa647c2c7827e247cba, WebCloud\JavaScript\d3.js\RadarChart.vb"
 
     ' Author:
     ' 
@@ -71,4 +71,3 @@ Namespace RadarChart
         End Function
     End Class
 End Namespace
-

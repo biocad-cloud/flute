@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::7144371172d3833d33da1aeb46e46b69, WebCloud\JavaScript\highcharts.js\Common\plotOptions.vb"
+﻿#Region "Microsoft.VisualBasic::e59f96e1be8919cf7021b3a4057e9b87, WebCloud\JavaScript\highcharts.js\Common\plotOptions.vb"
 
     ' Author:
     ' 
@@ -40,7 +40,7 @@
     ' 
     ' Class seriesOptions
     ' 
-    '     Properties: borderWidth, dataLabels, type
+    '     Properties: borderWidth, dataLabels, label, pointStart, type
     ' 
     ' /********************************************************************************/
 
@@ -82,4 +82,6 @@ Public Class seriesOptions
     Public Property type As String
     Public Property borderWidth As Double?
     Public Property dataLabels As dataLabels
+    Public Property label As labelOptions
+    Public Property pointStart As String
 End Class

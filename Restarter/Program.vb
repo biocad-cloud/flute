@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::8a37df07c652bb4ae3af9007b27110bb, Restarter\Program.vb"
+﻿#Region "Microsoft.VisualBasic::93f2d41bca7587a085ea79115fd82ec3, Restarter\Program.vb"
 
     ' Author:
     ' 
@@ -49,7 +49,6 @@
 
 #End Region
 
-Imports System.Threading
 Imports Microsoft.VisualBasic.CommandLine
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.ComponentModel.Triggers
@@ -125,7 +124,7 @@ Public Class Ini
 
     Public Shared Function Load() As Ini
         If DefaultFile.FileExists Then
-            Return DefaultFile.ReadAllText.LoadObject(Of Ini)
+            Return DefaultFile.ReadAllText.LoadJSON(Of Ini)
         Else
             Dim ini As New Ini With {
                 .CLI = "Put the CLI argument at here",

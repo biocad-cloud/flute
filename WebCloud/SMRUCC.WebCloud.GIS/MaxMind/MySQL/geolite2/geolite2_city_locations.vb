@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::f1cabd94c7504bb7fa8b1dfd9650f701, WebCloud\SMRUCC.WebCloud.GIS\MaxMind\MySQL\geolite2\geolite2_city_locations.vb"
+﻿#Region "Microsoft.VisualBasic::7a7d9df62348bb0838ecbbc13818116e, WebCloud\SMRUCC.WebCloud.GIS\MaxMind\MySQL\geolite2\geolite2_city_locations.vb"
 
     ' Author:
     ' 
@@ -37,7 +37,8 @@
     '                 geoname_id, locale_code, metro_code, subdivision_1_iso_code, subdivision_1_name
     '                 subdivision_2_iso_code, subdivision_2_name, time_zone
     ' 
-    '     Function: GetDeleteSQL, GetDumpInsertValue, GetInsertSQL, GetReplaceSQL, GetUpdateSQL
+    '     Function: Clone, GetDeleteSQL, GetDumpInsertValue, (+2 Overloads) GetInsertSQL, (+2 Overloads) GetReplaceSQL
+    '               GetUpdateSQL
     ' 
     ' 
     ' /********************************************************************************/
@@ -48,12 +49,13 @@ REM  Oracle.LinuxCompatibility.MySQL.CodeSolution.VisualBasic.CodeGenerator
 REM  MYSQL Schema Mapper
 REM      for Microsoft VisualBasic.NET 2.1.0.2569
 
-REM  Dump @2017/11/5 上午 01:32:17
+REM  Dump @12/2/2018 7:45:34 PM
 
 
 Imports System.Data.Linq.Mapping
 Imports System.Xml.Serialization
 Imports Oracle.LinuxCompatibility.MySQL.Reflection.DbAttributes
+Imports MySqlScript = Oracle.LinuxCompatibility.MySQL.Scripting.Extensions
 
 Namespace MaxMind.geolite2
 
@@ -104,7 +106,7 @@ CREATE TABLE `geolite2_city_locations` (
   `metro_code` int(11) DEFAULT NULL COMMENT 'The metro code associated with the IP address. These are only available for networks in the US. MaxMind provides the same metro codes as the Google AdWords API.',
   `time_zone` varchar(128) DEFAULT NULL COMMENT 'The time zone associated with location, as specified by the IANA Time Zone Database, e.g., ''America/New_York''.',
   PRIMARY KEY (`geoname_id`,`locale_code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='												\n';")>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='												\n';")>
 Public Class geolite2_city_locations: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #Region "Public Property Mapping To Database Fields"
 ''' <summary>
@@ -201,11 +203,26 @@ Public Class geolite2_city_locations: Inherits Oracle.LinuxCompatibility.MySQL.M
 #End Region
 #Region "Public SQL Interface"
 #Region "Interface SQL"
-    Private Shared ReadOnly INSERT_SQL As String = <SQL>INSERT INTO `geolite2_city_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`, `subdivision_1_iso_code`, `subdivision_1_name`, `subdivision_2_iso_code`, `subdivision_2_name`, `city_name`, `metro_code`, `time_zone`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}');</SQL>
-    Private Shared ReadOnly REPLACE_SQL As String = <SQL>REPLACE INTO `geolite2_city_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`, `subdivision_1_iso_code`, `subdivision_1_name`, `subdivision_2_iso_code`, `subdivision_2_name`, `city_name`, `metro_code`, `time_zone`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}');</SQL>
-    Private Shared ReadOnly DELETE_SQL As String = <SQL>DELETE FROM `geolite2_city_locations` WHERE `geoname_id`='{0}' and `locale_code`='{1}';</SQL>
-    Private Shared ReadOnly UPDATE_SQL As String = <SQL>UPDATE `geolite2_city_locations` SET `geoname_id`='{0}', `locale_code`='{1}', `continent_code`='{2}', `continent_name`='{3}', `country_iso_code`='{4}', `country_name`='{5}', `subdivision_1_iso_code`='{6}', `subdivision_1_name`='{7}', `subdivision_2_iso_code`='{8}', `subdivision_2_name`='{9}', `city_name`='{10}', `metro_code`='{11}', `time_zone`='{12}' WHERE `geoname_id`='{13}' and `locale_code`='{14}';</SQL>
+    Friend Shared ReadOnly INSERT_SQL$ = 
+        <SQL>INSERT INTO `geolite2_city_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`, `subdivision_1_iso_code`, `subdivision_1_name`, `subdivision_2_iso_code`, `subdivision_2_name`, `city_name`, `metro_code`, `time_zone`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}');</SQL>
+
+    Friend Shared ReadOnly INSERT_AI_SQL$ = 
+        <SQL>INSERT INTO `geolite2_city_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`, `subdivision_1_iso_code`, `subdivision_1_name`, `subdivision_2_iso_code`, `subdivision_2_name`, `city_name`, `metro_code`, `time_zone`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_SQL$ = 
+        <SQL>REPLACE INTO `geolite2_city_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`, `subdivision_1_iso_code`, `subdivision_1_name`, `subdivision_2_iso_code`, `subdivision_2_name`, `city_name`, `metro_code`, `time_zone`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_AI_SQL$ = 
+        <SQL>REPLACE INTO `geolite2_city_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`, `subdivision_1_iso_code`, `subdivision_1_name`, `subdivision_2_iso_code`, `subdivision_2_name`, `city_name`, `metro_code`, `time_zone`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}');</SQL>
+
+    Friend Shared ReadOnly DELETE_SQL$ =
+        <SQL>DELETE FROM `geolite2_city_locations` WHERE `geoname_id`='{0}' and `locale_code`='{1}';</SQL>
+
+    Friend Shared ReadOnly UPDATE_SQL$ = 
+        <SQL>UPDATE `geolite2_city_locations` SET `geoname_id`='{0}', `locale_code`='{1}', `continent_code`='{2}', `continent_name`='{3}', `country_iso_code`='{4}', `country_name`='{5}', `subdivision_1_iso_code`='{6}', `subdivision_1_name`='{7}', `subdivision_2_iso_code`='{8}', `subdivision_2_name`='{9}', `city_name`='{10}', `metro_code`='{11}', `time_zone`='{12}' WHERE `geoname_id`='{13}' and `locale_code`='{14}';</SQL>
+
 #End Region
+
 ''' <summary>
 ''' ```SQL
 ''' DELETE FROM `geolite2_city_locations` WHERE `geoname_id`='{0}' and `locale_code`='{1}';
@@ -214,6 +231,7 @@ Public Class geolite2_city_locations: Inherits Oracle.LinuxCompatibility.MySQL.M
     Public Overrides Function GetDeleteSQL() As String
         Return String.Format(DELETE_SQL, geoname_id, locale_code)
     End Function
+
 ''' <summary>
 ''' ```SQL
 ''' INSERT INTO `geolite2_city_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`, `subdivision_1_iso_code`, `subdivision_1_name`, `subdivision_2_iso_code`, `subdivision_2_name`, `city_name`, `metro_code`, `time_zone`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}');
@@ -224,10 +242,27 @@ Public Class geolite2_city_locations: Inherits Oracle.LinuxCompatibility.MySQL.M
     End Function
 
 ''' <summary>
+''' ```SQL
+''' INSERT INTO `geolite2_city_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`, `subdivision_1_iso_code`, `subdivision_1_name`, `subdivision_2_iso_code`, `subdivision_2_name`, `city_name`, `metro_code`, `time_zone`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}');
+''' ```
+''' </summary>
+    Public Overrides Function GetInsertSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(INSERT_AI_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name, subdivision_1_iso_code, subdivision_1_name, subdivision_2_iso_code, subdivision_2_name, city_name, metro_code, time_zone)
+        Else
+        Return String.Format(INSERT_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name, subdivision_1_iso_code, subdivision_1_name, subdivision_2_iso_code, subdivision_2_name, city_name, metro_code, time_zone)
+        End If
+    End Function
+
+''' <summary>
 ''' <see cref="GetInsertSQL"/>
 ''' </summary>
-    Public Overrides Function GetDumpInsertValue() As String
-        Return $"('{geoname_id}', '{locale_code}', '{continent_code}', '{continent_name}', '{country_iso_code}', '{country_name}', '{subdivision_1_iso_code}', '{subdivision_1_name}', '{subdivision_2_iso_code}', '{subdivision_2_name}', '{city_name}', '{metro_code}', '{time_zone}')"
+    Public Overrides Function GetDumpInsertValue(AI As Boolean) As String
+        If AI Then
+            Return $"('{geoname_id}', '{locale_code}', '{continent_code}', '{continent_name}', '{country_iso_code}', '{country_name}', '{subdivision_1_iso_code}', '{subdivision_1_name}', '{subdivision_2_iso_code}', '{subdivision_2_name}', '{city_name}', '{metro_code}', '{time_zone}')"
+        Else
+            Return $"('{geoname_id}', '{locale_code}', '{continent_code}', '{continent_name}', '{country_iso_code}', '{country_name}', '{subdivision_1_iso_code}', '{subdivision_1_name}', '{subdivision_2_iso_code}', '{subdivision_2_name}', '{city_name}', '{metro_code}', '{time_zone}')"
+        End If
     End Function
 
 
@@ -239,6 +274,20 @@ Public Class geolite2_city_locations: Inherits Oracle.LinuxCompatibility.MySQL.M
     Public Overrides Function GetReplaceSQL() As String
         Return String.Format(REPLACE_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name, subdivision_1_iso_code, subdivision_1_name, subdivision_2_iso_code, subdivision_2_name, city_name, metro_code, time_zone)
     End Function
+
+''' <summary>
+''' ```SQL
+''' REPLACE INTO `geolite2_city_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`, `subdivision_1_iso_code`, `subdivision_1_name`, `subdivision_2_iso_code`, `subdivision_2_name`, `city_name`, `metro_code`, `time_zone`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}');
+''' ```
+''' </summary>
+    Public Overrides Function GetReplaceSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(REPLACE_AI_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name, subdivision_1_iso_code, subdivision_1_name, subdivision_2_iso_code, subdivision_2_name, city_name, metro_code, time_zone)
+        Else
+        Return String.Format(REPLACE_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name, subdivision_1_iso_code, subdivision_1_name, subdivision_2_iso_code, subdivision_2_name, city_name, metro_code, time_zone)
+        End If
+    End Function
+
 ''' <summary>
 ''' ```SQL
 ''' UPDATE `geolite2_city_locations` SET `geoname_id`='{0}', `locale_code`='{1}', `continent_code`='{2}', `continent_name`='{3}', `country_iso_code`='{4}', `country_name`='{5}', `subdivision_1_iso_code`='{6}', `subdivision_1_name`='{7}', `subdivision_2_iso_code`='{8}', `subdivision_2_name`='{9}', `city_name`='{10}', `metro_code`='{11}', `time_zone`='{12}' WHERE `geoname_id`='{13}' and `locale_code`='{14}';
@@ -248,9 +297,13 @@ Public Class geolite2_city_locations: Inherits Oracle.LinuxCompatibility.MySQL.M
         Return String.Format(UPDATE_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name, subdivision_1_iso_code, subdivision_1_name, subdivision_2_iso_code, subdivision_2_name, city_name, metro_code, time_zone, geoname_id, locale_code)
     End Function
 #End Region
-Public Function Clone() As geolite2_city_locations
-                  Return DirectCast(MyClass.MemberwiseClone, geolite2_city_locations)
-              End Function
+
+''' <summary>
+                     ''' Memberwise clone of current table Object.
+                     ''' </summary>
+                     Public Function Clone() As geolite2_city_locations
+                         Return DirectCast(MyClass.MemberwiseClone, geolite2_city_locations)
+                     End Function
 End Class
 
 

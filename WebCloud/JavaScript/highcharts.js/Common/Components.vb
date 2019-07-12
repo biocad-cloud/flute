@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::35f9f6ec7d047922a2ad6a36fc6cb5b9, WebCloud\JavaScript\highcharts.js\Common\Components.vb"
+﻿#Region "Microsoft.VisualBasic::22ba85bb29b4a156bef01a869da92781, WebCloud\JavaScript\highcharts.js\Common\Components.vb"
 
     ' Author:
     ' 
@@ -34,9 +34,9 @@
     ' Class Axis
     ' 
     '     Properties: allowDecimals, categories, className, crosshair, dateTimeLabelFormats
-    '                 endOnTick, gridLineWidth, labels, max, min
-    '                 opposite, plotBands, showFirstLabel, showLastLabel, startOnTick
-    '                 tickInterval, title, type
+    '                 enabled, endOnTick, gridLineWidth, labels, max
+    '                 min, opposite, plotBands, showFirstLabel, showLastLabel
+    '                 startOnTick, tickInterval, title, type
     ' 
     ' Class dateTimeLabelFormats
     ' 
@@ -101,10 +101,10 @@
 
 #End Region
 
-
 Imports Newtonsoft.Json
 
 Public Class Axis
+
     Public Property type As String
     Public Property allowDecimals As Boolean?
     Public Property className As String
@@ -120,6 +120,8 @@ Public Class Axis
     Public Property gridLineWidth As Boolean?
     Public Property showFirstLabel As Boolean?
     Public Property crosshair As Boolean?
+    Public Property enabled As Boolean?
+
     ''' <summary>
     ''' 逻辑值或者一个实数
     ''' </summary>
@@ -244,4 +246,3 @@ Public Class credits
     ''' <returns></returns>
     Public Property text As String
 End Class
-

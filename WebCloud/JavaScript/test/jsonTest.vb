@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::7293a66fdc063c649d2050fc00604a62, WebCloud\JavaScript\test\jsonTest.vb"
+﻿#Region "Microsoft.VisualBasic::048baa0904b823d35bb429b18ab16485, WebCloud\JavaScript\test\jsonTest.vb"
 
     ' Author:
     ' 
@@ -207,4 +207,3 @@ Module jsonTest
         Pause()
     End Sub
 End Module
-

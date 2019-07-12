@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::8acb9794f328af8a66ff41b724fc8d5b, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\args\HttpResponse.vb"
+﻿#Region "Microsoft.VisualBasic::818558182f456beeee779376ed7c90e1, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\args\HttpResponse.vb"
 
     ' Author:
     ' 
@@ -33,6 +33,8 @@
 
     '     Class HttpResponse
     ' 
+    '         Properties: AccessControlAllowOrigin
+    ' 
     '         Constructor: (+1 Overloads) Sub New
     ' 
     '         Function: FlushAsync, (+3 Overloads) WriteAsync, (+4 Overloads) WriteLineAsync, writeSuccess
@@ -60,13 +62,14 @@ Imports Microsoft.VisualBasic.Serialization.JSON
 Imports Microsoft.VisualBasic.Text
 Imports SMRUCC.WebCloud.HTTPInternal.Core
 
-Namespace AppEngine.APIMethods.Arguments
+Namespace Core
 
-    Public Class HttpResponse
-        Implements IDisposable
+    Public Class HttpResponse : Implements IDisposable
 
-        ReadOnly response As StreamWriter
-        ReadOnly writeFailed As Action(Of String)
+        Friend ReadOnly response As StreamWriter
+        Friend ReadOnly writeFailed As Action(Of String)
+
+        Public Property AccessControlAllowOrigin As String
 
         Sub New(rep As StreamWriter, write404 As Action(Of String))
             response = rep
@@ -97,7 +100,8 @@ Namespace AppEngine.APIMethods.Arguments
         End Sub
 
         Public Sub WriteHTML(html As String)
-            If Not __writeHTML AndAlso Not __writeData Then  ' 如果writeData是True，则说明在这之前已经写了其他数据，就不写http头部了
+            ' 如果writeData是True，则说明在这之前已经写了其他数据，就不写http头部了
+            If Not __writeHTML AndAlso Not __writeData Then
                 __writeHTML = writeSuccess()
             End If
             Call response.WriteLine(html)
@@ -133,8 +137,14 @@ Namespace AppEngine.APIMethods.Arguments
             response.WriteLine("Accept-Ranges: bytes")
             response.WriteLine("Content-Length: " & Length)
             response.WriteLine("Content-Type: " & content_type)
+            response.WriteLine(HttpProcessor.XPoweredBy)
 
-            response.WriteLine("") ' this terminates the HTTP headers.. everything after this is HTTP body..
+            If Not AccessControlAllowOrigin.StringEmpty Then
+                response.WriteLine("Access-Control-Allow-Origin: " & AccessControlAllowOrigin)
+            End If
+
+            ' this terminates the HTTP headers.. everything after this is HTTP body..
+            response.WriteLine()
             response.Flush()
         End Sub
 
@@ -146,12 +156,16 @@ Namespace AppEngine.APIMethods.Arguments
             response.WriteLine("Connection: close")
             ' ..add your own headers here if you like
 
+            If Not AccessControlAllowOrigin.StringEmpty Then
+                response.WriteLine("Access-Control-Allow-Origin: " & AccessControlAllowOrigin)
+            End If
+
             Call content.WriteHeader(response)
 
-            response.WriteLine("X-Powered-By: Microsoft VisualBasic")
-            response.WriteLine("")
-            ' this terminates the HTTP headers.. everything after this is HTTP body..
+            response.WriteLine(HttpProcessor.XPoweredBy)
 
+            ' this terminates the HTTP headers.. everything after this is HTTP body..
+            response.WriteLine()
             response.Flush()
         End Sub
 
@@ -171,8 +185,8 @@ Namespace AppEngine.APIMethods.Arguments
         ''' </summary>
         ''' <typeparam name="T"></typeparam>
         ''' <param name="obj"></param>
-        Public Sub WriteJSON(Of T)(obj As T)
-            Dim json As String = obj.GetJson
+        Public Sub WriteJSON(Of T)(obj As T, Optional indent As Boolean = False)
+            Dim json As String = obj.GetJson(indent:=indent)
             Dim bytes As Byte() = TextEncodings.UTF8WithoutBOM.GetBytes(json)
 
             If Not __writeData Then

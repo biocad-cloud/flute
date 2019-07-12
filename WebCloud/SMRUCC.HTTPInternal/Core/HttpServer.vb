@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::fe7cf60329f25530189a414d4ab3a0ad, WebCloud\SMRUCC.HTTPInternal\Core\HttpServer.vb"
+﻿#Region "Microsoft.VisualBasic::a9a4e743a2d821731f6bcf240951d866, WebCloud\SMRUCC.HTTPInternal\Core\HttpServer.vb"
 
     ' Author:
     ' 
@@ -250,7 +250,8 @@ Namespace Core
         ''' 
         ''' </example>
         Public MustOverride Sub handleGETRequest(p As HttpProcessor)
-        Public MustOverride Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
+        Public MustOverride Sub handlePOSTRequest(p As HttpProcessor, inputData$)
+        Public MustOverride Sub handlePUTMethod(p As HttpProcessor, inputData$)
         Public MustOverride Sub handleOtherMethod(p As HttpProcessor)
 
 #Region "IDisposable Support"

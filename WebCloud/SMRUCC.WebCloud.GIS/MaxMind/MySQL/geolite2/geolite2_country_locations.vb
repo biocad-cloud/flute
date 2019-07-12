@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::e7a5b18129c32377e990f88dd7a3c391, WebCloud\SMRUCC.WebCloud.GIS\MaxMind\MySQL\geolite2\geolite2_country_locations.vb"
+﻿#Region "Microsoft.VisualBasic::c14bb0e2035e8505f36698716e81dc3a, WebCloud\SMRUCC.WebCloud.GIS\MaxMind\MySQL\geolite2\geolite2_country_locations.vb"
 
     ' Author:
     ' 
@@ -36,7 +36,8 @@
     '     Properties: continent_code, continent_name, country_iso_code, country_name, geoname_id
     '                 locale_code
     ' 
-    '     Function: GetDeleteSQL, GetDumpInsertValue, GetInsertSQL, GetReplaceSQL, GetUpdateSQL
+    '     Function: Clone, GetDeleteSQL, GetDumpInsertValue, (+2 Overloads) GetInsertSQL, (+2 Overloads) GetReplaceSQL
+    '               GetUpdateSQL
     ' 
     ' 
     ' /********************************************************************************/
@@ -47,12 +48,13 @@ REM  Oracle.LinuxCompatibility.MySQL.CodeSolution.VisualBasic.CodeGenerator
 REM  MYSQL Schema Mapper
 REM      for Microsoft VisualBasic.NET 2.1.0.2569
 
-REM  Dump @2017/11/5 上午 01:32:17
+REM  Dump @12/2/2018 7:45:34 PM
 
 
 Imports System.Data.Linq.Mapping
 Imports System.Xml.Serialization
 Imports Oracle.LinuxCompatibility.MySQL.Reflection.DbAttributes
+Imports MySqlScript = Oracle.LinuxCompatibility.MySQL.Scripting.Extensions
 
 Namespace MaxMind.geolite2
 
@@ -99,7 +101,7 @@ CREATE TABLE `geolite2_country_locations` (
   `country_name` tinytext,
   PRIMARY KEY (`geoname_id`,`locale_code`),
   UNIQUE KEY `geoname_id_UNIQUE` (`geoname_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;")>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;")>
 Public Class geolite2_country_locations: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #Region "Public Property Mapping To Database Fields"
     <DatabaseField("geoname_id"), PrimaryKey, NotNull, DataType(MySqlDbType.Int64, "11"), Column(Name:="geoname_id"), XmlAttribute> Public Property geoname_id As Long
@@ -111,11 +113,26 @@ Public Class geolite2_country_locations: Inherits Oracle.LinuxCompatibility.MySQ
 #End Region
 #Region "Public SQL Interface"
 #Region "Interface SQL"
-    Private Shared ReadOnly INSERT_SQL As String = <SQL>INSERT INTO `geolite2_country_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');</SQL>
-    Private Shared ReadOnly REPLACE_SQL As String = <SQL>REPLACE INTO `geolite2_country_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');</SQL>
-    Private Shared ReadOnly DELETE_SQL As String = <SQL>DELETE FROM `geolite2_country_locations` WHERE `geoname_id`='{0}' and `locale_code`='{1}';</SQL>
-    Private Shared ReadOnly UPDATE_SQL As String = <SQL>UPDATE `geolite2_country_locations` SET `geoname_id`='{0}', `locale_code`='{1}', `continent_code`='{2}', `continent_name`='{3}', `country_iso_code`='{4}', `country_name`='{5}' WHERE `geoname_id`='{6}' and `locale_code`='{7}';</SQL>
+    Friend Shared ReadOnly INSERT_SQL$ = 
+        <SQL>INSERT INTO `geolite2_country_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');</SQL>
+
+    Friend Shared ReadOnly INSERT_AI_SQL$ = 
+        <SQL>INSERT INTO `geolite2_country_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_SQL$ = 
+        <SQL>REPLACE INTO `geolite2_country_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_AI_SQL$ = 
+        <SQL>REPLACE INTO `geolite2_country_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');</SQL>
+
+    Friend Shared ReadOnly DELETE_SQL$ =
+        <SQL>DELETE FROM `geolite2_country_locations` WHERE `geoname_id`='{0}' and `locale_code`='{1}';</SQL>
+
+    Friend Shared ReadOnly UPDATE_SQL$ = 
+        <SQL>UPDATE `geolite2_country_locations` SET `geoname_id`='{0}', `locale_code`='{1}', `continent_code`='{2}', `continent_name`='{3}', `country_iso_code`='{4}', `country_name`='{5}' WHERE `geoname_id`='{6}' and `locale_code`='{7}';</SQL>
+
 #End Region
+
 ''' <summary>
 ''' ```SQL
 ''' DELETE FROM `geolite2_country_locations` WHERE `geoname_id`='{0}' and `locale_code`='{1}';
@@ -124,6 +141,7 @@ Public Class geolite2_country_locations: Inherits Oracle.LinuxCompatibility.MySQ
     Public Overrides Function GetDeleteSQL() As String
         Return String.Format(DELETE_SQL, geoname_id, locale_code)
     End Function
+
 ''' <summary>
 ''' ```SQL
 ''' INSERT INTO `geolite2_country_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');
@@ -134,10 +152,27 @@ Public Class geolite2_country_locations: Inherits Oracle.LinuxCompatibility.MySQ
     End Function
 
 ''' <summary>
+''' ```SQL
+''' INSERT INTO `geolite2_country_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');
+''' ```
+''' </summary>
+    Public Overrides Function GetInsertSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(INSERT_AI_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name)
+        Else
+        Return String.Format(INSERT_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name)
+        End If
+    End Function
+
+''' <summary>
 ''' <see cref="GetInsertSQL"/>
 ''' </summary>
-    Public Overrides Function GetDumpInsertValue() As String
-        Return $"('{geoname_id}', '{locale_code}', '{continent_code}', '{continent_name}', '{country_iso_code}', '{country_name}')"
+    Public Overrides Function GetDumpInsertValue(AI As Boolean) As String
+        If AI Then
+            Return $"('{geoname_id}', '{locale_code}', '{continent_code}', '{continent_name}', '{country_iso_code}', '{country_name}')"
+        Else
+            Return $"('{geoname_id}', '{locale_code}', '{continent_code}', '{continent_name}', '{country_iso_code}', '{country_name}')"
+        End If
     End Function
 
 
@@ -149,6 +184,20 @@ Public Class geolite2_country_locations: Inherits Oracle.LinuxCompatibility.MySQ
     Public Overrides Function GetReplaceSQL() As String
         Return String.Format(REPLACE_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name)
     End Function
+
+''' <summary>
+''' ```SQL
+''' REPLACE INTO `geolite2_country_locations` (`geoname_id`, `locale_code`, `continent_code`, `continent_name`, `country_iso_code`, `country_name`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}');
+''' ```
+''' </summary>
+    Public Overrides Function GetReplaceSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(REPLACE_AI_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name)
+        Else
+        Return String.Format(REPLACE_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name)
+        End If
+    End Function
+
 ''' <summary>
 ''' ```SQL
 ''' UPDATE `geolite2_country_locations` SET `geoname_id`='{0}', `locale_code`='{1}', `continent_code`='{2}', `continent_name`='{3}', `country_iso_code`='{4}', `country_name`='{5}' WHERE `geoname_id`='{6}' and `locale_code`='{7}';
@@ -158,9 +207,13 @@ Public Class geolite2_country_locations: Inherits Oracle.LinuxCompatibility.MySQ
         Return String.Format(UPDATE_SQL, geoname_id, locale_code, continent_code, continent_name, country_iso_code, country_name, geoname_id, locale_code)
     End Function
 #End Region
-Public Function Clone() As geolite2_country_locations
-                  Return DirectCast(MyClass.MemberwiseClone, geolite2_country_locations)
-              End Function
+
+''' <summary>
+                     ''' Memberwise clone of current table Object.
+                     ''' </summary>
+                     Public Function Clone() As geolite2_country_locations
+                         Return DirectCast(MyClass.MemberwiseClone, geolite2_country_locations)
+                     End Function
 End Class
 
 

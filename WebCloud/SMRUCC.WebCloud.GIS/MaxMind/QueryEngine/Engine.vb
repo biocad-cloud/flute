@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::e5b271eecce3c01b019eca60d7c8965b, WebCloud\SMRUCC.WebCloud.GIS\MaxMind\QueryEngine\Engine.vb"
+﻿#Region "Microsoft.VisualBasic::48196066056304fadfb900e3a83e389f, WebCloud\SMRUCC.WebCloud.GIS\MaxMind\QueryEngine\Engine.vb"
 
     ' Author:
     ' 
@@ -46,6 +46,7 @@
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Net
 Imports Oracle.LinuxCompatibility.MySQL
+Imports Oracle.LinuxCompatibility.MySQL.Uri
 Imports SMRUCC.WebCloud.GIS.MaxMind.geolite2
 
 Namespace MaxMind
@@ -55,7 +56,7 @@ Namespace MaxMind
     ''' </summary>
     Public Class Engine
 
-        Public ReadOnly Property MySQl As MySQL
+        Public ReadOnly Property MySQl As MySqli
 
         Sub New(uri As ConnectionUri)
             Me.MySQl = uri

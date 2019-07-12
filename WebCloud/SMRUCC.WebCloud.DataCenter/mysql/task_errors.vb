@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::4b4a64bb0f44a0cb1b08bf06626b9366, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\task_errors.vb"
+﻿#Region "Microsoft.VisualBasic::1cbb0ffad7e5ac6077dd2b099fefe9d9, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\task_errors.vb"
 
     ' Author:
     ' 
@@ -36,7 +36,8 @@
     '     Properties: app, exception, solved, stack_trace, task
     '                 type, uid
     ' 
-    '     Function: GetDeleteSQL, GetDumpInsertValue, GetInsertSQL, GetReplaceSQL, GetUpdateSQL
+    '     Function: Clone, GetDeleteSQL, GetDumpInsertValue, (+2 Overloads) GetInsertSQL, (+2 Overloads) GetReplaceSQL
+    '               GetUpdateSQL
     ' 
     ' 
     ' /********************************************************************************/
@@ -47,7 +48,7 @@ REM  Oracle.LinuxCompatibility.MySQL.CodeSolution.VisualBasic.CodeGenerator
 REM  MYSQL Schema Mapper
 REM      for Microsoft VisualBasic.NET 2.1.0.2569
 
-REM  Dump @3/16/2018 10:32:32 PM
+REM  Dump @5/25/2019 3:17:58 PM
 
 
 Imports System.Data.Linq.Mapping
@@ -98,7 +99,7 @@ CREATE TABLE `task_errors` (
   KEY `fk_task_errors_app1_idx` (`app`),
   CONSTRAINT `error_task` FOREIGN KEY (`app`) REFERENCES `task_pool` (`uid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_task_errors_app1` FOREIGN KEY (`app`) REFERENCES `app` (`uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Task executing errors log';")>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Task executing errors log';")>
 Public Class task_errors: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #Region "Public Property Mapping To Database Fields"
     <DatabaseField("uid"), PrimaryKey, NotNull, DataType(MySqlDbType.Int64, "11"), Column(Name:="uid"), XmlAttribute> Public Property uid As Long
@@ -141,11 +142,26 @@ Public Class task_errors: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #End Region
 #Region "Public SQL Interface"
 #Region "Interface SQL"
-    Private Shared ReadOnly INSERT_SQL As String = <SQL>INSERT INTO `task_errors` (`uid`, `app`, `task`, `exception`, `type`, `stack-trace`, `solved`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');</SQL>
-    Private Shared ReadOnly REPLACE_SQL As String = <SQL>REPLACE INTO `task_errors` (`uid`, `app`, `task`, `exception`, `type`, `stack-trace`, `solved`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');</SQL>
-    Private Shared ReadOnly DELETE_SQL As String = <SQL>DELETE FROM `task_errors` WHERE `uid`='{0}' and `app`='{1}';</SQL>
-    Private Shared ReadOnly UPDATE_SQL As String = <SQL>UPDATE `task_errors` SET `uid`='{0}', `app`='{1}', `task`='{2}', `exception`='{3}', `type`='{4}', `stack-trace`='{5}', `solved`='{6}' WHERE `uid`='{7}' and `app`='{8}';</SQL>
+    Friend Shared ReadOnly INSERT_SQL$ = 
+        <SQL>INSERT INTO `task_errors` (`uid`, `app`, `task`, `exception`, `type`, `stack-trace`, `solved`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');</SQL>
+
+    Friend Shared ReadOnly INSERT_AI_SQL$ = 
+        <SQL>INSERT INTO `task_errors` (`uid`, `app`, `task`, `exception`, `type`, `stack-trace`, `solved`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_SQL$ = 
+        <SQL>REPLACE INTO `task_errors` (`uid`, `app`, `task`, `exception`, `type`, `stack-trace`, `solved`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_AI_SQL$ = 
+        <SQL>REPLACE INTO `task_errors` (`uid`, `app`, `task`, `exception`, `type`, `stack-trace`, `solved`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');</SQL>
+
+    Friend Shared ReadOnly DELETE_SQL$ =
+        <SQL>DELETE FROM `task_errors` WHERE `uid`='{0}' and `app`='{1}';</SQL>
+
+    Friend Shared ReadOnly UPDATE_SQL$ = 
+        <SQL>UPDATE `task_errors` SET `uid`='{0}', `app`='{1}', `task`='{2}', `exception`='{3}', `type`='{4}', `stack-trace`='{5}', `solved`='{6}' WHERE `uid`='{7}' and `app`='{8}';</SQL>
+
 #End Region
+
 ''' <summary>
 ''' ```SQL
 ''' DELETE FROM `task_errors` WHERE `uid`='{0}' and `app`='{1}';
@@ -154,6 +170,7 @@ Public Class task_errors: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     Public Overrides Function GetDeleteSQL() As String
         Return String.Format(DELETE_SQL, uid, app)
     End Function
+
 ''' <summary>
 ''' ```SQL
 ''' INSERT INTO `task_errors` (`uid`, `app`, `task`, `exception`, `type`, `stack-trace`, `solved`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');
@@ -164,10 +181,27 @@ Public Class task_errors: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     End Function
 
 ''' <summary>
+''' ```SQL
+''' INSERT INTO `task_errors` (`uid`, `app`, `task`, `exception`, `type`, `stack-trace`, `solved`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');
+''' ```
+''' </summary>
+    Public Overrides Function GetInsertSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(INSERT_AI_SQL, uid, app, task, exception, type, stack_trace, solved)
+        Else
+        Return String.Format(INSERT_SQL, uid, app, task, exception, type, stack_trace, solved)
+        End If
+    End Function
+
+''' <summary>
 ''' <see cref="GetInsertSQL"/>
 ''' </summary>
-    Public Overrides Function GetDumpInsertValue() As String
-        Return $"('{uid}', '{app}', '{task}', '{exception}', '{type}', '{stack_trace}', '{solved}')"
+    Public Overrides Function GetDumpInsertValue(AI As Boolean) As String
+        If AI Then
+            Return $"('{uid}', '{app}', '{task}', '{exception}', '{type}', '{stack_trace}', '{solved}')"
+        Else
+            Return $"('{uid}', '{app}', '{task}', '{exception}', '{type}', '{stack_trace}', '{solved}')"
+        End If
     End Function
 
 
@@ -179,6 +213,20 @@ Public Class task_errors: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     Public Overrides Function GetReplaceSQL() As String
         Return String.Format(REPLACE_SQL, uid, app, task, exception, type, stack_trace, solved)
     End Function
+
+''' <summary>
+''' ```SQL
+''' REPLACE INTO `task_errors` (`uid`, `app`, `task`, `exception`, `type`, `stack-trace`, `solved`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');
+''' ```
+''' </summary>
+    Public Overrides Function GetReplaceSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(REPLACE_AI_SQL, uid, app, task, exception, type, stack_trace, solved)
+        Else
+        Return String.Format(REPLACE_SQL, uid, app, task, exception, type, stack_trace, solved)
+        End If
+    End Function
+
 ''' <summary>
 ''' ```SQL
 ''' UPDATE `task_errors` SET `uid`='{0}', `app`='{1}', `task`='{2}', `exception`='{3}', `type`='{4}', `stack-trace`='{5}', `solved`='{6}' WHERE `uid`='{7}' and `app`='{8}';
@@ -188,10 +236,15 @@ Public Class task_errors: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
         Return String.Format(UPDATE_SQL, uid, app, task, exception, type, stack_trace, solved, uid, app)
     End Function
 #End Region
-Public Function Clone() As task_errors
-                  Return DirectCast(MyClass.MemberwiseClone, task_errors)
-              End Function
+
+''' <summary>
+                     ''' Memberwise clone of current table Object.
+                     ''' </summary>
+                     Public Function Clone() As task_errors
+                         Return DirectCast(MyClass.MemberwiseClone, task_errors)
+                     End Function
 End Class
 
 
 End Namespace
+

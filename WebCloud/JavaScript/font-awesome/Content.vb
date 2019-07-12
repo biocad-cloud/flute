@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::16ef78e1c6d45dc3eafb5103cc8812bb, WebCloud\JavaScript\font-awesome\Content.vb"
+﻿#Region "Microsoft.VisualBasic::5260811c1fbfb6689d89691b96831062, WebCloud\JavaScript\font-awesome\Content.vb"
 
     ' Author:
     ' 
@@ -55,4 +55,3 @@ Public Class Content : Inherits Attribute
         Return Content
     End Function
 End Class
-

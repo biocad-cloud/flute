@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::f7819217e94cdecab95281dae8e58f2f, WebCloud\JavaScript\test\Module1.vb"
+﻿#Region "Microsoft.VisualBasic::1aaae4afa3c668dad377ab98029dde7a, WebCloud\JavaScript\test\Module1.vb"
 
     ' Author:
     ' 
@@ -53,4 +53,3 @@ Module Module1
         Pause()
     End Sub
 End Module
-

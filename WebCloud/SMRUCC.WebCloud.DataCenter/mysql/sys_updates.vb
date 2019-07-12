@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::f8cc333b65e329f4bcda9db4874bb1af, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\sys_updates.vb"
+﻿#Region "Microsoft.VisualBasic::c37f02fd21e8ffac53bab550eceae3a2, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\sys_updates.vb"
 
     ' Author:
     ' 
@@ -35,7 +35,8 @@
     ' 
     '     Properties: [date], app, details, title, uid
     ' 
-    '     Function: GetDeleteSQL, GetDumpInsertValue, GetInsertSQL, GetReplaceSQL, GetUpdateSQL
+    '     Function: Clone, GetDeleteSQL, GetDumpInsertValue, (+2 Overloads) GetInsertSQL, (+2 Overloads) GetReplaceSQL
+    '               GetUpdateSQL
     ' 
     ' 
     ' /********************************************************************************/
@@ -46,7 +47,7 @@ REM  Oracle.LinuxCompatibility.MySQL.CodeSolution.VisualBasic.CodeGenerator
 REM  MYSQL Schema Mapper
 REM      for Microsoft VisualBasic.NET 2.1.0.2569
 
-REM  Dump @3/16/2018 10:32:32 PM
+REM  Dump @5/25/2019 3:17:58 PM
 
 
 Imports System.Data.Linq.Mapping
@@ -89,7 +90,7 @@ CREATE TABLE `sys_updates` (
   `app` int(11) NOT NULL DEFAULT '-1' COMMENT '如果这个字段不为-1，则表示更新的内容为某一个app的内容更新',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `uid_UNIQUE` (`uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='网站更新记录';")>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='网站更新记录';")>
 Public Class sys_updates: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #Region "Public Property Mapping To Database Fields"
     <DatabaseField("uid"), PrimaryKey, AutoIncrement, NotNull, DataType(MySqlDbType.Int64, "11"), Column(Name:="uid"), XmlAttribute> Public Property uid As Long
@@ -106,11 +107,26 @@ Public Class sys_updates: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #End Region
 #Region "Public SQL Interface"
 #Region "Interface SQL"
-    Private Shared ReadOnly INSERT_SQL As String = <SQL>INSERT INTO `sys_updates` (`uid`, `date`, `title`, `details`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}');</SQL>
-    Private Shared ReadOnly REPLACE_SQL As String = <SQL>REPLACE INTO `sys_updates` (`uid`, `date`, `title`, `details`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}');</SQL>
-    Private Shared ReadOnly DELETE_SQL As String = <SQL>DELETE FROM `sys_updates` WHERE `uid` = '{0}';</SQL>
-    Private Shared ReadOnly UPDATE_SQL As String = <SQL>UPDATE `sys_updates` SET `uid`='{0}', `date`='{1}', `title`='{2}', `details`='{3}', `app`='{4}' WHERE `uid` = '{5}';</SQL>
+    Friend Shared ReadOnly INSERT_SQL$ = 
+        <SQL>INSERT INTO `sys_updates` (`date`, `title`, `details`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
+
+    Friend Shared ReadOnly INSERT_AI_SQL$ = 
+        <SQL>INSERT INTO `sys_updates` (`uid`, `date`, `title`, `details`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_SQL$ = 
+        <SQL>REPLACE INTO `sys_updates` (`date`, `title`, `details`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_AI_SQL$ = 
+        <SQL>REPLACE INTO `sys_updates` (`uid`, `date`, `title`, `details`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}');</SQL>
+
+    Friend Shared ReadOnly DELETE_SQL$ =
+        <SQL>DELETE FROM `sys_updates` WHERE `uid` = '{0}';</SQL>
+
+    Friend Shared ReadOnly UPDATE_SQL$ = 
+        <SQL>UPDATE `sys_updates` SET `uid`='{0}', `date`='{1}', `title`='{2}', `details`='{3}', `app`='{4}' WHERE `uid` = '{5}';</SQL>
+
 #End Region
+
 ''' <summary>
 ''' ```SQL
 ''' DELETE FROM `sys_updates` WHERE `uid` = '{0}';
@@ -119,20 +135,38 @@ Public Class sys_updates: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     Public Overrides Function GetDeleteSQL() As String
         Return String.Format(DELETE_SQL, uid)
     End Function
+
 ''' <summary>
 ''' ```SQL
 ''' INSERT INTO `sys_updates` (`uid`, `date`, `title`, `details`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}');
 ''' ```
 ''' </summary>
     Public Overrides Function GetInsertSQL() As String
-        Return String.Format(INSERT_SQL, uid, MySqlScript.ToMySqlDateTimeString([date]), title, details, app)
+        Return String.Format(INSERT_SQL, MySqlScript.ToMySqlDateTimeString([date]), title, details, app)
+    End Function
+
+''' <summary>
+''' ```SQL
+''' INSERT INTO `sys_updates` (`uid`, `date`, `title`, `details`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}');
+''' ```
+''' </summary>
+    Public Overrides Function GetInsertSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(INSERT_AI_SQL, uid, MySqlScript.ToMySqlDateTimeString([date]), title, details, app)
+        Else
+        Return String.Format(INSERT_SQL, MySqlScript.ToMySqlDateTimeString([date]), title, details, app)
+        End If
     End Function
 
 ''' <summary>
 ''' <see cref="GetInsertSQL"/>
 ''' </summary>
-    Public Overrides Function GetDumpInsertValue() As String
-        Return $"('{uid}', '{[date]}', '{title}', '{details}', '{app}')"
+    Public Overrides Function GetDumpInsertValue(AI As Boolean) As String
+        If AI Then
+            Return $"('{uid}', '{[date]}', '{title}', '{details}', '{app}')"
+        Else
+            Return $"('{[date]}', '{title}', '{details}', '{app}')"
+        End If
     End Function
 
 
@@ -142,8 +176,22 @@ Public Class sys_updates: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 ''' ```
 ''' </summary>
     Public Overrides Function GetReplaceSQL() As String
-        Return String.Format(REPLACE_SQL, uid, MySqlScript.ToMySqlDateTimeString([date]), title, details, app)
+        Return String.Format(REPLACE_SQL, MySqlScript.ToMySqlDateTimeString([date]), title, details, app)
     End Function
+
+''' <summary>
+''' ```SQL
+''' REPLACE INTO `sys_updates` (`uid`, `date`, `title`, `details`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}');
+''' ```
+''' </summary>
+    Public Overrides Function GetReplaceSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(REPLACE_AI_SQL, uid, MySqlScript.ToMySqlDateTimeString([date]), title, details, app)
+        Else
+        Return String.Format(REPLACE_SQL, MySqlScript.ToMySqlDateTimeString([date]), title, details, app)
+        End If
+    End Function
+
 ''' <summary>
 ''' ```SQL
 ''' UPDATE `sys_updates` SET `uid`='{0}', `date`='{1}', `title`='{2}', `details`='{3}', `app`='{4}' WHERE `uid` = '{5}';
@@ -153,10 +201,15 @@ Public Class sys_updates: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
         Return String.Format(UPDATE_SQL, uid, MySqlScript.ToMySqlDateTimeString([date]), title, details, app, uid)
     End Function
 #End Region
-Public Function Clone() As sys_updates
-                  Return DirectCast(MyClass.MemberwiseClone, sys_updates)
-              End Function
+
+''' <summary>
+                     ''' Memberwise clone of current table Object.
+                     ''' </summary>
+                     Public Function Clone() As sys_updates
+                         Return DirectCast(MyClass.MemberwiseClone, sys_updates)
+                     End Function
 End Class
 
 
 End Namespace
+

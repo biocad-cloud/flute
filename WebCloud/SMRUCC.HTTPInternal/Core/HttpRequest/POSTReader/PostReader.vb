@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::bd9280471248c5a4df25bff667499b55, WebCloud\SMRUCC.HTTPInternal\AppEngine\POSTReader\PostReader.vb"
+﻿#Region "Microsoft.VisualBasic::b92da9ace3f6b9015db26005d71f0d93, WebCloud\SMRUCC.HTTPInternal\AppEngine\POSTReader\PostReader.vb"
 
     ' Author:
     ' 
@@ -39,7 +39,7 @@
     ' 
     '         Function: GetParameter, GetSubStream
     ' 
-    '         Sub: __loadMultiPart, LoadMultiPart
+    '         Sub: loadjQueryPOST, loadMultiPart, LoadMultiPart
     ' 
     ' 
     ' /********************************************************************************/
@@ -51,9 +51,10 @@ Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports Microsoft.VisualBasic.Language
+Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Serialization.JSON
 
-Namespace AppEngine.POSTParser
+Namespace Core.HttpStream
 
     ''' <summary>
     ''' POST参数的解析工具
@@ -96,40 +97,84 @@ Namespace AppEngine.POSTParser
             Return header.Substring(ap + 1, [end] - ap - 1)
         End Function
 
-        Public ReadOnly Property ContentType() As String
-        Public ReadOnly Property InputStream() As MemoryStream
+        Public ReadOnly Property ContentType As String
+        ''' <summary>
+        ''' 所POST上传的数据的临时文件的文件路径
+        ''' </summary>
+        ''' <returns></returns>
+        Public ReadOnly Property InputStream As String
         Public ReadOnly Property ContentEncoding As Encoding
         Public ReadOnly Property Form As New NameValueCollection
         Public ReadOnly Property Files As New Dictionary(Of String, List(Of HttpPostedFile))
 
-        Sub New(input As MemoryStream, contentType As String, encoding As Encoding)
+        ''' <summary>
+        ''' 
+        ''' </summary>
+        ''' <param name="input">所POST上传的数据是保存在一个临时文件之中的</param>
+        ''' <param name="contentType$"></param>
+        ''' <param name="encoding"></param>
+        ''' <param name="fileName$"></param>
+        Sub New(input$, contentType$, encoding As Encoding, Optional fileName$ = Nothing)
             Me.InputStream = input
             Me.ContentType = contentType
             Me.ContentEncoding = encoding
 
-            Call LoadMultiPart()
+            Call LoadMultiPart(fileName)
         End Sub
 
-        ' GetSubStream returns a 'copy' of the InputStream with Position set to 0.
-        Private Shared Function GetSubStream(stream As Stream) As Stream
-            Dim other As MemoryStream = DirectCast(stream, MemoryStream)
-            Return New MemoryStream(other.GetBuffer(), 0, CInt(other.Length), False, True)
+        ''' <summary>
+        ''' GetSubStream returns a 'copy' of the InputStream with Position set to 0.
+        ''' </summary>
+        ''' <returns></returns>
+        ''' 
+        <MethodImpl(MethodImplOptions.AggressiveInlining)>
+        Private Function GetSubStream() As Stream
+            Return InputStream.Open(doClear:=False)
         End Function
+
+        Private Sub loadjQueryPOST(fileName As String)
+            Using inputStream As FileStream = Me.InputStream.Open(doClear:=False)
+                ' 在这里可能存在两种情况：
+                ' 一种是jquery POST
+                ' 另外的一种就是只有单独的一个文件的POST上传，
+                ' 现在我们假设jquery POST的长度很小， 而文件上传的长度很大，则在这里目前就只通过stream的长度来进行分别处理
+
+                If inputStream.Length >= 2048 Then
+                    ' 是一个单独的文件
+                    Dim [sub] As New HttpPostedFile(
+                        fileName,
+                        ContentType,
+                        inputStream,
+                        Scan0,
+                        inputStream.Length
+                    )
+
+                    Files("file") = New List(Of HttpPostedFile) From {[sub]}
+                Else
+                    ' probably is a jquery post
+                    Dim byts As Byte() = inputStream _
+                        .PopulateBlocks _
+                        .IteratesALL _
+                        .ToArray
+                    Dim s As String = ContentEncoding.GetString(byts)
+
+                    _Form = s.PostUrlDataParser
+                End If
+            End Using
+        End Sub
 
         ''' <summary>
         ''' Loads the data on the form for multipart/form-data
         ''' </summary>
-        Private Sub LoadMultiPart()
+        Private Sub LoadMultiPart(fileName As String)
             Dim boundary As String = GetParameter(ContentType, "; boundary=")
 
             If boundary Is Nothing Then
-                ' probably is a jquery post
-                Dim byts As Byte() = DirectCast(InputStream, MemoryStream).ToArray
-                Dim s As String = ContentEncoding.GetString(byts)
-
-                _Form = s.PostUrlDataParser
+                Call loadjQueryPOST(fileName)
             Else
-                Call __loadMultiPart(boundary)
+                Using input As Stream = Me.GetSubStream()
+                    Call loadMultiPart(boundary, input)
+                End Using
             End If
 
             Call Files _
@@ -137,15 +182,14 @@ Namespace AppEngine.POSTParser
                               Function(names)
                                   Return names _
                                       .Value _
-                                      .Select(Function(x) x.Summary) _
+                                      .Select(Function(file) file.Summary) _
                                       .ToArray
                               End Function) _
                 .GetJson(indent:=True) _
                 .Warning
         End Sub
 
-        Private Sub __loadMultiPart(boundary$)
-            Dim input As Stream = GetSubStream(InputStream)
+        Private Sub loadMultiPart(boundary$, input As Stream)
             Dim multi_part As New HttpMultipart(input, boundary, ContentEncoding)
             Dim read As New Value(Of HttpMultipart.Element)
             Dim str As String

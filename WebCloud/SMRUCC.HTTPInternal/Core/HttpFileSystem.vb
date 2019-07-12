@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::357a2b2076e485b6ae3a750a0cc44807, WebCloud\SMRUCC.HTTPInternal\Core\HttpFileSystem.vb"
+﻿#Region "Microsoft.VisualBasic::c72513d558e16f5515bd302d848a9107, WebCloud\SMRUCC.HTTPInternal\Core\HttpFileSystem.vb"
 
 ' Author:
 ' 
@@ -66,6 +66,7 @@ Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine.Reflection
+Imports Microsoft.VisualBasic.ComponentModel.Ranges
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Language.Default
 Imports Microsoft.VisualBasic.Net.Http
@@ -76,6 +77,7 @@ Imports Microsoft.VisualBasic.Serialization.JSON
 Imports SMRUCC.WebCloud.HTTPInternal.Platform.Plugins
 Imports SMRUCC.WebCloud.HTTPInternal.Core.Cache
 Imports fs = Microsoft.VisualBasic.FileIO.FileSystem
+Imports r = System.Text.RegularExpressions.Regex
 
 Namespace Core
 
@@ -101,7 +103,7 @@ Namespace Core
         ReadOnly _nullAsExists As Boolean
         ReadOnly _cache As VirtualFileSystem
         ReadOnly _defaultFavicon As Byte() = My.Resources.favicon.UnZipStream.ToArray
-
+        ReadOnly MAX_POST_SIZE%
         ''' <summary>
         ''' Current http filesystem is running in cache mode?
         ''' </summary>
@@ -153,6 +155,35 @@ Namespace Core
             App.CurrentDirectory = root
             _virtualMappings = New Dictionary(Of String, String)
             RequestStream = requestResource Or defaultResource
+
+            Dim size$ = App.GetVariable("MAX_POST_SIZE")
+
+            If size.StringEmpty Then
+                size = 128 * 1024 * 1024
+                MAX_POST_SIZE = size
+            ElseIf size.IsPattern("\d+") Then
+                MAX_POST_SIZE = Val(size)
+            ElseIf size.IsPattern("\d+\s*[GMK]?B", RegexICSng) Then
+                Dim value# = size.Match("\d+")
+                Dim unit$ = r.Replace(size, "\d+", "").Trim
+
+                Select Case unit.ToLower
+                    Case "b"
+                        MAX_POST_SIZE = (value)
+                    Case "kb"
+                        MAX_POST_SIZE = (value.Unit(ByteSize.KB) = ByteSize.B)
+                    Case "mb"
+                        MAX_POST_SIZE = (value.Unit(ByteSize.MB) = ByteSize.B)
+                    Case "gb"
+                        MAX_POST_SIZE = (value.Unit(ByteSize.GB) = ByteSize.B)
+                    Case Else
+                        Throw New InvalidExpressionException($"MAX_POST_SIZE={size}")
+                End Select
+            End If
+
+            If Not size.StringEmpty Then
+                Call $"MAX_POST_SIZE={size} ({MAX_POST_SIZE} bytes)".__INFO_ECHO
+            End If
 
             If cache Then
                 _cache = CachedFile.CacheAllFiles(wwwroot.FullName)
@@ -241,6 +272,10 @@ Namespace Core
             If InStr(res, "http://", CompareMethod.Text) > 0 OrElse InStr(res, "https://", CompareMethod.Text) > 0 Then
                 res = Nothing
                 Return {}
+            Else
+                ' 假若存在空格之类的,会因为被js转义而无法识别
+                ' 在这里需要反转义一下
+                res = res.UrlDecode
             End If
 
             Try
@@ -441,7 +476,7 @@ Namespace Core
             Call $"Transfer data:  {type.ToString} ==> [{buf.Length} Bytes]!".__DEBUG_ECHO
         End Sub
 
-        Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData As MemoryStream)
+        Public Overrides Sub handlePOSTRequest(p As HttpProcessor, inputData$)
 
         End Sub
 
@@ -474,7 +509,7 @@ Namespace Core
 
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Protected Overrides Function __httpProcessor(client As TcpClient) As HttpProcessor
-            Return New HttpProcessor(client, Me) With {
+            Return New HttpProcessor(client, Me, MAX_POST_SIZE) With {
                 ._404Page = AddressOf __request404
             }
         End Function
@@ -483,6 +518,10 @@ Namespace Core
             Dim msg As String = $"Unsupport {NameOf(p.http_method)}:={p.http_method}"
             Call msg.__DEBUG_ECHO
             Call p.writeFailure(msg)
+        End Sub
+
+        Public Overrides Sub handlePUTMethod(p As HttpProcessor, inputData$)
+            Throw New NotImplementedException()
         End Sub
     End Class
 End Namespace

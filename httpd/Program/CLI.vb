@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::23533c1f72e947b646b102590ffdbc2e, httpd\Program\CLI.vb"
+﻿#Region "Microsoft.VisualBasic::8803fdd97efd035fa276c12e5c782fb8, httpd\Program\CLI.vb"
 
     ' Author:
     ' 
@@ -33,26 +33,17 @@
 
     ' Module CLI
     ' 
-    '     Function: [GET], RunApp, RunDll, Start, StressTest
-    '     Structure __test
-    ' 
-    '         Function: Run
-    ' 
-    ' 
+    '     Function: RunApp, RunDll, Start
     ' 
     ' /********************************************************************************/
 
 #End Region
 
-Imports System.IO
 Imports System.Reflection
-Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.CommandLine
 Imports Microsoft.VisualBasic.CommandLine.InteropService.SharedORM
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Language.UnixBash
-Imports Microsoft.VisualBasic.Parallel.Threads
-Imports Microsoft.VisualBasic.Text
 Imports SMRUCC.WebCloud.HTTPInternal.Platform
 
 <GroupingDefine(CLI.httpdServerCLI, Description:="Server CLI for running this httpd web server.")>
@@ -108,70 +99,6 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
         Dim dll As String = args.GetValue("/dll", "")
         Return New PlatformEngine(HOME, port, True, dll).Run
     End Function
-
-    <ExportAPI("/GET",
-               Info:="Tools for http get request the content of a specific url.",
-               Usage:="/GET /url <url, /std_in> [/out <file/std_out>]")>
-    <Argument("/url", False, CLITypes.File, PipelineTypes.std_in,
-              AcceptTypes:={GetType(String)},
-              Description:="The resource URL on the web.")>
-    <Argument("/out", True, CLITypes.File, PipelineTypes.std_out,
-              AcceptTypes:={GetType(String)},
-              Description:="The save location of your requested data file.")>
-    Public Function [GET](args As CommandLine) As Integer
-        Dim url As String = args.ReadInput("/url")
-
-        VBDebugger.ForceSTDError = True
-
-        Using out As StreamWriter = args.OpenStreamOutput("/out")
-            Dim html As String = url.GET
-            Call out.Write(html)
-        End Using
-
-        Return 0
-    End Function
-
-    <ExportAPI("/Stress.Testing",
-               Info:="Using Ctrl + C to stop the stress testing.",
-               Usage:="/Stress.Testing /url <target_url> [/out <out.txt>]")>
-    Public Function StressTest(args As CommandLine) As Integer
-        Dim url$ = args <= "/url"
-        Dim out As String = args.GetValue("/out", App.CurrentDirectory & "/" & url.NormalizePathString & ".txt")
-        Dim test As Func(Of Integer, String) = AddressOf New __test With {
-            .url = url
-        }.Run
-
-        Using result As StreamWriter = out.OpenWriter
-            Do While True
-                Dim pack%() = SeqRandom(10000)
-                Dim returns = BatchTasks.BatchTask(pack, getTask:=test, numThreads:=1000, TimeInterval:=0)
-                For Each line In returns
-                    Call result.WriteLine(line)
-                Next
-
-                Call result.WriteLine()
-                Call result.WriteLine("==========================================================")
-                Call result.WriteLine()
-                Call result.Flush()
-            Loop
-        End Using
-
-        Return 0
-    End Function
-
-    Private Structure __test
-        Dim url$
-
-        Public Function Run(n%) As String
-            Try
-                Dim request$ = url & "?random=" & UrlEncode(StrUtils.RandomASCIIString(len:=n))
-                Dim response& = Time(Sub() Call request.GET)
-                Return {"len=" & n, $"response={response}ms"}.JoinBy(ASCII.TAB)
-            Catch ex As Exception
-                Return "error"
-            End Try
-        End Function
-    End Structure
 
     ''' <summary>
     ''' 可以使用这个API来运行内部的配置API，例如调用内部的函数配置mysql链接

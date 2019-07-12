@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::aff7d89e057da8483367ca5127a3e7c8, WebCloud\SMRUCC.WebCloud.GIS\MaxMind\MySQL\geolite2\geolite2_city_blocks_ipv4.vb"
+﻿#Region "Microsoft.VisualBasic::c2aefaa0464451c9628374b0b4d31da6, WebCloud\SMRUCC.WebCloud.GIS\MaxMind\MySQL\geolite2\geolite2_city_blocks_ipv4.vb"
 
     ' Author:
     ' 
@@ -36,7 +36,8 @@
     '     Properties: accuracy_radius, geoname_id, is_anonymous_proxy, is_satellite_provider, latitude
     '                 longitude, network, postal_code, registered_country_geoname_id, represented_country_geoname_id
     ' 
-    '     Function: GetDeleteSQL, GetDumpInsertValue, GetInsertSQL, GetReplaceSQL, GetUpdateSQL
+    '     Function: Clone, GetDeleteSQL, GetDumpInsertValue, (+2 Overloads) GetInsertSQL, (+2 Overloads) GetReplaceSQL
+    '               GetUpdateSQL
     ' 
     ' 
     ' /********************************************************************************/
@@ -47,12 +48,13 @@ REM  Oracle.LinuxCompatibility.MySQL.CodeSolution.VisualBasic.CodeGenerator
 REM  MYSQL Schema Mapper
 REM      for Microsoft VisualBasic.NET 2.1.0.2569
 
-REM  Dump @2017/11/5 上午 01:32:17
+REM  Dump @12/2/2018 7:45:34 PM
 
 
 Imports System.Data.Linq.Mapping
 Imports System.Xml.Serialization
 Imports Oracle.LinuxCompatibility.MySQL.Reflection.DbAttributes
+Imports MySqlScript = Oracle.LinuxCompatibility.MySQL.Scripting.Extensions
 
 Namespace MaxMind.geolite2
 
@@ -99,7 +101,7 @@ CREATE TABLE `geolite2_city_blocks_ipv4` (
   `accuracy_radius` double DEFAULT NULL COMMENT 'The approximate accuracy radius, in kilometers, around the latitude and longitude for the geographical entity (country, subdivision, city or postal code) associated with the IP address. We have a 67% confidence that the location of the end-user falls within the area defined by the accuracy radius and the latitude and longitude coordinates.',
   PRIMARY KEY (`network`),
   UNIQUE KEY `network_UNIQUE` (`network`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='								\n';")>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='								\n';")>
 Public Class geolite2_city_blocks_ipv4: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #Region "Public Property Mapping To Database Fields"
 ''' <summary>
@@ -175,11 +177,26 @@ Public Class geolite2_city_blocks_ipv4: Inherits Oracle.LinuxCompatibility.MySQL
 #End Region
 #Region "Public SQL Interface"
 #Region "Interface SQL"
-    Private Shared ReadOnly INSERT_SQL As String = <SQL>INSERT INTO `geolite2_city_blocks_ipv4` (`network`, `geoname_id`, `registered_country_geoname_id`, `represented_country_geoname_id`, `is_anonymous_proxy`, `is_satellite_provider`, `postal_code`, `latitude`, `longitude`, `accuracy_radius`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');</SQL>
-    Private Shared ReadOnly REPLACE_SQL As String = <SQL>REPLACE INTO `geolite2_city_blocks_ipv4` (`network`, `geoname_id`, `registered_country_geoname_id`, `represented_country_geoname_id`, `is_anonymous_proxy`, `is_satellite_provider`, `postal_code`, `latitude`, `longitude`, `accuracy_radius`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');</SQL>
-    Private Shared ReadOnly DELETE_SQL As String = <SQL>DELETE FROM `geolite2_city_blocks_ipv4` WHERE `network` = '{0}';</SQL>
-    Private Shared ReadOnly UPDATE_SQL As String = <SQL>UPDATE `geolite2_city_blocks_ipv4` SET `network`='{0}', `geoname_id`='{1}', `registered_country_geoname_id`='{2}', `represented_country_geoname_id`='{3}', `is_anonymous_proxy`='{4}', `is_satellite_provider`='{5}', `postal_code`='{6}', `latitude`='{7}', `longitude`='{8}', `accuracy_radius`='{9}' WHERE `network` = '{10}';</SQL>
+    Friend Shared ReadOnly INSERT_SQL$ = 
+        <SQL>INSERT INTO `geolite2_city_blocks_ipv4` (`network`, `geoname_id`, `registered_country_geoname_id`, `represented_country_geoname_id`, `is_anonymous_proxy`, `is_satellite_provider`, `postal_code`, `latitude`, `longitude`, `accuracy_radius`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');</SQL>
+
+    Friend Shared ReadOnly INSERT_AI_SQL$ = 
+        <SQL>INSERT INTO `geolite2_city_blocks_ipv4` (`network`, `geoname_id`, `registered_country_geoname_id`, `represented_country_geoname_id`, `is_anonymous_proxy`, `is_satellite_provider`, `postal_code`, `latitude`, `longitude`, `accuracy_radius`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_SQL$ = 
+        <SQL>REPLACE INTO `geolite2_city_blocks_ipv4` (`network`, `geoname_id`, `registered_country_geoname_id`, `represented_country_geoname_id`, `is_anonymous_proxy`, `is_satellite_provider`, `postal_code`, `latitude`, `longitude`, `accuracy_radius`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_AI_SQL$ = 
+        <SQL>REPLACE INTO `geolite2_city_blocks_ipv4` (`network`, `geoname_id`, `registered_country_geoname_id`, `represented_country_geoname_id`, `is_anonymous_proxy`, `is_satellite_provider`, `postal_code`, `latitude`, `longitude`, `accuracy_radius`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');</SQL>
+
+    Friend Shared ReadOnly DELETE_SQL$ =
+        <SQL>DELETE FROM `geolite2_city_blocks_ipv4` WHERE `network` = '{0}';</SQL>
+
+    Friend Shared ReadOnly UPDATE_SQL$ = 
+        <SQL>UPDATE `geolite2_city_blocks_ipv4` SET `network`='{0}', `geoname_id`='{1}', `registered_country_geoname_id`='{2}', `represented_country_geoname_id`='{3}', `is_anonymous_proxy`='{4}', `is_satellite_provider`='{5}', `postal_code`='{6}', `latitude`='{7}', `longitude`='{8}', `accuracy_radius`='{9}' WHERE `network` = '{10}';</SQL>
+
 #End Region
+
 ''' <summary>
 ''' ```SQL
 ''' DELETE FROM `geolite2_city_blocks_ipv4` WHERE `network` = '{0}';
@@ -188,6 +205,7 @@ Public Class geolite2_city_blocks_ipv4: Inherits Oracle.LinuxCompatibility.MySQL
     Public Overrides Function GetDeleteSQL() As String
         Return String.Format(DELETE_SQL, network)
     End Function
+
 ''' <summary>
 ''' ```SQL
 ''' INSERT INTO `geolite2_city_blocks_ipv4` (`network`, `geoname_id`, `registered_country_geoname_id`, `represented_country_geoname_id`, `is_anonymous_proxy`, `is_satellite_provider`, `postal_code`, `latitude`, `longitude`, `accuracy_radius`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');
@@ -198,10 +216,27 @@ Public Class geolite2_city_blocks_ipv4: Inherits Oracle.LinuxCompatibility.MySQL
     End Function
 
 ''' <summary>
+''' ```SQL
+''' INSERT INTO `geolite2_city_blocks_ipv4` (`network`, `geoname_id`, `registered_country_geoname_id`, `represented_country_geoname_id`, `is_anonymous_proxy`, `is_satellite_provider`, `postal_code`, `latitude`, `longitude`, `accuracy_radius`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');
+''' ```
+''' </summary>
+    Public Overrides Function GetInsertSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(INSERT_AI_SQL, network, geoname_id, registered_country_geoname_id, represented_country_geoname_id, is_anonymous_proxy, is_satellite_provider, postal_code, latitude, longitude, accuracy_radius)
+        Else
+        Return String.Format(INSERT_SQL, network, geoname_id, registered_country_geoname_id, represented_country_geoname_id, is_anonymous_proxy, is_satellite_provider, postal_code, latitude, longitude, accuracy_radius)
+        End If
+    End Function
+
+''' <summary>
 ''' <see cref="GetInsertSQL"/>
 ''' </summary>
-    Public Overrides Function GetDumpInsertValue() As String
-        Return $"('{network}', '{geoname_id}', '{registered_country_geoname_id}', '{represented_country_geoname_id}', '{is_anonymous_proxy}', '{is_satellite_provider}', '{postal_code}', '{latitude}', '{longitude}', '{accuracy_radius}')"
+    Public Overrides Function GetDumpInsertValue(AI As Boolean) As String
+        If AI Then
+            Return $"('{network}', '{geoname_id}', '{registered_country_geoname_id}', '{represented_country_geoname_id}', '{is_anonymous_proxy}', '{is_satellite_provider}', '{postal_code}', '{latitude}', '{longitude}', '{accuracy_radius}')"
+        Else
+            Return $"('{network}', '{geoname_id}', '{registered_country_geoname_id}', '{represented_country_geoname_id}', '{is_anonymous_proxy}', '{is_satellite_provider}', '{postal_code}', '{latitude}', '{longitude}', '{accuracy_radius}')"
+        End If
     End Function
 
 
@@ -213,6 +248,20 @@ Public Class geolite2_city_blocks_ipv4: Inherits Oracle.LinuxCompatibility.MySQL
     Public Overrides Function GetReplaceSQL() As String
         Return String.Format(REPLACE_SQL, network, geoname_id, registered_country_geoname_id, represented_country_geoname_id, is_anonymous_proxy, is_satellite_provider, postal_code, latitude, longitude, accuracy_radius)
     End Function
+
+''' <summary>
+''' ```SQL
+''' REPLACE INTO `geolite2_city_blocks_ipv4` (`network`, `geoname_id`, `registered_country_geoname_id`, `represented_country_geoname_id`, `is_anonymous_proxy`, `is_satellite_provider`, `postal_code`, `latitude`, `longitude`, `accuracy_radius`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');
+''' ```
+''' </summary>
+    Public Overrides Function GetReplaceSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(REPLACE_AI_SQL, network, geoname_id, registered_country_geoname_id, represented_country_geoname_id, is_anonymous_proxy, is_satellite_provider, postal_code, latitude, longitude, accuracy_radius)
+        Else
+        Return String.Format(REPLACE_SQL, network, geoname_id, registered_country_geoname_id, represented_country_geoname_id, is_anonymous_proxy, is_satellite_provider, postal_code, latitude, longitude, accuracy_radius)
+        End If
+    End Function
+
 ''' <summary>
 ''' ```SQL
 ''' UPDATE `geolite2_city_blocks_ipv4` SET `network`='{0}', `geoname_id`='{1}', `registered_country_geoname_id`='{2}', `represented_country_geoname_id`='{3}', `is_anonymous_proxy`='{4}', `is_satellite_provider`='{5}', `postal_code`='{6}', `latitude`='{7}', `longitude`='{8}', `accuracy_radius`='{9}' WHERE `network` = '{10}';
@@ -222,9 +271,13 @@ Public Class geolite2_city_blocks_ipv4: Inherits Oracle.LinuxCompatibility.MySQL
         Return String.Format(UPDATE_SQL, network, geoname_id, registered_country_geoname_id, represented_country_geoname_id, is_anonymous_proxy, is_satellite_provider, postal_code, latitude, longitude, accuracy_radius, network)
     End Function
 #End Region
-Public Function Clone() As geolite2_city_blocks_ipv4
-                  Return DirectCast(MyClass.MemberwiseClone, geolite2_city_blocks_ipv4)
-              End Function
+
+''' <summary>
+                     ''' Memberwise clone of current table Object.
+                     ''' </summary>
+                     Public Function Clone() As geolite2_city_blocks_ipv4
+                         Return DirectCast(MyClass.MemberwiseClone, geolite2_city_blocks_ipv4)
+                     End Function
 End Class
 
 

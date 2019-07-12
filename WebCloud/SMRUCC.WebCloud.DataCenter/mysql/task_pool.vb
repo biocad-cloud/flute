@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::c4d0daee429c7510e638da5ec520ff3d, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\task_pool.vb"
+﻿#Region "Microsoft.VisualBasic::1a43b21c4f60a6690d00d36bbcf0fad7, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\task_pool.vb"
 
     ' Author:
     ' 
@@ -37,7 +37,8 @@
     '                 result_url, status, time_complete, time_create, title
     '                 uid, workspace
     ' 
-    '     Function: GetDeleteSQL, GetDumpInsertValue, GetInsertSQL, GetReplaceSQL, GetUpdateSQL
+    '     Function: Clone, GetDeleteSQL, GetDumpInsertValue, (+2 Overloads) GetInsertSQL, (+2 Overloads) GetReplaceSQL
+    '               GetUpdateSQL
     ' 
     ' 
     ' /********************************************************************************/
@@ -48,7 +49,7 @@ REM  Oracle.LinuxCompatibility.MySQL.CodeSolution.VisualBasic.CodeGenerator
 REM  MYSQL Schema Mapper
 REM      for Microsoft VisualBasic.NET 2.1.0.2569
 
-REM  Dump @3/16/2018 10:32:32 PM
+REM  Dump @5/25/2019 3:17:58 PM
 
 
 Imports System.Data.Linq.Mapping
@@ -111,7 +112,7 @@ CREATE TABLE `task_pool` (
   UNIQUE KEY `uid_UNIQUE` (`uid`),
   KEY `fk_task_pool_app1_idx` (`app`),
   CONSTRAINT `fk_task_pool_app1` FOREIGN KEY (`app`) REFERENCES `app` (`uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='这个数据表之中只存放已经完成的用户任务信息';")>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='这个数据表之中只存放已经完成的用户任务信息';")>
 Public Class task_pool: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #Region "Public Property Mapping To Database Fields"
     <DatabaseField("uid"), PrimaryKey, AutoIncrement, NotNull, DataType(MySqlDbType.Int64, "11"), Column(Name:="uid"), XmlAttribute> Public Property uid As Long
@@ -195,11 +196,26 @@ Public Class task_pool: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #End Region
 #Region "Public SQL Interface"
 #Region "Interface SQL"
-    Private Shared ReadOnly INSERT_SQL As String = <SQL>INSERT INTO `task_pool` (`uid`, `md5`, `workspace`, `time_create`, `time_complete`, `result_url`, `email`, `title`, `description`, `status`, `app`, `parameters`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}');</SQL>
-    Private Shared ReadOnly REPLACE_SQL As String = <SQL>REPLACE INTO `task_pool` (`uid`, `md5`, `workspace`, `time_create`, `time_complete`, `result_url`, `email`, `title`, `description`, `status`, `app`, `parameters`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}');</SQL>
-    Private Shared ReadOnly DELETE_SQL As String = <SQL>DELETE FROM `task_pool` WHERE `uid` = '{0}';</SQL>
-    Private Shared ReadOnly UPDATE_SQL As String = <SQL>UPDATE `task_pool` SET `uid`='{0}', `md5`='{1}', `workspace`='{2}', `time_create`='{3}', `time_complete`='{4}', `result_url`='{5}', `email`='{6}', `title`='{7}', `description`='{8}', `status`='{9}', `app`='{10}', `parameters`='{11}' WHERE `uid` = '{12}';</SQL>
+    Friend Shared ReadOnly INSERT_SQL$ = 
+        <SQL>INSERT INTO `task_pool` (`md5`, `workspace`, `time_create`, `time_complete`, `result_url`, `email`, `title`, `description`, `status`, `app`, `parameters`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}');</SQL>
+
+    Friend Shared ReadOnly INSERT_AI_SQL$ = 
+        <SQL>INSERT INTO `task_pool` (`uid`, `md5`, `workspace`, `time_create`, `time_complete`, `result_url`, `email`, `title`, `description`, `status`, `app`, `parameters`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_SQL$ = 
+        <SQL>REPLACE INTO `task_pool` (`md5`, `workspace`, `time_create`, `time_complete`, `result_url`, `email`, `title`, `description`, `status`, `app`, `parameters`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_AI_SQL$ = 
+        <SQL>REPLACE INTO `task_pool` (`uid`, `md5`, `workspace`, `time_create`, `time_complete`, `result_url`, `email`, `title`, `description`, `status`, `app`, `parameters`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}');</SQL>
+
+    Friend Shared ReadOnly DELETE_SQL$ =
+        <SQL>DELETE FROM `task_pool` WHERE `uid` = '{0}';</SQL>
+
+    Friend Shared ReadOnly UPDATE_SQL$ = 
+        <SQL>UPDATE `task_pool` SET `uid`='{0}', `md5`='{1}', `workspace`='{2}', `time_create`='{3}', `time_complete`='{4}', `result_url`='{5}', `email`='{6}', `title`='{7}', `description`='{8}', `status`='{9}', `app`='{10}', `parameters`='{11}' WHERE `uid` = '{12}';</SQL>
+
 #End Region
+
 ''' <summary>
 ''' ```SQL
 ''' DELETE FROM `task_pool` WHERE `uid` = '{0}';
@@ -208,20 +224,38 @@ Public Class task_pool: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     Public Overrides Function GetDeleteSQL() As String
         Return String.Format(DELETE_SQL, uid)
     End Function
+
 ''' <summary>
 ''' ```SQL
 ''' INSERT INTO `task_pool` (`uid`, `md5`, `workspace`, `time_create`, `time_complete`, `result_url`, `email`, `title`, `description`, `status`, `app`, `parameters`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}');
 ''' ```
 ''' </summary>
     Public Overrides Function GetInsertSQL() As String
-        Return String.Format(INSERT_SQL, uid, md5, workspace, MySqlScript.ToMySqlDateTimeString(time_create), MySqlScript.ToMySqlDateTimeString(time_complete), result_url, email, title, description, status, app, parameters)
+        Return String.Format(INSERT_SQL, md5, workspace, MySqlScript.ToMySqlDateTimeString(time_create), MySqlScript.ToMySqlDateTimeString(time_complete), result_url, email, title, description, status, app, parameters)
+    End Function
+
+''' <summary>
+''' ```SQL
+''' INSERT INTO `task_pool` (`uid`, `md5`, `workspace`, `time_create`, `time_complete`, `result_url`, `email`, `title`, `description`, `status`, `app`, `parameters`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}');
+''' ```
+''' </summary>
+    Public Overrides Function GetInsertSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(INSERT_AI_SQL, uid, md5, workspace, MySqlScript.ToMySqlDateTimeString(time_create), MySqlScript.ToMySqlDateTimeString(time_complete), result_url, email, title, description, status, app, parameters)
+        Else
+        Return String.Format(INSERT_SQL, md5, workspace, MySqlScript.ToMySqlDateTimeString(time_create), MySqlScript.ToMySqlDateTimeString(time_complete), result_url, email, title, description, status, app, parameters)
+        End If
     End Function
 
 ''' <summary>
 ''' <see cref="GetInsertSQL"/>
 ''' </summary>
-    Public Overrides Function GetDumpInsertValue() As String
-        Return $"('{uid}', '{md5}', '{workspace}', '{time_create}', '{time_complete}', '{result_url}', '{email}', '{title}', '{description}', '{status}', '{app}', '{parameters}')"
+    Public Overrides Function GetDumpInsertValue(AI As Boolean) As String
+        If AI Then
+            Return $"('{uid}', '{md5}', '{workspace}', '{time_create}', '{time_complete}', '{result_url}', '{email}', '{title}', '{description}', '{status}', '{app}', '{parameters}')"
+        Else
+            Return $"('{md5}', '{workspace}', '{time_create}', '{time_complete}', '{result_url}', '{email}', '{title}', '{description}', '{status}', '{app}', '{parameters}')"
+        End If
     End Function
 
 
@@ -231,8 +265,22 @@ Public Class task_pool: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 ''' ```
 ''' </summary>
     Public Overrides Function GetReplaceSQL() As String
-        Return String.Format(REPLACE_SQL, uid, md5, workspace, MySqlScript.ToMySqlDateTimeString(time_create), MySqlScript.ToMySqlDateTimeString(time_complete), result_url, email, title, description, status, app, parameters)
+        Return String.Format(REPLACE_SQL, md5, workspace, MySqlScript.ToMySqlDateTimeString(time_create), MySqlScript.ToMySqlDateTimeString(time_complete), result_url, email, title, description, status, app, parameters)
     End Function
+
+''' <summary>
+''' ```SQL
+''' REPLACE INTO `task_pool` (`uid`, `md5`, `workspace`, `time_create`, `time_complete`, `result_url`, `email`, `title`, `description`, `status`, `app`, `parameters`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}');
+''' ```
+''' </summary>
+    Public Overrides Function GetReplaceSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(REPLACE_AI_SQL, uid, md5, workspace, MySqlScript.ToMySqlDateTimeString(time_create), MySqlScript.ToMySqlDateTimeString(time_complete), result_url, email, title, description, status, app, parameters)
+        Else
+        Return String.Format(REPLACE_SQL, md5, workspace, MySqlScript.ToMySqlDateTimeString(time_create), MySqlScript.ToMySqlDateTimeString(time_complete), result_url, email, title, description, status, app, parameters)
+        End If
+    End Function
+
 ''' <summary>
 ''' ```SQL
 ''' UPDATE `task_pool` SET `uid`='{0}', `md5`='{1}', `workspace`='{2}', `time_create`='{3}', `time_complete`='{4}', `result_url`='{5}', `email`='{6}', `title`='{7}', `description`='{8}', `status`='{9}', `app`='{10}', `parameters`='{11}' WHERE `uid` = '{12}';
@@ -242,10 +290,15 @@ Public Class task_pool: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
         Return String.Format(UPDATE_SQL, uid, md5, workspace, MySqlScript.ToMySqlDateTimeString(time_create), MySqlScript.ToMySqlDateTimeString(time_complete), result_url, email, title, description, status, app, parameters, uid)
     End Function
 #End Region
-Public Function Clone() As task_pool
-                  Return DirectCast(MyClass.MemberwiseClone, task_pool)
-              End Function
+
+''' <summary>
+                     ''' Memberwise clone of current table Object.
+                     ''' </summary>
+                     Public Function Clone() As task_pool
+                         Return DirectCast(MyClass.MemberwiseClone, task_pool)
+                     End Function
 End Class
 
 
 End Namespace
+

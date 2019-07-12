@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::01dda8b4a351bfe05c8d06cf42c4786a, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\visitor_stat.vb"
+﻿#Region "Microsoft.VisualBasic::ab0563a7bc541796e1d30c698f4677f2, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\visitor_stat.vb"
 
     ' Author:
     ' 
@@ -36,7 +36,8 @@
     '     Properties: app, data, ip, method, ref
     '                 success, time, ua, uid, url
     ' 
-    '     Function: GetDeleteSQL, GetDumpInsertValue, GetInsertSQL, GetReplaceSQL, GetUpdateSQL
+    '     Function: Clone, GetDeleteSQL, GetDumpInsertValue, (+2 Overloads) GetInsertSQL, (+2 Overloads) GetReplaceSQL
+    '               GetUpdateSQL
     ' 
     ' 
     ' /********************************************************************************/
@@ -47,7 +48,7 @@ REM  Oracle.LinuxCompatibility.MySQL.CodeSolution.VisualBasic.CodeGenerator
 REM  MYSQL Schema Mapper
 REM      for Microsoft VisualBasic.NET 2.1.0.2569
 
-REM  Dump @3/16/2018 10:32:32 PM
+REM  Dump @5/25/2019 3:17:58 PM
 
 
 Imports System.Data.Linq.Mapping
@@ -151,7 +152,7 @@ CREATE TABLE `visitor_stat` (
   UNIQUE KEY `uid_UNIQUE` (`uid`),
   KEY `fk_visitor_stat_app1_idx` (`app`),
   CONSTRAINT `fk_visitor_stat_app1` FOREIGN KEY (`app`) REFERENCES `app` (`uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;")>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;")>
 Public Class visitor_stat: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #Region "Public Property Mapping To Database Fields"
     <DatabaseField("uid"), AutoIncrement, NotNull, DataType(MySqlDbType.Int64, "11"), Column(Name:="uid")> Public Property uid As Long
@@ -203,11 +204,26 @@ Public Class visitor_stat: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #End Region
 #Region "Public SQL Interface"
 #Region "Interface SQL"
-    Private Shared ReadOnly INSERT_SQL As String = <SQL>INSERT INTO `visitor_stat` (`uid`, `time`, `ip`, `url`, `success`, `method`, `ua`, `ref`, `data`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');</SQL>
-    Private Shared ReadOnly REPLACE_SQL As String = <SQL>REPLACE INTO `visitor_stat` (`uid`, `time`, `ip`, `url`, `success`, `method`, `ua`, `ref`, `data`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');</SQL>
-    Private Shared ReadOnly DELETE_SQL As String = <SQL>DELETE FROM `visitor_stat` WHERE `ip`='{0}' and `time`='{1}' and `app`='{2}';</SQL>
-    Private Shared ReadOnly UPDATE_SQL As String = <SQL>UPDATE `visitor_stat` SET `uid`='{0}', `time`='{1}', `ip`='{2}', `url`='{3}', `success`='{4}', `method`='{5}', `ua`='{6}', `ref`='{7}', `data`='{8}', `app`='{9}' WHERE `ip`='{10}' and `time`='{11}' and `app`='{12}';</SQL>
+    Friend Shared ReadOnly INSERT_SQL$ = 
+        <SQL>INSERT INTO `visitor_stat` (`time`, `ip`, `url`, `success`, `method`, `ua`, `ref`, `data`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}');</SQL>
+
+    Friend Shared ReadOnly INSERT_AI_SQL$ = 
+        <SQL>INSERT INTO `visitor_stat` (`uid`, `time`, `ip`, `url`, `success`, `method`, `ua`, `ref`, `data`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_SQL$ = 
+        <SQL>REPLACE INTO `visitor_stat` (`time`, `ip`, `url`, `success`, `method`, `ua`, `ref`, `data`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_AI_SQL$ = 
+        <SQL>REPLACE INTO `visitor_stat` (`uid`, `time`, `ip`, `url`, `success`, `method`, `ua`, `ref`, `data`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');</SQL>
+
+    Friend Shared ReadOnly DELETE_SQL$ =
+        <SQL>DELETE FROM `visitor_stat` WHERE `ip`='{0}' and `time`='{1}' and `app`='{2}';</SQL>
+
+    Friend Shared ReadOnly UPDATE_SQL$ = 
+        <SQL>UPDATE `visitor_stat` SET `uid`='{0}', `time`='{1}', `ip`='{2}', `url`='{3}', `success`='{4}', `method`='{5}', `ua`='{6}', `ref`='{7}', `data`='{8}', `app`='{9}' WHERE `ip`='{10}' and `time`='{11}' and `app`='{12}';</SQL>
+
 #End Region
+
 ''' <summary>
 ''' ```SQL
 ''' DELETE FROM `visitor_stat` WHERE `ip`='{0}' and `time`='{1}' and `app`='{2}';
@@ -216,20 +232,38 @@ Public Class visitor_stat: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     Public Overrides Function GetDeleteSQL() As String
         Return String.Format(DELETE_SQL, ip, MySqlScript.ToMySqlDateTimeString(time), app)
     End Function
+
 ''' <summary>
 ''' ```SQL
 ''' INSERT INTO `visitor_stat` (`uid`, `time`, `ip`, `url`, `success`, `method`, `ua`, `ref`, `data`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');
 ''' ```
 ''' </summary>
     Public Overrides Function GetInsertSQL() As String
-        Return String.Format(INSERT_SQL, uid, MySqlScript.ToMySqlDateTimeString(time), ip, url, success, method, ua, ref, data, app)
+        Return String.Format(INSERT_SQL, MySqlScript.ToMySqlDateTimeString(time), ip, url, success, method, ua, ref, data, app)
+    End Function
+
+''' <summary>
+''' ```SQL
+''' INSERT INTO `visitor_stat` (`uid`, `time`, `ip`, `url`, `success`, `method`, `ua`, `ref`, `data`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');
+''' ```
+''' </summary>
+    Public Overrides Function GetInsertSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(INSERT_AI_SQL, uid, MySqlScript.ToMySqlDateTimeString(time), ip, url, success, method, ua, ref, data, app)
+        Else
+        Return String.Format(INSERT_SQL, MySqlScript.ToMySqlDateTimeString(time), ip, url, success, method, ua, ref, data, app)
+        End If
     End Function
 
 ''' <summary>
 ''' <see cref="GetInsertSQL"/>
 ''' </summary>
-    Public Overrides Function GetDumpInsertValue() As String
-        Return $"('{uid}', '{time}', '{ip}', '{url}', '{success}', '{method}', '{ua}', '{ref}', '{data}', '{app}')"
+    Public Overrides Function GetDumpInsertValue(AI As Boolean) As String
+        If AI Then
+            Return $"('{uid}', '{time}', '{ip}', '{url}', '{success}', '{method}', '{ua}', '{ref}', '{data}', '{app}')"
+        Else
+            Return $"('{time}', '{ip}', '{url}', '{success}', '{method}', '{ua}', '{ref}', '{data}', '{app}')"
+        End If
     End Function
 
 
@@ -239,8 +273,22 @@ Public Class visitor_stat: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 ''' ```
 ''' </summary>
     Public Overrides Function GetReplaceSQL() As String
-        Return String.Format(REPLACE_SQL, uid, MySqlScript.ToMySqlDateTimeString(time), ip, url, success, method, ua, ref, data, app)
+        Return String.Format(REPLACE_SQL, MySqlScript.ToMySqlDateTimeString(time), ip, url, success, method, ua, ref, data, app)
     End Function
+
+''' <summary>
+''' ```SQL
+''' REPLACE INTO `visitor_stat` (`uid`, `time`, `ip`, `url`, `success`, `method`, `ua`, `ref`, `data`, `app`) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}');
+''' ```
+''' </summary>
+    Public Overrides Function GetReplaceSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(REPLACE_AI_SQL, uid, MySqlScript.ToMySqlDateTimeString(time), ip, url, success, method, ua, ref, data, app)
+        Else
+        Return String.Format(REPLACE_SQL, MySqlScript.ToMySqlDateTimeString(time), ip, url, success, method, ua, ref, data, app)
+        End If
+    End Function
+
 ''' <summary>
 ''' ```SQL
 ''' UPDATE `visitor_stat` SET `uid`='{0}', `time`='{1}', `ip`='{2}', `url`='{3}', `success`='{4}', `method`='{5}', `ua`='{6}', `ref`='{7}', `data`='{8}', `app`='{9}' WHERE `ip`='{10}' and `time`='{11}' and `app`='{12}';
@@ -250,10 +298,15 @@ Public Class visitor_stat: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
         Return String.Format(UPDATE_SQL, uid, MySqlScript.ToMySqlDateTimeString(time), ip, url, success, method, ua, ref, data, app, ip, MySqlScript.ToMySqlDateTimeString(time), app)
     End Function
 #End Region
-Public Function Clone() As visitor_stat
-                  Return DirectCast(MyClass.MemberwiseClone, visitor_stat)
-              End Function
+
+''' <summary>
+                     ''' Memberwise clone of current table Object.
+                     ''' </summary>
+                     Public Function Clone() As visitor_stat
+                         Return DirectCast(MyClass.MemberwiseClone, visitor_stat)
+                     End Function
 End Class
 
 
 End Namespace
+

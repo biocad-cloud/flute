@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::f1437959b8e7e819cc9160c4ea27dc39, WebCloud\JavaScript\d3.js\Network\htmlwidget\BuildData.vb"
+﻿#Region "Microsoft.VisualBasic::89bc9d2b47462838759731f0202248bf, WebCloud\JavaScript\d3.js\Network\htmlwidget\BuildData.vb"
 
     ' Author:
     ' 
@@ -73,7 +73,7 @@ Namespace Network.htmlwidget
 
         Public Function BuildGraph(html$) As NetGraphData
             Dim json$ = BuildData.ParseHTML(html)
-            Dim data As htmlwidget.NetGraph = json.LoadObject(Of htmlwidget.JSON).x
+            Dim data As htmlwidget.NetGraph = json.LoadJSON(Of htmlwidget.JSON).x
             Dim nodes As New List(Of Node)
             Dim edges As New List(Of NetworkEdge)
 

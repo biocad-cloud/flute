@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::48a4afd62d6da295c58238562a5bfba0, WebCloud\SMRUCC.WebCloud.Mail\Subscription.vb"
+﻿#Region "Microsoft.VisualBasic::a7925f325963cb1f5faeed7f3fed2dac, WebCloud\SMRUCC.WebCloud.Mail\Subscription.vb"
 
     ' Author:
     ' 
@@ -46,15 +46,16 @@
 #End Region
 
 Imports Oracle.LinuxCompatibility.MySQL
+Imports Oracle.LinuxCompatibility.MySQL.Uri
 Imports SMRUCC.WebCloud.DataCenter.mysql
 
 Public Class SubscriptionMgr
 
-    Public ReadOnly Property MySQL As MySQL
+    Public ReadOnly Property MySQL As MySqli
     Public ReadOnly Property AppId As Integer
 
     Sub New(app%, cnn As ConnectionUri)
-        MySQL = New MySQL(cnn)
+        MySQL = New MySqli(cnn)
         AppId = app
     End Sub
 

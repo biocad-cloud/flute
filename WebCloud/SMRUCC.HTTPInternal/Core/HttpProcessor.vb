@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::d94ad16d202e28581a37324086281520, WebCloud\SMRUCC.HTTPInternal\Core\HttpProcessor.vb"
+﻿#Region "Microsoft.VisualBasic::59ebd24f7bb7852c998d8cb9a1cb0b7f, WebCloud\SMRUCC.HTTPInternal\Core\HttpProcessor.vb"
 
     ' Author:
     ' 
@@ -38,7 +38,7 @@
     ' 
     '         Constructor: (+1 Overloads) Sub New
     ' 
-    '         Function: __streamReadLine, parseRequest, ToString
+    '         Function: __streamReadLine, parseRequest, ToString, writeTemp
     ' 
     '         Sub: __processInvoker, __writeFailure, __writeSuccess, (+2 Overloads) Dispose, handleGETRequest
     '              HandlePOSTRequest, Process, readHeaders, WriteData, writeFailure
@@ -52,7 +52,6 @@
 Imports System.IO
 Imports System.Net.Sockets
 Imports System.Runtime.CompilerServices
-Imports System.Text
 Imports System.Threading
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Serialization.JSON
@@ -80,6 +79,7 @@ Namespace Core
         Public outputStream As StreamWriter
 
         Public Property http_method As String
+
         ''' <summary>
         ''' File location or GET/POST request arguments
         ''' </summary>
@@ -103,11 +103,13 @@ Namespace Core
         ''' 10MB
         ''' </summary>
         ''' <remarks></remarks>
-        Const MAX_POST_SIZE As Integer = 128 * 1024 * 1024
+        ReadOnly MAX_POST_SIZE% = 128 * 1024 * 1024
 
-        Public Sub New(s As TcpClient, srv As HttpServer)
-            Me.socket = s
+        Public Sub New(socket As TcpClient, srv As HttpServer, MAX_POST_SIZE%)
+            Me.socket = socket
             Me.srv = srv
+            Me.MAX_POST_SIZE = MAX_POST_SIZE
+            Me.MAX_POST_SIZE = -1
         End Sub
 
         ''' <summary>
@@ -174,7 +176,9 @@ Namespace Core
 
             ' we probably shouldn't be using a streamwriter for all output from handlers either
             ' 2017-3-25 使用utf8来尝试解决中文乱码问题
-            outputStream = New StreamWriter(New BufferedStream(socket.GetStream()), Encoding.UTF8)
+            outputStream = New StreamWriter(New BufferedStream(socket.GetStream()), TextEncodings.UTF8WithoutBOM) With {
+                .NewLine = vbCrLf
+            }
 
             Try
                 Call __processInvoker()
@@ -226,6 +230,9 @@ Namespace Core
                 handleGETRequest()
 
             ElseIf http_method.Equals("POST", StringComparison.OrdinalIgnoreCase) Then
+                HandlePOSTRequest()
+
+            ElseIf http_method.Equals("PUT", StringComparison.OrdinalIgnoreCase) Then
                 HandlePOSTRequest()
 
             Else
@@ -316,8 +323,8 @@ Namespace Core
 
         Public BUF_SIZE As Integer = 4096
 
-        Public Const ContentLengthTooLarge As String = "POST Content-Length({0}) too big for this simple server"
-        Public Const ContentLength As String = "Content-Length"
+        Public Const packageTooLarge$ = "POST Content-Length({0}) too big for this simple server"
+        Public Const ContentLength$ = "Content-Length"
 
         ''' <summary>
         ''' This post data processing just reads everything into a memory stream.
@@ -332,14 +339,25 @@ Namespace Core
             ' Call Console.WriteLine("get post data start")
 
             Dim content_len As Integer = 0
-            Dim ms As New MemoryStream()
+            Dim handle$ = App.GetAppSysTempFile(, sessionID:=App.PID)
 
             If Me.httpHeaders.ContainsKey(ContentLength) Then
+                content_len = writeTemp(handle)
+            End If
 
+            ' Call Console.WriteLine("get post data end")
+            Call srv.handlePOSTRequest(Me, handle)
+        End Sub
+
+        Private Function writeTemp(handle$) As Long
+            Dim content_len%
+
+            Using content As Stream = handle.Open()
                 content_len = Convert.ToInt32(Me.httpHeaders(ContentLength))
 
-                If content_len > MAX_POST_SIZE Then
-                    Throw New Exception(String.Format(ContentLengthTooLarge, content_len))
+                ' 小于零的时候不进行限制
+                If MAX_POST_SIZE > 0 AndAlso content_len > MAX_POST_SIZE Then
+                    Throw New Exception(String.Format(packageTooLarge, content_len))
                 End If
 
                 Dim buf As Byte() = New Byte(BUF_SIZE - 1) {}
@@ -359,15 +377,15 @@ Namespace Core
                     End If
 
                     to_read -= numread
-                    ms.Write(buf, 0, numread)
+                    content.Write(buf, 0, numread)
                 End While
 
-                Call ms.Seek(Scan0, SeekOrigin.Begin)
-            End If
+                ' Call content.Seek(Scan0, SeekOrigin.Begin)
+                Call content.Flush()
+            End Using
 
-            ' Call Console.WriteLine("get post data end")
-            Call srv.handlePOSTRequest(Me, ms)
-        End Sub
+            Return content_len
+        End Function
 
         ''' <summary>
         ''' 默认是html文件类型
@@ -385,8 +403,11 @@ Namespace Core
             End Try
         End Sub
 
-        Const PoweredBy$ = "microsoft-visualbasic-servlet(*.vbs)"
-        Const XPoweredBy$ = "X-Powered-By: " & PoweredBy
+        ''' <summary>
+        ''' VB server script http platform
+        ''' </summary>
+        Public Const VBS_platform$ = "microsoft-visualbasic-servlet(*.vbs)"
+        Public Const XPoweredBy$ = "X-Powered-By: " & VBS_platform
 
         Private Sub __writeSuccess(content_type As String, content As Content)
             ' this is the successful HTTP response line
@@ -417,7 +438,7 @@ Namespace Core
             '        </settings>
             ' </system.net>
             ' </configuration>
-            Call outputStream.Write(vbCrLf)
+            Call outputStream.WriteLine()
             ' this terminates the HTTP headers.. everything after this is HTTP body..
             Call outputStream.Flush()
         End Sub

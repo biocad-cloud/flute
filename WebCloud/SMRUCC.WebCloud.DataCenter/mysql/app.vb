@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::5c9be2d4d74c4d485f317aecf05a2c1d, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\app.vb"
+﻿#Region "Microsoft.VisualBasic::e615b3a1ce61faf9046b1beb0372df74, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\app.vb"
 
     ' Author:
     ' 
@@ -35,7 +35,8 @@
     ' 
     '     Properties: catagory, description, name, uid
     ' 
-    '     Function: GetDeleteSQL, GetDumpInsertValue, GetInsertSQL, GetReplaceSQL, GetUpdateSQL
+    '     Function: Clone, GetDeleteSQL, GetDumpInsertValue, (+2 Overloads) GetInsertSQL, (+2 Overloads) GetReplaceSQL
+    '               GetUpdateSQL
     ' 
     ' 
     ' /********************************************************************************/
@@ -46,7 +47,7 @@ REM  Oracle.LinuxCompatibility.MySQL.CodeSolution.VisualBasic.CodeGenerator
 REM  MYSQL Schema Mapper
 REM      for Microsoft VisualBasic.NET 2.1.0.2569
 
-REM  Dump @3/16/2018 10:32:32 PM
+REM  Dump @5/25/2019 3:17:58 PM
 
 
 Imports System.Data.Linq.Mapping
@@ -87,7 +88,7 @@ CREATE TABLE `app` (
   `catagory` varchar(45) DEFAULT NULL COMMENT '功能分类',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `uid_UNIQUE` (`uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='The analysis application that running the task';")>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='The analysis application that running the task';")>
 Public Class app: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #Region "Public Property Mapping To Database Fields"
     <DatabaseField("uid"), PrimaryKey, NotNull, DataType(MySqlDbType.Int64, "11"), Column(Name:="uid"), XmlAttribute> Public Property uid As Long
@@ -109,11 +110,26 @@ Public Class app: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #End Region
 #Region "Public SQL Interface"
 #Region "Interface SQL"
-    Private Shared ReadOnly INSERT_SQL As String = <SQL>INSERT INTO `app` (`uid`, `name`, `description`, `catagory`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
-    Private Shared ReadOnly REPLACE_SQL As String = <SQL>REPLACE INTO `app` (`uid`, `name`, `description`, `catagory`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
-    Private Shared ReadOnly DELETE_SQL As String = <SQL>DELETE FROM `app` WHERE `uid` = '{0}';</SQL>
-    Private Shared ReadOnly UPDATE_SQL As String = <SQL>UPDATE `app` SET `uid`='{0}', `name`='{1}', `description`='{2}', `catagory`='{3}' WHERE `uid` = '{4}';</SQL>
+    Friend Shared ReadOnly INSERT_SQL$ = 
+        <SQL>INSERT INTO `app` (`uid`, `name`, `description`, `catagory`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
+
+    Friend Shared ReadOnly INSERT_AI_SQL$ = 
+        <SQL>INSERT INTO `app` (`uid`, `name`, `description`, `catagory`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_SQL$ = 
+        <SQL>REPLACE INTO `app` (`uid`, `name`, `description`, `catagory`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_AI_SQL$ = 
+        <SQL>REPLACE INTO `app` (`uid`, `name`, `description`, `catagory`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
+
+    Friend Shared ReadOnly DELETE_SQL$ =
+        <SQL>DELETE FROM `app` WHERE `uid` = '{0}';</SQL>
+
+    Friend Shared ReadOnly UPDATE_SQL$ = 
+        <SQL>UPDATE `app` SET `uid`='{0}', `name`='{1}', `description`='{2}', `catagory`='{3}' WHERE `uid` = '{4}';</SQL>
+
 #End Region
+
 ''' <summary>
 ''' ```SQL
 ''' DELETE FROM `app` WHERE `uid` = '{0}';
@@ -122,6 +138,7 @@ Public Class app: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     Public Overrides Function GetDeleteSQL() As String
         Return String.Format(DELETE_SQL, uid)
     End Function
+
 ''' <summary>
 ''' ```SQL
 ''' INSERT INTO `app` (`uid`, `name`, `description`, `catagory`) VALUES ('{0}', '{1}', '{2}', '{3}');
@@ -132,10 +149,27 @@ Public Class app: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     End Function
 
 ''' <summary>
+''' ```SQL
+''' INSERT INTO `app` (`uid`, `name`, `description`, `catagory`) VALUES ('{0}', '{1}', '{2}', '{3}');
+''' ```
+''' </summary>
+    Public Overrides Function GetInsertSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(INSERT_AI_SQL, uid, name, description, catagory)
+        Else
+        Return String.Format(INSERT_SQL, uid, name, description, catagory)
+        End If
+    End Function
+
+''' <summary>
 ''' <see cref="GetInsertSQL"/>
 ''' </summary>
-    Public Overrides Function GetDumpInsertValue() As String
-        Return $"('{uid}', '{name}', '{description}', '{catagory}')"
+    Public Overrides Function GetDumpInsertValue(AI As Boolean) As String
+        If AI Then
+            Return $"('{uid}', '{name}', '{description}', '{catagory}')"
+        Else
+            Return $"('{uid}', '{name}', '{description}', '{catagory}')"
+        End If
     End Function
 
 
@@ -147,6 +181,20 @@ Public Class app: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     Public Overrides Function GetReplaceSQL() As String
         Return String.Format(REPLACE_SQL, uid, name, description, catagory)
     End Function
+
+''' <summary>
+''' ```SQL
+''' REPLACE INTO `app` (`uid`, `name`, `description`, `catagory`) VALUES ('{0}', '{1}', '{2}', '{3}');
+''' ```
+''' </summary>
+    Public Overrides Function GetReplaceSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(REPLACE_AI_SQL, uid, name, description, catagory)
+        Else
+        Return String.Format(REPLACE_SQL, uid, name, description, catagory)
+        End If
+    End Function
+
 ''' <summary>
 ''' ```SQL
 ''' UPDATE `app` SET `uid`='{0}', `name`='{1}', `description`='{2}', `catagory`='{3}' WHERE `uid` = '{4}';
@@ -156,10 +204,15 @@ Public Class app: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
         Return String.Format(UPDATE_SQL, uid, name, description, catagory, uid)
     End Function
 #End Region
-Public Function Clone() As app
-                  Return DirectCast(MyClass.MemberwiseClone, app)
-              End Function
+
+''' <summary>
+                     ''' Memberwise clone of current table Object.
+                     ''' </summary>
+                     Public Function Clone() As app
+                         Return DirectCast(MyClass.MemberwiseClone, app)
+                     End Function
 End Class
 
 
 End Namespace
+

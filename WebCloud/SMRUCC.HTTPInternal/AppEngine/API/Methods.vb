@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::cd32be7d5b2700029b2c2f4ad8ab323b, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\Methods.vb"
+﻿#Region "Microsoft.VisualBasic::c9925084e34019b32beba12f6e7cbce8, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\Methods.vb"
 
     ' Author:
     ' 
@@ -82,6 +82,7 @@
 #End Region
 
 Imports System.Reflection
+Imports Microsoft.VisualBasic.Text.Xml
 
 Namespace AppEngine.APIMethods
 
@@ -160,7 +161,15 @@ Returns:<br />
         End Sub
 
         Public Overrides Function GetMethodHelp(EntryPoint As MethodInfo) As String
-            Throw New NotImplementedException()
+            Return sprintf(<div>
+                               Method: <strong><%= GetType(PUT).Name %></strong>
+                               <br/>
+                               %s<br/>
+                               Returns:<br/>
+                               <pre>
+                                   %s
+                               </pre>
+                           </div>, __getParameters(EntryPoint), GetExample())
         End Function
     End Class
 

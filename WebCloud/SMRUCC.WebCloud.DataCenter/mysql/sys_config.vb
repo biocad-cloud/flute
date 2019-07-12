@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::bd1cc7c5d6ddc01a5d876aa14d88c12d, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\sys_config.vb"
+﻿#Region "Microsoft.VisualBasic::073aecf1e7b8df4525fe1b7ebe0112b5, WebCloud\SMRUCC.WebCloud.DataCenter\mysql\sys_config.vb"
 
     ' Author:
     ' 
@@ -35,7 +35,8 @@
     ' 
     '     Properties: set_by, set_time, value, variable
     ' 
-    '     Function: GetDeleteSQL, GetDumpInsertValue, GetInsertSQL, GetReplaceSQL, GetUpdateSQL
+    '     Function: Clone, GetDeleteSQL, GetDumpInsertValue, (+2 Overloads) GetInsertSQL, (+2 Overloads) GetReplaceSQL
+    '               GetUpdateSQL
     ' 
     ' 
     ' /********************************************************************************/
@@ -46,7 +47,7 @@ REM  Oracle.LinuxCompatibility.MySQL.CodeSolution.VisualBasic.CodeGenerator
 REM  MYSQL Schema Mapper
 REM      for Microsoft VisualBasic.NET 2.1.0.2569
 
-REM  Dump @3/16/2018 10:32:32 PM
+REM  Dump @5/25/2019 3:17:58 PM
 
 
 Imports System.Data.Linq.Mapping
@@ -85,7 +86,7 @@ CREATE TABLE `sys_config` (
   `set_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `set_by` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`variable`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='系统设置';")>
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='系统设置';")>
 Public Class sys_config: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #Region "Public Property Mapping To Database Fields"
     <DatabaseField("variable"), PrimaryKey, NotNull, DataType(MySqlDbType.VarChar, "128"), Column(Name:="variable"), XmlAttribute> Public Property variable As String
@@ -95,11 +96,26 @@ Public Class sys_config: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
 #End Region
 #Region "Public SQL Interface"
 #Region "Interface SQL"
-    Private Shared ReadOnly INSERT_SQL As String = <SQL>INSERT INTO `sys_config` (`variable`, `value`, `set_time`, `set_by`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
-    Private Shared ReadOnly REPLACE_SQL As String = <SQL>REPLACE INTO `sys_config` (`variable`, `value`, `set_time`, `set_by`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
-    Private Shared ReadOnly DELETE_SQL As String = <SQL>DELETE FROM `sys_config` WHERE `variable` = '{0}';</SQL>
-    Private Shared ReadOnly UPDATE_SQL As String = <SQL>UPDATE `sys_config` SET `variable`='{0}', `value`='{1}', `set_time`='{2}', `set_by`='{3}' WHERE `variable` = '{4}';</SQL>
+    Friend Shared ReadOnly INSERT_SQL$ = 
+        <SQL>INSERT INTO `sys_config` (`variable`, `value`, `set_time`, `set_by`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
+
+    Friend Shared ReadOnly INSERT_AI_SQL$ = 
+        <SQL>INSERT INTO `sys_config` (`variable`, `value`, `set_time`, `set_by`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_SQL$ = 
+        <SQL>REPLACE INTO `sys_config` (`variable`, `value`, `set_time`, `set_by`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
+
+    Friend Shared ReadOnly REPLACE_AI_SQL$ = 
+        <SQL>REPLACE INTO `sys_config` (`variable`, `value`, `set_time`, `set_by`) VALUES ('{0}', '{1}', '{2}', '{3}');</SQL>
+
+    Friend Shared ReadOnly DELETE_SQL$ =
+        <SQL>DELETE FROM `sys_config` WHERE `variable` = '{0}';</SQL>
+
+    Friend Shared ReadOnly UPDATE_SQL$ = 
+        <SQL>UPDATE `sys_config` SET `variable`='{0}', `value`='{1}', `set_time`='{2}', `set_by`='{3}' WHERE `variable` = '{4}';</SQL>
+
 #End Region
+
 ''' <summary>
 ''' ```SQL
 ''' DELETE FROM `sys_config` WHERE `variable` = '{0}';
@@ -108,6 +124,7 @@ Public Class sys_config: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     Public Overrides Function GetDeleteSQL() As String
         Return String.Format(DELETE_SQL, variable)
     End Function
+
 ''' <summary>
 ''' ```SQL
 ''' INSERT INTO `sys_config` (`variable`, `value`, `set_time`, `set_by`) VALUES ('{0}', '{1}', '{2}', '{3}');
@@ -118,10 +135,27 @@ Public Class sys_config: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     End Function
 
 ''' <summary>
+''' ```SQL
+''' INSERT INTO `sys_config` (`variable`, `value`, `set_time`, `set_by`) VALUES ('{0}', '{1}', '{2}', '{3}');
+''' ```
+''' </summary>
+    Public Overrides Function GetInsertSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(INSERT_AI_SQL, variable, value, MySqlScript.ToMySqlDateTimeString(set_time), set_by)
+        Else
+        Return String.Format(INSERT_SQL, variable, value, MySqlScript.ToMySqlDateTimeString(set_time), set_by)
+        End If
+    End Function
+
+''' <summary>
 ''' <see cref="GetInsertSQL"/>
 ''' </summary>
-    Public Overrides Function GetDumpInsertValue() As String
-        Return $"('{variable}', '{value}', '{set_time}', '{set_by}')"
+    Public Overrides Function GetDumpInsertValue(AI As Boolean) As String
+        If AI Then
+            Return $"('{variable}', '{value}', '{set_time}', '{set_by}')"
+        Else
+            Return $"('{variable}', '{value}', '{set_time}', '{set_by}')"
+        End If
     End Function
 
 
@@ -133,6 +167,20 @@ Public Class sys_config: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
     Public Overrides Function GetReplaceSQL() As String
         Return String.Format(REPLACE_SQL, variable, value, MySqlScript.ToMySqlDateTimeString(set_time), set_by)
     End Function
+
+''' <summary>
+''' ```SQL
+''' REPLACE INTO `sys_config` (`variable`, `value`, `set_time`, `set_by`) VALUES ('{0}', '{1}', '{2}', '{3}');
+''' ```
+''' </summary>
+    Public Overrides Function GetReplaceSQL(AI As Boolean) As String
+        If AI Then
+        Return String.Format(REPLACE_AI_SQL, variable, value, MySqlScript.ToMySqlDateTimeString(set_time), set_by)
+        Else
+        Return String.Format(REPLACE_SQL, variable, value, MySqlScript.ToMySqlDateTimeString(set_time), set_by)
+        End If
+    End Function
+
 ''' <summary>
 ''' ```SQL
 ''' UPDATE `sys_config` SET `variable`='{0}', `value`='{1}', `set_time`='{2}', `set_by`='{3}' WHERE `variable` = '{4}';
@@ -142,10 +190,15 @@ Public Class sys_config: Inherits Oracle.LinuxCompatibility.MySQL.MySQLTable
         Return String.Format(UPDATE_SQL, variable, value, MySqlScript.ToMySqlDateTimeString(set_time), set_by, variable)
     End Function
 #End Region
-Public Function Clone() As sys_config
-                  Return DirectCast(MyClass.MemberwiseClone, sys_config)
-              End Function
+
+''' <summary>
+                     ''' Memberwise clone of current table Object.
+                     ''' </summary>
+                     Public Function Clone() As sys_config
+                         Return DirectCast(MyClass.MemberwiseClone, sys_config)
+                     End Function
 End Class
 
 
 End Namespace
+
