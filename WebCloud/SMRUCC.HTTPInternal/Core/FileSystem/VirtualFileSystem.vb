@@ -36,20 +36,24 @@ Namespace Core.Cache
         ReadOnly _cacheUpdate As UpdateThread
         ReadOnly wwwroot As DirectoryInfo
 
+        ''' <summary>
+        ''' 可以使用这个时间戳来获取更新后的文件内容
+        ''' </summary>
+        ReadOnly lastUpdate As Date
+
         Sub New(updateMode As Boolean, wwwroot As DirectoryInfo)
             If updateMode Then
-                _cacheUpdate = New UpdateThread(1000 * 60 * 30,
-                      Sub()
-                          For Each file In CachedFile.CacheAllFiles(wwwroot.FullName)
-                              files(file.Key) = file.Value
-                          Next
-                      End Sub)
+                _cacheUpdate = New UpdateThread(1000 * 60 * 30, AddressOf Me.RunCacheUpdate)
                 _cacheUpdate.Start()
             End If
 
             Me.wwwroot = wwwroot
 
             Call "Running in file system cache mode!".__DEBUG_ECHO
+        End Sub
+
+        Public Sub Add(path As String, file As CachedFile)
+
         End Sub
 
         Public Function GetFileBuffer(file As String) As Byte()

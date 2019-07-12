@@ -113,8 +113,9 @@ Namespace Core
         ''' 可能会延迟一段时间才会更新到内存缓存之中
         ''' </remarks>
         Public ReadOnly Property InMemoryCacheMode As Boolean
+            <MethodImpl(MethodImplOptions.AggressiveInlining)>
             Get
-                Return New _Cache Is Nothing
+                Return _cache Is Nothing
             End Get
         End Property
 

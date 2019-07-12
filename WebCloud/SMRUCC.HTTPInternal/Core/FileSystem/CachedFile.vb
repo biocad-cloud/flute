@@ -50,8 +50,20 @@ Namespace Core.Cache
 
     Public Class CachedFile
 
+        ''' <summary>
+        ''' 文件路径
+        ''' </summary>
+        ''' <returns></returns>
         Public ReadOnly Property Path As String
+        ''' <summary>
+        ''' 文件的内容
+        ''' </summary>
+        ''' <returns></returns>
         Public ReadOnly Property bufs As Byte()
+        ''' <summary>
+        ''' 文件的类型
+        ''' </summary>
+        ''' <returns></returns>
         Public ReadOnly Property content As ContentType
 
         Sub New(path As String)
@@ -81,10 +93,10 @@ Namespace Core.Cache
                 wwwroot,
                 FileIO.SearchOption.SearchAllSubDirectories,
                 "*.*")
-            Dim hash As New Dictionary(Of String, CachedFile)
+            Dim hash As New VirtualFileSystem(False, New DirectoryInfo(wwwroot))
 
             For Each file As String In allFiles
-                hash(file) = New CachedFile(file)
+                hash.Add(file, New CachedFile(file))
             Next
 
             Return hash

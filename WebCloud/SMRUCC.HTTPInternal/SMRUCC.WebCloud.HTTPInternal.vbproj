@@ -494,6 +494,7 @@
   <ItemGroup>
     <Compile Include="AppEngine\APIName.vb" />
     <Compile Include="AppEngine\API\APIMethod.vb" />
+    <Compile Include="Core\FileSystem\InternalUpdates.vb" />
     <Compile Include="Core\HttpRequest\HttpRequest.vb" />
     <Compile Include="Core\HttpRequest\HttpResponse.vb" />
     <Compile Include="AppEngine\API\Methods.vb" />
