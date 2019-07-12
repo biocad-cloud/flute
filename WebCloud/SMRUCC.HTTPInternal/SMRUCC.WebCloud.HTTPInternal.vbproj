@@ -504,7 +504,10 @@
     <Compile Include="AppEngine\SessionManager.vb" />
     <Compile Include="AppEngine\WebApp.vb" />
     <Compile Include="AppEngine\API\APIInvoker.vb" />
-    <Compile Include="Core\WebSocket.vb" />
+    <Compile Include="Core\WebSocket\Events.vb" />
+    <Compile Include="Core\WebSocket\Operations.vb" />
+    <Compile Include="Core\WebSocket\WsProcessor.vb" />
+    <Compile Include="Core\WebSocket\WebSocket.vb" />
     <Compile Include="Extensions.vb" />
     <Compile Include="Core\CachedFile.vb" />
     <Compile Include="Core\Content.vb" />
@@ -560,7 +563,7 @@
     <None Include="Resources\favicon.zip" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\sciBASIC#\Microsoft.VisualBasic.Core\47-dotnet_Microsoft.VisualBasic.vbproj">
+    <ProjectReference Include="..\..\..\..\..\..\GCModeller\src\runtime\sciBASIC#\Microsoft.VisualBasic.Core\47-dotnet_Microsoft.VisualBasic.vbproj">
       <Project>{fecce1fd-e1d4-49e3-a668-60bb5e7aed99}</Project>
       <Name>47-dotnet_Microsoft.VisualBasic</Name>
     </ProjectReference>
