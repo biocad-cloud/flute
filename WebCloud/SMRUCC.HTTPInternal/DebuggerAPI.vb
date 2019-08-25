@@ -78,7 +78,7 @@ Public Module DebuggerAPI
 
     Public Function PrintOnConsole() As HttpResponse
         Return New HttpResponse(New StreamWriter(Console.OpenStandardOutput),
-            write404:=Sub(msg As String)
+            [error]:=Sub(msg As String)
                           Call msg.PrintException
                       End Sub)
     End Function

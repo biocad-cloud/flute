@@ -95,7 +95,7 @@ Namespace AppEngine.APIMethods
 #End If
             Call App.LogException(ex)
             Call ex.PrintException
-            Call response.Write404(result)
+            Call response.WriteError(result)
 
             Return False
         End Function
