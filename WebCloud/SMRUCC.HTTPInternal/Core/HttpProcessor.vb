@@ -466,7 +466,7 @@ Namespace Core
         ''' <summary>
         ''' 404
         ''' </summary>
-        Public Sub writeFailure(ex As String)
+        Public Sub writeFailure(errCode%, ex As String)
             Try
                 Call __writeFailure(ex)
             Catch e As Exception
