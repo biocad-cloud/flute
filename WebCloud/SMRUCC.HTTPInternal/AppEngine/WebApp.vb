@@ -128,7 +128,7 @@ Namespace AppEngine
         ''' 
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub AddDynamics(url$, method As APIMethod, API As MethodInfo, Optional help$ = "")
-            Call PlatformEngine.AppManager.Join(url, method, API, APP:=Me, help:=help)
+            Call PlatformEngine.AppManager.Join(url, method, API, app:=Me, help:=help)
         End Sub
 
         ''' <summary>
