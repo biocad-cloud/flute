@@ -88,7 +88,9 @@ Namespace AppEngine
             methods = MyClass _
                 .GetType _
                 .GetMethods(BindingFlags.Public Or BindingFlags.Instance) _
-                .Where(Function(m) Not m.GetCustomAttribute(GetType(APIMethod)) Is Nothing) _
+                .Where(Function(m)
+                           Return Not m.GetCustomAttribute(GetType(APIMethod)) Is Nothing
+                       End Function) _
                 .ToDictionary(Function(m) m.Name)
         End Sub
 
