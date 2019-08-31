@@ -242,6 +242,15 @@ Namespace Core.WebSocket
         ''' Send text message to client
         ''' </summary>
         ''' <param name="text"></param>
+        Public Sub SendText(text As String)
+            Call doChecks()
+            Call SendText(text, tcp.GetStream)
+        End Sub
+
+        ''' <summary>
+        ''' Send text message to client
+        ''' </summary>
+        ''' <param name="text"></param>
         Public Sub SendText(text As String, stream As NetworkStream)
             Dim Payload As Byte() = Encoding.UTF8.GetBytes(text)
             Dim FRRROPCODE As Byte = Convert.ToByte("10000001", 2) 'FIN is set, and OPCODE is 1 or Text
