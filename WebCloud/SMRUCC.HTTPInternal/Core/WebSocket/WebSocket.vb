@@ -69,9 +69,13 @@ Namespace Core.WebSocket
         Dim WithEvents listener As New Tick(50)
 
         Dim connected As New List(Of WsProcessor)
+        Dim activator As WebsocketActivator
 
-        Sub New(url As String, port As Integer)
+        Sub New(url$, port%, activator As WebsocketActivator)
             MyBase.New(IPAddress.Parse(url), port)
+
+            ' 这个函数指针描述了如何创建一个业务逻辑对象实例
+            Me.activator = activator
         End Sub
 
         Sub StartServer()
@@ -89,18 +93,18 @@ Namespace Core.WebSocket
             Return 0
         End Function
 
-        Sub Client_Connected(sender As Object, ByRef client As WsProcessor) Handles Me.OnClientConnect
+        Public Sub Client_Connected(sender As Object, ByRef client As WsProcessor) Handles Me.OnClientConnect
             connected.Add(client)
             AddHandler client.onClientDisconnect, AddressOf Client_Disconnected
             client.HandShake()
             listener.Start()
         End Sub
 
-        Sub Client_Disconnected()
+        Private Sub Client_Disconnected()
 
         End Sub
 
-        Function isClientDisconnected(client As WsProcessor) As Boolean
+        Private Function isClientDisconnected(client As WsProcessor) As Boolean
             isClientDisconnected = False
 
             If Not client.isConnected Then
@@ -108,7 +112,7 @@ Namespace Core.WebSocket
             End If
         End Function
 
-        Function isClientConnected(client As WsProcessor) As Boolean
+        Private Function isClientConnected(client As WsProcessor) As Boolean
             isClientConnected = False
 
             If client.isConnected Then
@@ -118,7 +122,7 @@ Namespace Core.WebSocket
 
         Private Sub PendingCheckTimer_Elapsed(sender As Object, e As ElapsedEventArgs) Handles pendingCheckTimer.Elapsed
             If Pending() Then
-                RaiseEvent OnClientConnect(Me, New WsProcessor(Me.AcceptTcpClient()))
+                RaiseEvent OnClientConnect(Me, Me.activator(Me.AcceptTcpClient))
             End If
         End Sub
 
