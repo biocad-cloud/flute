@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::a4d62b7a5888bc8d783e3505fadf1427, WebCloud\SMRUCC.HTTPInternal\Core\WebSocket\Events.vb"
+﻿#Region "Microsoft.VisualBasic::d9242509967eb1106f7819970cf49dcc, WebCloud\SMRUCC.HTTPInternal\Core\WebSocket\WebsocketActivator.vb"
 
     ' Author:
     ' 
@@ -31,22 +31,12 @@
 
     ' Summaries:
 
-    '     Delegate Sub
+    '     Delegate Function
     ' 
     ' 
-    '     Delegate Sub
+    '     Module Extensions
     ' 
-    ' 
-    '     Delegate Sub
-    ' 
-    ' 
-    '     Delegate Sub
-    ' 
-    ' 
-    ' 
-    ' 
-    ' 
-    ' 
+    '         Function: GetActivator
     ' 
     ' 
     ' 
@@ -54,27 +44,34 @@
 
 #End Region
 
-Imports System.IO
 Imports System.Net.Sockets
+Imports System.Reflection
+Imports Microsoft.VisualBasic.ApplicationServices.Plugin
+Imports Microsoft.VisualBasic.Language
+Imports Microsoft.VisualBasic.Language.UnixBash
+Imports Microsoft.VisualBasic.Language.Values
 
 Namespace Core.WebSocket
 
-    Public Delegate Sub OnClientConnectDelegate(sender As Object, ByRef client As WsProcessor)
-    Public Delegate Sub OnClientDisconnectDelegateHandler(sender As Object)
-
     ''' <summary>
-    ''' 
+    ''' A static method should be marked with <see cref="PluginAttribute"/>
     ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="data"></param>
-    ''' <param name="responseStream">请注意，使用完了不可以关闭这个流对象</param>
-    Public Delegate Sub OnClientTextMessage(sender As WsProcessor, data As String, responseStream As NetworkStream)
-    ''' <summary>
-    ''' 
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="data"></param>
-    ''' <param name="responseStream">请注意，使用完了不可以关闭这个流对象</param>
-    Public Delegate Sub OnClinetBinaryMessage(sender As WsProcessor, data As MemoryStream, responseStream As NetworkStream)
+    ''' <param name="tcp"></param>
+    ''' <returns></returns>
+    Public Delegate Function WebsocketActivator(tcp As TcpClient) As WsProcessor
 
+    <HideModuleName> Public Module Extensions
+
+        Public Function GetActivator(directory$, entry As String) As WebsocketActivator
+            Dim activator As New Value(Of MethodInfo)
+
+            For Each dll As String In ls - l - r - "*.dll" <= directory
+                If Not (activator = Loader.GetPluginMethod(dll, entry)) Is Nothing Then
+                    Return activator.CreateDelegate(GetType(WebsocketActivator))
+                End If
+            Next
+
+            Return Nothing
+        End Function
+    End Module
 End Namespace

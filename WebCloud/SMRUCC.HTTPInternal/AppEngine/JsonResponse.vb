@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::89fb3ef5440c16e492d029ed0f8189f3, WebCloud\SMRUCC.HTTPInternal\Core\FileSystem\FileNode.vb"
+﻿#Region "Microsoft.VisualBasic::d529aa63d7801968f916e320db121477, WebCloud\SMRUCC.HTTPInternal\AppEngine\JsonResponse.vb"
 
     ' Author:
     ' 
@@ -31,44 +31,31 @@
 
     ' Summaries:
 
-    '     Class FileNode
+    '     Structure JsonResponse
     ' 
-    '         Properties: File, isDirectory, MySelf
+    '         Properties: code, message
     ' 
-    '         Constructor: (+1 Overloads) Sub New
+    '         Function: ToString
     ' 
     ' 
     ' /********************************************************************************/
 
 #End Region
 
-Imports Microsoft.VisualBasic.ComponentModel.DataStructures.Tree
+Imports System.Xml.Serialization
+Imports Microsoft.VisualBasic.Serialization.JSON
 
-Namespace Core.Cache
+Namespace AppEngine
 
-    Public Class FileNode : Inherits TreeNodeBase(Of FileNode)
-        Implements ITreeNode(Of FileNode)
+    Public Structure JsonResponse
 
-        Public ReadOnly Property File As CachedFile
+        <XmlAttribute>
+        Public Property code As Integer
+        <XmlText>
+        Public Property message As String
 
-        ''' <summary>
-        ''' 
-        ''' </summary>
-        ''' <param name="name">FileName</param>
-        Public Sub New(name As String)
-            MyBase.New(name)
-        End Sub
-
-        Public ReadOnly Property isDirectory As Boolean
-            Get
-                Return ChildNodes.Count > 0
-            End Get
-        End Property
-
-        Public Overrides ReadOnly Property MySelf As FileNode
-            Get
-                Return Me
-            End Get
-        End Property
-    End Class
+        Public Overrides Function ToString() As String
+            Return Me.GetJson
+        End Function
+    End Structure
 End Namespace

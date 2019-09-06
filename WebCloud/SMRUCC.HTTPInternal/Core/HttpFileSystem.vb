@@ -1,62 +1,62 @@
-﻿#Region "Microsoft.VisualBasic::c72513d558e16f5515bd302d848a9107, WebCloud\SMRUCC.HTTPInternal\Core\HttpFileSystem.vb"
+﻿#Region "Microsoft.VisualBasic::3f315926e791c39b1207a6abdd4690e8, WebCloud\SMRUCC.HTTPInternal\Core\HttpFileSystem.vb"
 
-' Author:
-' 
-'       asuka (amethyst.asuka@gcmodeller.org)
-'       xie (genetics@smrucc.org)
-'       xieguigang (xie.guigang@live.com)
-' 
-' Copyright (c) 2018 GPL3 Licensed
-' 
-' 
-' GNU GENERAL PUBLIC LICENSE (GPL3)
-' 
-' 
-' This program is free software: you can redistribute it and/or modify
-' it under the terms of the GNU General Public License as published by
-' the Free Software Foundation, either version 3 of the License, or
-' (at your option) any later version.
-' 
-' This program is distributed in the hope that it will be useful,
-' but WITHOUT ANY WARRANTY; without even the implied warranty of
-' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-' GNU General Public License for more details.
-' 
-' You should have received a copy of the GNU General Public License
-' along with this program. If not, see <http://www.gnu.org/licenses/>.
+    ' Author:
+    ' 
+    '       asuka (amethyst.asuka@gcmodeller.org)
+    '       xie (genetics@smrucc.org)
+    '       xieguigang (xie.guigang@live.com)
+    ' 
+    ' Copyright (c) 2018 GPL3 Licensed
+    ' 
+    ' 
+    ' GNU GENERAL PUBLIC LICENSE (GPL3)
+    ' 
+    ' 
+    ' This program is free software: you can redistribute it and/or modify
+    ' it under the terms of the GNU General Public License as published by
+    ' the Free Software Foundation, either version 3 of the License, or
+    ' (at your option) any later version.
+    ' 
+    ' This program is distributed in the hope that it will be useful,
+    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
+    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    ' GNU General Public License for more details.
+    ' 
+    ' You should have received a copy of the GNU General Public License
+    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-' /********************************************************************************/
+    ' /********************************************************************************/
 
-' Summaries:
+    ' Summaries:
 
-'     Class HttpFileSystem
-' 
-' 
-'     Class HttpFileSystem
-' 
-'         Properties: RequestStream, wwwroot
-' 
-'         Constructor: (+1 Overloads) Sub New
-' 
-'         Function: AddMappings, GetResource, MapPath
-' 
-'         Sub: Dispose
-'         Delegate Function
-' 
-'             Properties: Page404
-' 
-'             Function: __getMapDIR, __handleFileGET, __httpProcessor, __request404, Open
-' 
-'             Sub: __handleREST, __transferData, handleGETRequest, handleOtherMethod, handlePOSTRequest
-'                  RunServer, SetGetRequest
-' 
-' 
-' 
-' 
-' 
-' /********************************************************************************/
+    '     Class HttpFileSystem
+    ' 
+    ' 
+    '     Class HttpFileSystem
+    ' 
+    '         Properties: InMemoryCacheMode, RequestStream, wwwroot
+    ' 
+    '         Constructor: (+1 Overloads) Sub New
+    ' 
+    '         Function: AddMappings, GetResource, MapPath
+    ' 
+    '         Sub: Dispose
+    '         Delegate Function
+    ' 
+    '             Properties: Page404
+    ' 
+    '             Function: __getMapDIR, __handleFileGET, __httpProcessor, __request404, Open
+    ' 
+    '             Sub: __handleREST, __transferData, handleGETRequest, handleOtherMethod, handlePOSTRequest
+    '                  handlePUTMethod, RunServer, SetGetRequest
+    ' 
+    ' 
+    ' 
+    ' 
+    ' 
+    ' /********************************************************************************/
 
 #End Region
 
@@ -72,10 +72,9 @@ Imports Microsoft.VisualBasic.Language.Default
 Imports Microsoft.VisualBasic.Net.Http
 Imports Microsoft.VisualBasic.Net.Protocols
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
-Imports Microsoft.VisualBasic.Parallel.Tasks
 Imports Microsoft.VisualBasic.Serialization.JSON
-Imports SMRUCC.WebCloud.HTTPInternal.Platform.Plugins
 Imports SMRUCC.WebCloud.HTTPInternal.Core.Cache
+Imports SMRUCC.WebCloud.HTTPInternal.Platform.Plugins
 Imports fs = Microsoft.VisualBasic.FileIO.FileSystem
 Imports r = System.Text.RegularExpressions.Regex
 
@@ -104,6 +103,7 @@ Namespace Core
         ReadOnly _cache As VirtualFileSystem
         ReadOnly _defaultFavicon As Byte() = My.Resources.favicon.UnZipStream.ToArray
         ReadOnly MAX_POST_SIZE%
+
         ''' <summary>
         ''' Current http filesystem is running in cache mode?
         ''' </summary>
@@ -115,7 +115,7 @@ Namespace Core
         Public ReadOnly Property InMemoryCacheMode As Boolean
             <MethodImpl(MethodImplOptions.AggressiveInlining)>
             Get
-                Return _cache Is Nothing
+                Return Not _cache Is Nothing
             End Get
         End Property
 

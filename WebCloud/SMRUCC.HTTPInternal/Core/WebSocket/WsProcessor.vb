@@ -1,52 +1,51 @@
-﻿#Region "Microsoft.VisualBasic::52eff1c95cb746451f6fbd0b202ca4da, WebCloud\SMRUCC.HTTPInternal\Core\WebSocket\WsProcessor.vb"
+﻿#Region "Microsoft.VisualBasic::83a76e1732ce7b883ee206a998b34e02, WebCloud\SMRUCC.HTTPInternal\Core\WebSocket\WsProcessor.vb"
 
-' Author:
-' 
-'       asuka (amethyst.asuka@gcmodeller.org)
-'       xie (genetics@smrucc.org)
-'       xieguigang (xie.guigang@live.com)
-' 
-' Copyright (c) 2018 GPL3 Licensed
-' 
-' 
-' GNU GENERAL PUBLIC LICENSE (GPL3)
-' 
-' 
-' This program is free software: you can redistribute it and/or modify
-' it under the terms of the GNU General Public License as published by
-' the Free Software Foundation, either version 3 of the License, or
-' (at your option) any later version.
-' 
-' This program is distributed in the hope that it will be useful,
-' but WITHOUT ANY WARRANTY; without even the implied warranty of
-' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-' GNU General Public License for more details.
-' 
-' You should have received a copy of the GNU General Public License
-' along with this program. If not, see <http://www.gnu.org/licenses/>.
+    ' Author:
+    ' 
+    '       asuka (amethyst.asuka@gcmodeller.org)
+    '       xie (genetics@smrucc.org)
+    '       xieguigang (xie.guigang@live.com)
+    ' 
+    ' Copyright (c) 2018 GPL3 Licensed
+    ' 
+    ' 
+    ' GNU GENERAL PUBLIC LICENSE (GPL3)
+    ' 
+    ' 
+    ' This program is free software: you can redistribute it and/or modify
+    ' it under the terms of the GNU General Public License as published by
+    ' the Free Software Foundation, either version 3 of the License, or
+    ' (at your option) any later version.
+    ' 
+    ' This program is distributed in the hope that it will be useful,
+    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
+    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    ' GNU General Public License for more details.
+    ' 
+    ' You should have received a copy of the GNU General Public License
+    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-' /********************************************************************************/
+    ' /********************************************************************************/
 
-' Summaries:
+    ' Summaries:
 
-'     Class WsProcessor
-' 
-'         Properties: isConnected
-' 
-'         Constructor: (+1 Overloads) Sub New
-' 
-'         Function: handshakePayload
-' 
-'         Sub: CheckForDataAvailability, DecodeFrame, doChecks, handleBinary, handleText
-'              HandShake, Response
-' 
-' 
-' /********************************************************************************/
+    '     Class WsProcessor
+    ' 
+    '         Properties: isConnected
+    ' 
+    '         Constructor: (+1 Overloads) Sub New
+    ' 
+    '         Function: handshakePayload
+    ' 
+    '         Sub: CheckForDataAvailability, DecodeFrame, doChecks, HandShake, Response
+    '              SendBinary, (+2 Overloads) SendText
+    ' 
+    ' 
+    ' /********************************************************************************/
 
 #End Region
-
 
 Imports System.IO
 Imports System.Net.Sockets
@@ -62,7 +61,7 @@ Namespace Core.WebSocket
     ''' <summary>
     ''' A websocket client
     ''' </summary>
-    Public Class WsProcessor
+    Public MustInherit Class WsProcessor
 
         Public Event onClientDisconnect As OnClientDisconnectDelegateHandler
         Public Event onClientTextMessage As OnClientTextMessage
@@ -75,28 +74,31 @@ Namespace Core.WebSocket
         ReadOnly WsSeckey As New Regex("Sec-WebSocket-Key: (.*)")
         ReadOnly sha1 As SHA1 = SHA1.Create()
 
-        Dim tcpClient As TcpClient
+        ''' <summary>
+        ''' 会需要一直保持网络连接
+        ''' </summary>
+        ReadOnly tcp As TcpClient
 
         Const WsMagic As String = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
         Public ReadOnly Property isConnected As Boolean
             Get
-                Return tcpClient.Connected
+                Return tcp.Connected
             End Get
         End Property
 
-        Sub New(tcpClient As TcpClient)
-            Me.tcpClient = tcpClient
+        Sub New(tcp As TcpClient)
+            Me.tcp = tcp
         End Sub
 
         Sub HandShake()
-            Dim stream As NetworkStream = Me.tcpClient.GetStream()
+            Dim stream As NetworkStream = Me.tcp.GetStream()
             Dim bytes As Byte()
             Dim data As String
 
-            While Me.tcpClient.Connected
+            While Me.tcp.Connected
                 While (stream.DataAvailable)
-                    ReDim bytes(Me.tcpClient.Client.Available)
+                    ReDim bytes(Me.tcp.Client.Available)
 
                     stream.Read(bytes, 0, bytes.Length)
                     data = Encoding.UTF8.GetString(bytes)
@@ -115,7 +117,7 @@ Namespace Core.WebSocket
                         ' (or at least to the scope of this code sample)
                         ' The next While Me._TcpClient.Connected Loop Check should fail.. 
                         ' And raise the onClientDisconnect Event Thereafter
-                        Me.tcpClient.Close()
+                        Me.tcp.Close()
                     End If
                 End While
             End While
@@ -143,8 +145,8 @@ Namespace Core.WebSocket
         Const frameCount = 2
 
         Sub doChecks()
-            Dim stream As NetworkStream = Me.tcpClient.GetStream()
-            Dim bufferSize As Integer = tcpClient.Client.Available
+            Dim stream As NetworkStream = Me.tcp.GetStream()
+            Dim bufferSize As Integer = tcp.Client.Available
             Dim bytes As Byte() = New Byte(bufferSize - 1) {}
             Dim decoded As Byte() = Nothing
             Dim operation As Operations
@@ -208,7 +210,7 @@ Namespace Core.WebSocket
                 bytes(frameCount + 3)
             }
 
-            Dim j As VBInteger = Scan0
+            Dim j As i32 = Scan0
 
             For i As Integer = (frameCount + 4) To (bytes.Length - 2) Step 1
                 decoded(j) = Convert.ToByte((bytes(i) Xor masks(++j Mod 4)))
@@ -227,13 +229,22 @@ Namespace Core.WebSocket
                 Case Is = Operations.Pong
                 Case Else
                     ' Improper opCode.. disconnect the client 
-                    Call tcpClient.Close()
+                    Call tcp.Close()
                     RaiseEvent onClientDisconnect(Me)
             End Select
         End Sub
 
         Public Sub SendBinary(data As Byte(), stream As NetworkStream)
             Call stream.Write(data, 0, data.Length)
+        End Sub
+
+        ''' <summary>
+        ''' Send text message to client
+        ''' </summary>
+        ''' <param name="text"></param>
+        Public Sub SendText(text As String)
+            Call doChecks()
+            Call SendText(text, tcp.GetStream)
         End Sub
 
         ''' <summary>
@@ -264,11 +275,11 @@ Namespace Core.WebSocket
         ''' Check for new data that send from browser
         ''' </summary>
         Sub CheckForDataAvailability()
-            If (Me.tcpClient.GetStream().DataAvailable) Then
+            If (Me.tcp.GetStream().DataAvailable) Then
                 Try
                     Call doChecks()
                 Catch ex As Exception
-                    tcpClient.Close()
+                    tcp.Close()
                     RaiseEvent onClientDisconnect(Me)
                 End Try
             End If

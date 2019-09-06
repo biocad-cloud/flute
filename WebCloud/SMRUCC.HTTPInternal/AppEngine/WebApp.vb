@@ -1,56 +1,56 @@
-﻿#Region "Microsoft.VisualBasic::b5930be5c097baded72f360642e60724, WebCloud\SMRUCC.HTTPInternal\AppEngine\WebApp.vb"
+﻿#Region "Microsoft.VisualBasic::1b347483126aba4d25951c20c38ef1be, WebCloud\SMRUCC.HTTPInternal\AppEngine\WebApp.vb"
 
-' Author:
-' 
-'       asuka (amethyst.asuka@gcmodeller.org)
-'       xie (genetics@smrucc.org)
-'       xieguigang (xie.guigang@live.com)
-' 
-' Copyright (c) 2018 GPL3 Licensed
-' 
-' 
-' GNU GENERAL PUBLIC LICENSE (GPL3)
-' 
-' 
-' This program is free software: you can redistribute it and/or modify
-' it under the terms of the GNU General Public License as published by
-' the Free Software Foundation, either version 3 of the License, or
-' (at your option) any later version.
-' 
-' This program is distributed in the hope that it will be useful,
-' but WITHOUT ANY WARRANTY; without even the implied warranty of
-' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-' GNU General Public License for more details.
-' 
-' You should have received a copy of the GNU General Public License
-' along with this program. If not, see <http://www.gnu.org/licenses/>.
+    ' Author:
+    ' 
+    '       asuka (amethyst.asuka@gcmodeller.org)
+    '       xie (genetics@smrucc.org)
+    '       xieguigang (xie.guigang@live.com)
+    ' 
+    ' Copyright (c) 2018 GPL3 Licensed
+    ' 
+    ' 
+    ' GNU GENERAL PUBLIC LICENSE (GPL3)
+    ' 
+    ' 
+    ' This program is free software: you can redistribute it and/or modify
+    ' it under the terms of the GNU General Public License as published by
+    ' the Free Software Foundation, either version 3 of the License, or
+    ' (at your option) any later version.
+    ' 
+    ' This program is distributed in the hope that it will be useful,
+    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
+    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    ' GNU General Public License for more details.
+    ' 
+    ' You should have received a copy of the GNU General Public License
+    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-' /********************************************************************************/
+    ' /********************************************************************************/
 
-' Summaries:
+    ' Summaries:
 
-'     Class WebApp
-' 
-'         Properties: wwwroot
-' 
-'         Constructor: (+1 Overloads) Sub New
-'         Function: ToString
-'         Delegate Function
-' 
-' 
-'         Delegate Function
-' 
-'             Function: GetAPIMethod
-' 
-'             Sub: AddDynamics
-' 
-' 
-' 
-' 
-' 
-' /********************************************************************************/
+    '     Class WebApp
+    ' 
+    '         Properties: wwwroot
+    ' 
+    '         Constructor: (+1 Overloads) Sub New
+    '         Function: ToString
+    '         Delegate Function
+    ' 
+    ' 
+    '         Delegate Function
+    ' 
+    '             Function: GetAPIMethod
+    ' 
+    '             Sub: AddDynamics
+    ' 
+    ' 
+    ' 
+    ' 
+    ' 
+    ' /********************************************************************************/
 
 #End Region
 
@@ -88,7 +88,9 @@ Namespace AppEngine
             methods = MyClass _
                 .GetType _
                 .GetMethods(BindingFlags.Public Or BindingFlags.Instance) _
-                .Where(Function(m) Not m.GetCustomAttribute(GetType(APIMethod)) Is Nothing) _
+                .Where(Function(m)
+                           Return Not m.GetCustomAttribute(GetType(APIMethod)) Is Nothing
+                       End Function) _
                 .ToDictionary(Function(m) m.Name)
         End Sub
 
@@ -126,7 +128,7 @@ Namespace AppEngine
         ''' 
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub AddDynamics(url$, method As APIMethod, API As MethodInfo, Optional help$ = "")
-            Call PlatformEngine.AppManager.Join(url, method, API, APP:=Me, help:=help)
+            Call PlatformEngine.AppManager.Join(url, method, API, app:=Me, help:=help)
         End Sub
 
         ''' <summary>

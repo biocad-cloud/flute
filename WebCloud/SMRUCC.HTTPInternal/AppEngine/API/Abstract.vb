@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::a4d62b7a5888bc8d783e3505fadf1427, WebCloud\SMRUCC.HTTPInternal\Core\WebSocket\Events.vb"
+﻿#Region "Microsoft.VisualBasic::d451d209856926a79bb356e70fa56a2f, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\Abstract.vb"
 
     ' Author:
     ' 
@@ -31,18 +31,13 @@
 
     ' Summaries:
 
-    '     Delegate Sub
+    '     Delegate Function
     ' 
     ' 
-    '     Delegate Sub
+    '     Delegate Function
     ' 
     ' 
-    '     Delegate Sub
-    ' 
-    ' 
-    '     Delegate Sub
-    ' 
-    ' 
+    '     Delegate Function
     ' 
     ' 
     ' 
@@ -54,27 +49,32 @@
 
 #End Region
 
-Imports System.IO
-Imports System.Net.Sockets
+Imports SMRUCC.WebCloud.HTTPInternal.Core
 
-Namespace Core.WebSocket
-
-    Public Delegate Sub OnClientConnectDelegate(sender As Object, ByRef client As WsProcessor)
-    Public Delegate Sub OnClientDisconnectDelegateHandler(sender As Object)
+Namespace AppEngine.APIMethods
 
     ''' <summary>
-    ''' 
+    ''' WebApp API的抽象接口
     ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="data"></param>
-    ''' <param name="responseStream">请注意，使用完了不可以关闭这个流对象</param>
-    Public Delegate Sub OnClientTextMessage(sender As WsProcessor, data As String, responseStream As NetworkStream)
-    ''' <summary>
-    ''' 
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="data"></param>
-    ''' <param name="responseStream">请注意，使用完了不可以关闭这个流对象</param>
-    Public Delegate Sub OnClinetBinaryMessage(sender As WsProcessor, data As MemoryStream, responseStream As NetworkStream)
+    ''' <param name="api">URL</param>
+    ''' <param name="request">URL后面的参数请求</param>
+    ''' <param name="response">返回的html页面的文档</param>
+    ''' <returns>是否执行成功</returns>
+    Public Delegate Function APIAbstract(api As String, request As HttpRequest, response As HttpResponse) As Boolean
 
+    ''' <summary>
+    ''' <see cref="[GET]"/> API interface
+    ''' </summary>
+    ''' <param name="request">url arguments</param>
+    ''' <param name="response">output json or html page</param>
+    ''' <returns>Execute success or not?</returns>
+    Public Delegate Function _GET(request As HttpRequest, response As HttpResponse) As Boolean
+
+    ''' <summary>
+    ''' <see cref="POST"/> API interface
+    ''' </summary>
+    ''' <param name="request">url arguments and Form data</param>
+    ''' <param name="response"></param>
+    ''' <returns>Execute success or not?</returns>
+    Public Delegate Function _POST(request As HttpPOSTRequest, response As HttpResponse) As Boolean
 End Namespace
