@@ -63,11 +63,11 @@ Namespace AppEngine.APIMethods
         End Function
 
         <POST(GetType(Boolean))>
-        Public Function InvokePOST(App As Object, request As HttpPOSTRequest, response As HttpResponse) As Boolean
+        Public Function Invoke(App As Object, request As HttpPOSTRequest, response As HttpResponse) As Boolean
             Try
-                Return __invokePOST(App, request, response)
+                Return doExternalInvoke(App, request, response)
             Catch ex As Exception
-                Return __handleERROR(ex, request.URL, response)
+                Return internalHandleERROR(ex, request.URL, response)
             End Try
         End Function
 
@@ -78,13 +78,13 @@ Namespace AppEngine.APIMethods
         <[GET](GetType(Boolean))>
         Public Function Invoke(App As Object, request As HttpRequest, response As HttpResponse) As Boolean
             Try
-                Return __invoke(App, request, response)
+                Return doExternalInvoke(App, request, response)
             Catch ex As Exception
-                Return __handleERROR(ex, request.URL, response)
+                Return internalHandleERROR(ex, request.URL, response)
             End Try
         End Function
 
-        Private Function __handleERROR(ex As Exception, url As String, ByRef response As HttpResponse) As Boolean
+        Private Function internalHandleERROR(ex As Exception, url As String, ByRef response As HttpResponse) As Boolean
             Dim result As String
             ex = New Exception("Request page: " & url, ex)
 
@@ -152,12 +152,7 @@ Namespace AppEngine.APIMethods
             Return sbr.ToString
         End Function
 
-        Private Function __invokePOST(App As Object, request As HttpPOSTRequest, response As HttpResponse) As Boolean
-            Dim value As Object = EntryPoint.Invoke(App, {request, response})
-            Return DirectCast(value, Boolean)
-        End Function
-
-        Private Function __invoke(App As Object, request As HttpRequest, response As HttpResponse) As Boolean
+        Private Function doExternalInvoke(App As Object, request As HttpRequest, response As HttpResponse) As Boolean
             Dim value As Object = EntryPoint.Invoke(App, {request, response})
             Return DirectCast(value, Boolean)
         End Function
