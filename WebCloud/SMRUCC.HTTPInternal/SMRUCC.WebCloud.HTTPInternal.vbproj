@@ -538,6 +538,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Platform\AccessController\Access.vb" />
+    <Compile Include="Platform\AccessController\Accept.vb" />
+    <Compile Include="Platform\AccessController\Uses.vb" />
     <Compile Include="Platform\TaskWorker.vb" />
     <Compile Include="Platform\PlatformEngine.vb" />
     <Compile Include="Platform\Plugin\Scripting.vb" />

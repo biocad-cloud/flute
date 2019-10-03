@@ -157,6 +157,8 @@ Namespace Core
             _virtualMappings = New Dictionary(Of String, String)
             RequestStream = requestResource Or defaultResource
 
+            Call $"WWWROOT={root.GetDirectoryFullPath}".__INFO_ECHO
+
             Dim size$ = App.GetVariable("MAX_POST_SIZE")
 
             If size.StringEmpty Then
