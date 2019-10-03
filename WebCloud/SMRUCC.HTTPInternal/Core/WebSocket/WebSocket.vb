@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::44ba9d23c764231f9f40488c535adb0a, WebCloud\SMRUCC.HTTPInternal\Core\WebSocket\WebSocket.vb"
+﻿#Region "Microsoft.VisualBasic::ff316fa7b791d33de5c351192d2390dd, WebCloud\SMRUCC.HTTPInternal\Core\WebSocket\WebSocket.vb"
 
     ' Author:
     ' 
@@ -35,7 +35,7 @@
     ' 
     '         Constructor: (+1 Overloads) Sub New
     ' 
-    '         Function: isClientConnected, isClientDisconnected
+    '         Function: isClientConnected, isClientDisconnected, Run
     ' 
     '         Sub: Client_Connected, Client_Disconnected, ClientDataAvailableTimer_Elapsed, PendingCheckTimer_Elapsed, StartServer
     ' 
@@ -46,7 +46,10 @@
 
 Imports System.Net
 Imports System.Net.Sockets
+Imports System.Threading
 Imports System.Timers
+Imports Microsoft.VisualBasic.ComponentModel
+Imports Tick = System.Timers.Timer
 
 Namespace Core.WebSocket
 
@@ -54,20 +57,25 @@ Namespace Core.WebSocket
     ''' WebSocket server
     ''' </summary>
     Public Class WsServer : Inherits TcpListener
+        Implements ITaskDriver
 
         Public Event OnClientConnect As OnClientConnectDelegate
 
-        Dim WithEvents pendingCheckTimer As New Timer(500)
+        Dim WithEvents pendingCheckTimer As New Tick(100)
 
         ''' <summary>
         ''' Use this timer thread for read new data that send from client
         ''' </summary>
-        Dim WithEvents listener As New Timer(50)
+        Dim WithEvents listener As New Tick(50)
 
         Dim connected As New List(Of WsProcessor)
+        Dim activator As WebsocketActivator
 
-        Sub New(url As String, port As Integer)
+        Sub New(url$, port%, activator As WebsocketActivator)
             MyBase.New(IPAddress.Parse(url), port)
+
+            ' 这个函数指针描述了如何创建一个业务逻辑对象实例
+            Me.activator = activator
         End Sub
 
         Sub StartServer()
@@ -75,18 +83,28 @@ Namespace Core.WebSocket
             pendingCheckTimer.Start()
         End Sub
 
-        Sub Client_Connected(sender As Object, ByRef client As WsProcessor) Handles Me.OnClientConnect
+        Public Function Run() As Integer Implements ITaskDriver.Run
+            Call StartServer()
+
+            Do While Me.Active
+                Call Thread.Sleep(100)
+            Loop
+
+            Return 0
+        End Function
+
+        Public Sub Client_Connected(sender As Object, ByRef client As WsProcessor) Handles Me.OnClientConnect
             connected.Add(client)
             AddHandler client.onClientDisconnect, AddressOf Client_Disconnected
             client.HandShake()
             listener.Start()
         End Sub
 
-        Sub Client_Disconnected()
+        Private Sub Client_Disconnected()
 
         End Sub
 
-        Function isClientDisconnected(client As WsProcessor) As Boolean
+        Private Function isClientDisconnected(client As WsProcessor) As Boolean
             isClientDisconnected = False
 
             If Not client.isConnected Then
@@ -94,7 +112,7 @@ Namespace Core.WebSocket
             End If
         End Function
 
-        Function isClientConnected(client As WsProcessor) As Boolean
+        Private Function isClientConnected(client As WsProcessor) As Boolean
             isClientConnected = False
 
             If client.isConnected Then
@@ -104,7 +122,7 @@ Namespace Core.WebSocket
 
         Private Sub PendingCheckTimer_Elapsed(sender As Object, e As ElapsedEventArgs) Handles pendingCheckTimer.Elapsed
             If Pending() Then
-                RaiseEvent OnClientConnect(Me, New WsProcessor(Me.AcceptTcpClient()))
+                RaiseEvent OnClientConnect(Me, Me.activator(Me.AcceptTcpClient))
             End If
         End Sub
 

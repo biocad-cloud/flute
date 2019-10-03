@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::8803fdd97efd035fa276c12e5c782fb8, httpd\Program\CLI.vb"
+﻿#Region "Microsoft.VisualBasic::d1c4b303cf359ec8aa5b094a8dbc1e45, httpd\Program\CLI.vb"
 
     ' Author:
     ' 
@@ -33,17 +33,20 @@
 
     ' Module CLI
     ' 
-    '     Function: RunApp, RunDll, Start
+    '     Function: RunApp, RunDll, RunSocket, Start
     ' 
     ' /********************************************************************************/
 
 #End Region
 
+Imports System.ComponentModel
 Imports System.Reflection
 Imports Microsoft.VisualBasic.CommandLine
 Imports Microsoft.VisualBasic.CommandLine.InteropService.SharedORM
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Language.UnixBash
+Imports SMRUCC.WebCloud.HTTPInternal.Core
+Imports SMRUCC.WebCloud.HTTPInternal.Core.WebSocket
 Imports SMRUCC.WebCloud.HTTPInternal.Platform
 
 <GroupingDefine(CLI.httpdServerCLI, Description:="Server CLI for running this httpd web server.")>
@@ -51,6 +54,17 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
 
     Public Const httpdServerCLI$ = NameOf(httpdServerCLI)
     Public Const Utility$ = NameOf(Utility)
+
+    <ExportAPI("/socket")>
+    <Description("Start a new websocket server.")>
+    <Usage("/socket /app <appName> [/hostName <default=127.0.0.1> /port <default=81>]")>
+    Public Function RunSocket(args As CommandLine) As Integer
+        Dim port% = args("/port") Or 81
+        Dim app As WebsocketActivator = WebSocket.GetActivator(HOME, args <= "/app")
+        Dim socket As New WsServer(args("/hostName") Or "127.0.0.1", port, activator:=app)
+
+        Return socket.Run
+    End Function
 
     <ExportAPI("/start",
                Info:="Run start the httpd web server.",
@@ -119,8 +133,8 @@ Imports SMRUCC.WebCloud.HTTPInternal.Platform
             Try
                 method = RunDllEntryPoint.GetDllMethod(Assembly.LoadFrom(dll), api)
             Catch ex As Exception
-#If debug Then
-                call ex .PrintException
+#If DEBUG Then
+                Call ex.PrintException
 #Else
                 Call App.LogException(ex)
 #End If

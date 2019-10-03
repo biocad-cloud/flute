@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::a9a4e743a2d821731f6bcf240951d866, WebCloud\SMRUCC.HTTPInternal\Core\HttpServer.vb"
+﻿#Region "Microsoft.VisualBasic::319e955aa8f25d9aadbf64f96dca23bb, WebCloud\SMRUCC.HTTPInternal\Core\HttpServer.vb"
 
     ' Author:
     ' 
@@ -46,12 +46,12 @@
 
 #End Region
 
-Imports System.IO
 Imports System.Net
 Imports System.Net.Sockets
 Imports System.Runtime.CompilerServices
 Imports System.Threading
 Imports Microsoft.VisualBasic.ApplicationServices
+Imports Microsoft.VisualBasic.ComponentModel
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Language.Default
 Imports Microsoft.VisualBasic.Parallel
@@ -64,6 +64,7 @@ Namespace Core
     ''' </summary>
     Public MustInherit Class HttpServer
         Implements IDisposable
+        Implements ITaskDriver
 
         Protected Is_active As Boolean = True
 
@@ -124,7 +125,7 @@ Namespace Core
         ''' (请注意，在服务器开启之后，当前的线程会被阻塞在这里)
         ''' </summary>
         ''' <returns></returns>
-        Public Overridable Function Run() As Integer
+        Public Overridable Function Run() As Integer Implements ITaskDriver.Run
             Try
                 Call _httpListener.Start(10240)
             Catch ex As Exception

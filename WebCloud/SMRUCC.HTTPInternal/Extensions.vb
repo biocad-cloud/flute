@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::0816269a2f2f03b5a6e7fdbeb375f84d, WebCloud\SMRUCC.HTTPInternal\Extensions.vb"
+﻿#Region "Microsoft.VisualBasic::111227a71ab28dc0b69fb204aeb9e091, WebCloud\SMRUCC.HTTPInternal\Extensions.vb"
 
     ' Author:
     ' 
@@ -37,25 +37,18 @@
     ' 
     '     Sub: FailureMsg, SuccessMsg, TransferBinary
     ' 
-    ' Structure JsonResponse
-    ' 
-    '     Properties: code, message
-    ' 
-    '     Function: ToString
-    ' 
     ' /********************************************************************************/
 
 #End Region
 
 Imports System.IO
 Imports System.Runtime.CompilerServices
-Imports System.Xml.Serialization
 Imports Microsoft.VisualBasic.Net.Http
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
-Imports Microsoft.VisualBasic.Serialization.JSON
+Imports SMRUCC.WebCloud.HTTPInternal.AppEngine
 Imports SMRUCC.WebCloud.HTTPInternal.Core
 
-Public Module Extensions
+<HideModuleName> Public Module Extensions
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Function FaviconZip() As Byte()
@@ -99,15 +92,3 @@ Public Module Extensions
         Call rep.WriteJSON(New JsonResponse With {.code = code, .message = message})
     End Sub
 End Module
-
-Public Structure JsonResponse
-
-    <XmlAttribute>
-    Public Property code As Integer
-    <XmlText>
-    Public Property message As String
-
-    Public Overrides Function ToString() As String
-        Return Me.GetJson
-    End Function
-End Structure
