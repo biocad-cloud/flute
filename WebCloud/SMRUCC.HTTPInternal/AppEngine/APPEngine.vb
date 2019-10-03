@@ -130,8 +130,7 @@ Namespace AppEngine
             End If
 
             If dynamics.ContainsKey(api) Then
-                Dim run As (App As Object, api As APIInvoker) =
-                    dynamics(api)
+                Dim run As (App As Object, api As APIInvoker) = dynamics(api)
                 Return run.api _
                     .InvokePOST(run.App, request, response)
             End If

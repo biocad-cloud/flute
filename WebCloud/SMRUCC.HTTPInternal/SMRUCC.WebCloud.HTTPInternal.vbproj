@@ -496,6 +496,7 @@
     <Compile Include="AppEngine\APIName.vb" />
     <Compile Include="AppEngine\API\APIMethod.vb" />
     <Compile Include="AppEngine\API\Abstract.vb" />
+    <Compile Include="AppEngine\API\Extensions.vb" />
     <Compile Include="AppEngine\JsonResponse.vb" />
     <Compile Include="Core\FileSystem\InternalUpdates.vb" />
     <Compile Include="Core\HttpRequest\HttpRequest.vb" />
