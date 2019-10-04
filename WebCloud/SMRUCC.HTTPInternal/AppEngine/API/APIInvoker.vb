@@ -44,9 +44,10 @@
 #End Region
 
 Imports System.Reflection
-Imports System.Text
-Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.ComponentModel.Collection.Generic
+Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
+Imports Microsoft.VisualBasic.Language
+Imports Microsoft.VisualBasic.Linq
 Imports SMRUCC.WebCloud.HTTPInternal.Core
 
 Namespace AppEngine.APIMethods
@@ -54,9 +55,36 @@ Namespace AppEngine.APIMethods
     Public Class APIInvoker : Implements INamedValue
 
         Public Property Name As String Implements INamedValue.Key
-        Public Property EntryPoint As MethodInfo
         Public Property Help As String
         Public Property Method As APIMethod
+
+        ''' <summary>
+        ''' 这个属性提供外部dll中的Api方法的执行入口点
+        ''' </summary>
+        ''' <returns></returns>
+        Public ReadOnly Property EntryPoint As MethodInfo
+
+        ReadOnly getArguments As NamedValue(Of Func(Of HttpRequest, Object))()
+
+        Sub New(entryPoint As MethodInfo)
+            Dim parameters = entryPoint.GetParameters
+
+            If parameters.Length < 2 Then
+                Throw New InvalidProgramException($"Api method should have two required parameters: one is for request input and another is for response output.")
+            ElseIf parameters.Length = 2 Then
+                getArguments = Nothing
+            Else
+                getArguments = parameters _
+                    .DoCall(AddressOf getParameters) _
+                    .ToArray
+            End If
+
+            Me.EntryPoint = entryPoint
+        End Sub
+
+        Private Shared Iterator Function getParameters(parameters As ParameterInfo()) As IEnumerable(Of NamedValue(Of Func(Of HttpRequest, Object)))
+
+        End Function
 
         Public Overrides Function ToString() As String
             Return Name
@@ -100,9 +128,36 @@ Namespace AppEngine.APIMethods
             Return False
         End Function
 
-        Private Function doExternalInvoke(App As Object, request As HttpRequest, response As HttpResponse) As Boolean
-            Dim value As Object = EntryPoint.Invoke(App, {request, response})
-            Return DirectCast(value, Boolean)
+        ''' <summary>
+        ''' <paramref name="app"/>.Method(<paramref name="request"/>, <paramref name="response"/>)
+        ''' </summary>
+        ''' <param name="app"></param>
+        ''' <param name="request"></param>
+        ''' <param name="response"></param>
+        ''' <returns></returns>
+        Private Function doExternalInvoke(app As Object, request As HttpRequest, response As HttpResponse) As Boolean
+            If getArguments Is Nothing Then
+                Return EntryPoint.Invoke(app, {request, response})
+            Else
+                Return InvokeSpecificArgumentMethod(app, request, response)
+            End If
+        End Function
+
+        ''' <summary>
+        ''' <paramref name="app"/>.Method(arg1, arg2, ..., argn, <paramref name="request"/>, <paramref name="response"/>)
+        ''' </summary>
+        ''' <param name="app"></param>
+        ''' <param name="request"></param>
+        ''' <param name="response"></param>
+        ''' <returns></returns>
+        Private Function InvokeSpecificArgumentMethod(app As Object, request As HttpRequest, response As HttpResponse) As Boolean
+            Dim args As New List(Of Object)
+
+            For Each getter In getArguments
+                args += getter(request)
+            Next
+
+            Return EntryPoint.Invoke(app, args + {request, response})
         End Function
     End Class
 End Namespace

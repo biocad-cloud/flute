@@ -212,9 +212,8 @@ Namespace AppEngine
                     $"API: {api.Name}")                                    ' 由于rest服务需要返回json、所以在API的申明的时候还需要同时申明GET、POST里面所返回的json对象的类型，
                 Where Not attr Is Nothing
                 Let httpMethod As APIMethod = DirectCast(attr, APIMethod)  ' 假若程序是在这里出错的话，则说明有API函数没有进行GET、POST的json类型申明，找到该函数补全即可
-                Let invoke = New APIInvoker With {
+                Let invoke = New APIInvoker(entryPoint) With {
                     .Name = api.Name.ToLower,
-                    .EntryPoint = entryPoint,
                     .Help = api.PrintView(HTML:=True) & $"<br /><div>{httpMethod.GetMethodHelp(entryPoint)}</div>"
                 }
                 Select invoke
