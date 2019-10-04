@@ -1,45 +1,45 @@
 ﻿#Region "Microsoft.VisualBasic::db303801ba67233f659a4c04adb23d9a, WebCloud\SMRUCC.HTTPInternal\AppEngine\API\APIInvoker.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xie (genetics@smrucc.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2018 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xie (genetics@smrucc.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2018 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-    ' /********************************************************************************/
+' /********************************************************************************/
 
-    ' Summaries:
+' Summaries:
 
-    '     Class APIInvoker
-    ' 
-    '         Properties: EntryPoint, Help, Method, Name
-    ' 
-    '         Function: __handleERROR, __invoke, __invokePOST, Fakes, Invoke
-    '                   InvokePOST, ToString, VirtualPath
-    ' 
-    ' 
-    ' /********************************************************************************/
+'     Class APIInvoker
+' 
+'         Properties: EntryPoint, Help, Method, Name
+' 
+'         Function: __handleERROR, __invoke, __invokePOST, Fakes, Invoke
+'                   InvokePOST, ToString, VirtualPath
+' 
+' 
+' /********************************************************************************/
 
 #End Region
 
@@ -91,65 +91,13 @@ Namespace AppEngine.APIMethods
 #If DEBUG Then
             result = ex.ToString
 #Else
-            result = Fakes(ex.ToString)
+            result = APIMethods.Fakes(ex)
 #End If
             Call App.LogException(ex)
             Call ex.PrintException
-            Call response.Write404(result)
+            Call response.WriteError(500, result)
 
             Return False
-        End Function
-
-        Private Function VirtualPath(strData As String(), prefix As String) As Dictionary(Of String, String)
-            Dim LQuery = From source As String
-                         In strData
-                         Let trimPrefix = Regex.Replace(source, "in [A-Z][:]\\", "", RegexOptions.IgnoreCase)
-                         Let line = Regex.Match(trimPrefix, "[:]line \d+").Value
-                         Let path = trimPrefix.Replace(line, "")
-                         Select source,
-                             path
-
-            Dim LTokens = (From obj
-                           In LQuery
-                           Let tokens As String() = obj.path.Split("\"c)
-                           Select tokens,
-                               obj.source).ToArray
-            Dim p As Integer
-
-            If LTokens.Length = 0 Then
-                Return New Dictionary(Of String, String)
-            End If
-
-            For i As Integer = 0 To (From obj In LTokens Select obj.tokens.Length).Min - 1
-                p = i
-
-                If (From n In LTokens Select n.tokens(p) Distinct).Count > 1 Then
-                    Exit For
-                End If
-            Next
-
-            Dim LSkips = (From obj In LTokens Select obj.source, obj.tokens.Skip(p).ToArray).ToArray
-            Dim LpreFakes = (From obj In LSkips
-                             Select obj.source,
-                                 virtual = String.Join("/", obj.ToArray).Replace(".vb", ".vbs")).ToArray
-            Dim hash As Dictionary(Of String, String) = LpreFakes.ToDictionary(
-                Function(obj) obj.source,
-                Function(obj) $"in {prefix}/{obj.virtual}:line {CInt(5000 * Rnd() + 100)}")
-            Return hash
-        End Function
-
-        Const virtual As String = "/root/ubuntu.d~/->/wwwroot/~azure.microsoft.com/api.vbs?virtual=ms_visualBasic_sh:/"
-
-        Private Function Fakes(ex As String) As String
-            Dim line As String() = Regex.Matches(ex, "in .+?[:]line \d+").ToArray
-            Dim hash As Dictionary(Of String, String) = VirtualPath(line, virtual)
-            Dim sbr As New StringBuilder(ex)
-
-            For Each obj In hash
-                Call sbr.Replace(obj.Key, obj.Value)
-            Next
-
-            Return sbr.ToString
         End Function
 
         Private Function doExternalInvoke(App As Object, request As HttpRequest, response As HttpResponse) As Boolean
