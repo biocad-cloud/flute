@@ -109,8 +109,7 @@ Namespace AppEngine
             End If
 
             Dim script As APIInvoker = Me.API(api)
-            Dim success As Boolean =
-                script.InvokePOST(Application, request, response)
+            Dim success As Boolean = script.Invoke(Application, request, response)
 
             Return success
         End Function
@@ -131,8 +130,7 @@ Namespace AppEngine
 
             If dynamics.ContainsKey(api) Then
                 Dim run As (App As Object, api As APIInvoker) = dynamics(api)
-                Return run.api _
-                    .InvokePOST(run.App, request, response)
+                Return run.api.Invoke(run.App, request, response)
             End If
 
             If Not applications.ContainsKey(application) Then
