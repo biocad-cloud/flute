@@ -2,64 +2,67 @@
 Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 
-Public MustInherit Class FileObject
+Namespace FileSystem
 
-    ''' <summary>
-    ''' 文件的类型
-    ''' </summary>
-    ''' <returns></returns>
-    Public ReadOnly Property mime As ContentType
-    Public ReadOnly Property fileName As String
+    Public MustInherit Class FileObject
 
-    Sub New(fileName$, Optional mime As ContentType = Nothing)
-        Me.fileName = fileName
-        Me.mime = mime
+        ''' <summary>
+        ''' 文件的类型
+        ''' </summary>
+        ''' <returns></returns>
+        Public ReadOnly Property mime As ContentType
+        Public ReadOnly Property fileName As String
 
-        If mime.IsEmpty Then
-            Me.mime = fileName.FileMimeType
-        End If
-    End Sub
+        Sub New(fileName$, Optional mime As ContentType = Nothing)
+            Me.fileName = fileName
+            Me.mime = mime
 
-    Public MustOverride Function GetResource() As Stream
+            If mime.IsEmpty Then
+                Me.mime = fileName.FileMimeType
+            End If
+        End Sub
 
-    Public Overrides Function ToString() As String
-        Return fileName
-    End Function
-End Class
+        Public MustOverride Function GetResource() As Stream
 
-Public Class MemoryCachedFile : Inherits FileObject
+        Public Overrides Function ToString() As String
+            Return fileName
+        End Function
+    End Class
 
-    ReadOnly cache As MemoryStream
+    Public Class MemoryCachedFile : Inherits FileObject
 
-    Sub New(fileName$, data As Byte(), Optional mime As ContentType = Nothing)
-        Call MyBase.New(fileName, mime)
+        ReadOnly cache As MemoryStream
 
-        ' create cache data stream
-        Me.cache = New MemoryStream(data)
-    End Sub
+        Sub New(fileName$, data As Byte(), Optional mime As ContentType = Nothing)
+            Call MyBase.New(fileName, mime)
 
-    Public Overrides Function GetResource() As Stream
-        Return cache
-    End Function
-End Class
+            ' create cache data stream
+            Me.cache = New MemoryStream(data)
+        End Sub
 
-Public Class VirtualMappedFile : Inherits FileObject
+        Public Overrides Function GetResource() As Stream
+            Return cache
+        End Function
+    End Class
 
-    Public ReadOnly Property mappedPath As String
+    Public Class VirtualMappedFile : Inherits FileObject
 
-    Public ReadOnly Property isValid As Boolean
-        Get
-            Return mappedPath.FileExists
-        End Get
-    End Property
+        Public ReadOnly Property mappedPath As String
 
-    Sub New(fileName$, mappedPath$, Optional mime As ContentType = Nothing)
-        Call MyBase.New(fileName, mime)
+        Public ReadOnly Property isValid As Boolean
+            Get
+                Return mappedPath.FileExists
+            End Get
+        End Property
 
-        Me.mappedPath = mappedPath
-    End Sub
+        Sub New(fileName$, mappedPath$, Optional mime As ContentType = Nothing)
+            Call MyBase.New(fileName, mime)
 
-    Public Overrides Function GetResource() As Stream
-        Return mappedPath.Open(FileMode.Open, doClear:=False)
-    End Function
-End Class
+            Me.mappedPath = mappedPath
+        End Sub
+
+        Public Overrides Function GetResource() As Stream
+            Return mappedPath.Open(FileMode.Open, doClear:=False)
+        End Function
+    End Class
+End Namespace
