@@ -71,6 +71,8 @@
     <Compile Include="HttpMessage\POSTReader\HttpPostedFile.vb" />
     <Compile Include="HttpMessage\POSTReader\PostReader.vb" />
     <Compile Include="HttpMessage\POSTReader\ReadSubStream.vb" />
+    <Compile Include="Http\HttpProcessor.vb" />
+    <Compile Include="Http\HttpServer.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -112,5 +114,6 @@
       <Name>47-dotnet_Microsoft.VisualBasic</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>
