@@ -63,25 +63,13 @@ Namespace Core.HttpStream
     ''' </summary>
     Public Class HttpMultipart
 
-        Public Class Element
-            Public ContentType As String
-            Public Name As String
-            Public Filename As String
-            Public Start As Long
-            Public Length As Long
-
-            Public Overrides Function ToString() As String
-                Return "ContentType " & ContentType & ", Name " & Name & ", Filename " & Filename & ", Start " & Start.ToString() & ", Length " & Length.ToString()
-            End Function
-        End Class
-
-        Private data As Stream
-        Private boundary As String
-        Private boundary_bytes As Byte()
-        Private buffer As Byte()
-        Private at_eof As Boolean
-        Private encoding As Encoding
-        Private sb As StringBuilder
+        Dim data As Stream
+        Dim boundary As String
+        Dim boundary_bytes As Byte()
+        Dim buffer As Byte()
+        Dim at_eof As Boolean
+        Dim encoding As Encoding
+        Dim sb As StringBuilder
 
         Const HYPHEN As Byte = CByte(AscW("-"c)), LF As Byte = CByte(AscW(ControlChars.Lf)), CR As Byte = CByte(AscW(ControlChars.Cr))
 
@@ -286,12 +274,12 @@ Namespace Core.HttpStream
             Return retval
         End Function
 
-        Public Function ReadNextElement() As Element
+        Public Function ReadNextElement() As StreamElement
             If at_eof OrElse ReadBoundary() Then
                 Return Nothing
             End If
 
-            Dim elem As New Element()
+            Dim elem As New StreamElement()
             Dim header As New Value(Of String)
             While (header = ReadHeaders()) IsNot Nothing
                 If StrUtils.StartsWith(header.Value, "Content-Disposition:", True) Then

@@ -109,7 +109,7 @@ Namespace Core.HttpStream
         ''' </summary>
         ''' <returns></returns>
         Public ReadOnly Property Form As New NameValueCollection
-        Public ReadOnly Property Files As New Dictionary(Of String, List(Of HttpPostedFile))
+        Public ReadOnly Property files As New Dictionary(Of String, List(Of HttpPostedFile))
 
         ''' <summary>
         ''' 
@@ -153,7 +153,7 @@ Namespace Core.HttpStream
                         inputStream.Length
                     )
 
-                    Files("file") = New List(Of HttpPostedFile) From {[sub]}
+                    files("file") = New List(Of HttpPostedFile) From {[sub]}
                 Else
                     ' probably is a jquery post
                     Dim byts As Byte() = inputStream _
@@ -181,7 +181,7 @@ Namespace Core.HttpStream
                 End Using
             End If
 
-            Call Files _
+            Call files _
                 .ToDictionary(Function(f) f.Key,
                               Function(names)
                                   Return names _
@@ -220,11 +220,11 @@ Namespace Core.HttpStream
                         data.Start,
                         data.Length)
 
-                    If Not Files.ContainsKey(data.Name) Then
-                        Files.Add(data.Name, New List(Of HttpPostedFile))
+                    If Not files.ContainsKey(data.Name) Then
+                        files.Add(data.Name, New List(Of HttpPostedFile))
                     End If
 
-                    Files(data.Name) += [sub]
+                    files(data.Name) += [sub]
                 End If
             End While
         End Sub

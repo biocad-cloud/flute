@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="FileSystem\FileObject.vb" />
     <Compile Include="FileSystem\FileSystem.vb" />
+    <Compile Include="HttpMessage\POSTReader\StreamElement.vb" />
     <Compile Include="HttpMessage\POSTReader\HttpMultipart.vb" />
     <Compile Include="HttpMessage\POSTReader\HttpPostedFile.vb" />
     <Compile Include="HttpMessage\POSTReader\PostReader.vb" />
