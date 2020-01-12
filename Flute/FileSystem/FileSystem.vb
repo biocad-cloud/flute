@@ -1,12 +1,13 @@
-﻿Imports Microsoft.VisualBasic.FileIO
+﻿Imports System.IO
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
+Imports FolderHandle = Microsoft.VisualBasic.FileIO.Directory
 
 ''' <summary>
 ''' Physical file system combine with logical file mapping 
 ''' </summary>
 Public Class FileSystem
 
-    Public Property wwwroot As Directory
+    Public Property wwwroot As FolderHandle
 
     ReadOnly virtualMaps As New Dictionary(Of String, FileObject)
 
@@ -15,7 +16,7 @@ Public Class FileSystem
     ''' </summary>
     ''' <param name="wwwroot"></param>
     Sub New(wwwroot As String)
-        Me.wwwroot = New Directory(directory:=wwwroot)
+        Me.wwwroot = New FolderHandle(directory:=wwwroot)
     End Sub
 
     ''' <summary>
@@ -40,9 +41,34 @@ Public Class FileSystem
         Return resource
     End Function
 
+    Public Function AddMapping(resourceUrl$, file$, Optional mime As ContentType = Nothing) As FileObject
+        Dim resource As New VirtualMappedFile(resourceUrl.FileName, file, mime)
+        Dim key$ = FileSystem.resourceUrl(resourceUrl)
+
+        ' add new cache resource or update current 
+        ' existed resource
+        virtualMaps(key) = resource
+
+        Return resource
+    End Function
+
     Private Shared Function resourceUrl(ByRef pathRelative As String) As String
         pathRelative = pathRelative.Trim("."c, "/"c, "\"c)
         Return pathRelative
+    End Function
+
+    Public Function GetResource(pathRelative As String) As Stream
+        ' test of the physical file at first
+        If resourceUrl(pathRelative).FileExists Then
+            Return pathRelative.Open(FileMode.Open, doClear:=False)
+        Else
+            ' and then test for the logical file
+            If virtualMaps.ContainsKey(pathRelative) Then
+                Return virtualMaps(pathRelative).GetResource
+            End If
+        End If
+
+        Return New MemoryStream(buffer:={})
     End Function
 
     Public Function FileExists(pathRelative As String) As Boolean

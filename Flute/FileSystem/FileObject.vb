@@ -20,7 +20,7 @@ Public MustInherit Class FileObject
         End If
     End Sub
 
-    Public MustOverride Function ReadFile() As Stream
+    Public MustOverride Function GetResource() As Stream
 
     Public Overrides Function ToString() As String
         Return fileName
@@ -38,7 +38,7 @@ Public Class MemoryCachedFile : Inherits FileObject
         Me.cache = New MemoryStream(data)
     End Sub
 
-    Public Overrides Function ReadFile() As Stream
+    Public Overrides Function GetResource() As Stream
         Return cache
     End Function
 End Class
@@ -59,7 +59,7 @@ Public Class VirtualMappedFile : Inherits FileObject
         Me.mappedPath = mappedPath
     End Sub
 
-    Public Overrides Function ReadFile() As Stream
+    Public Overrides Function GetResource() As Stream
         Return mappedPath.Open(FileMode.Open, doClear:=False)
     End Function
 End Class
