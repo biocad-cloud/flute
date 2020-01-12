@@ -1,55 +1,56 @@
 ﻿#Region "Microsoft.VisualBasic::df0e6e7e4a8365794cd5139ef8a7ac16, WebCloud\SMRUCC.HTTPInternal\Core\HttpRequest\POSTReader\HttpMultipart.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xie (genetics@smrucc.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2018 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xie (genetics@smrucc.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2018 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-    ' /********************************************************************************/
+' /********************************************************************************/
 
-    ' Summaries:
+' Summaries:
 
-    '     Class HttpMultipart
-    ' 
-    '         Constructor: (+1 Overloads) Sub New
-    '         Function: CompareBytes, GetContentDispositionAttribute, GetContentDispositionAttributeWithEncoding, MoveToNextBoundary, ReadBoundary
-    '                   ReadHeaders, ReadLine, ReadNextElement, StripPath
-    '         Class Element
-    ' 
-    '             Function: ToString
-    ' 
-    ' 
-    ' 
-    ' 
-    ' /********************************************************************************/
+'     Class HttpMultipart
+' 
+'         Constructor: (+1 Overloads) Sub New
+'         Function: CompareBytes, GetContentDispositionAttribute, GetContentDispositionAttributeWithEncoding, MoveToNextBoundary, ReadBoundary
+'                   ReadHeaders, ReadLine, ReadNextElement, StripPath
+'         Class Element
+' 
+'             Function: ToString
+' 
+' 
+' 
+' 
+' /********************************************************************************/
 
 #End Region
 
 Imports System.Text
 Imports System.IO
 Imports Microsoft.VisualBasic.Language
+Imports Microsoft.VisualBasic.Text
 
 Namespace Core.HttpStream
 
@@ -70,8 +71,6 @@ Namespace Core.HttpStream
         Dim at_eof As Boolean
         Dim encoding As Encoding
         Dim sb As StringBuilder
-
-        Const HYPHEN As Byte = CByte(AscW("-"c)), LF As Byte = CByte(AscW(ControlChars.Lf)), CR As Byte = CByte(AscW(ControlChars.Cr))
 
         ' See RFC 2046 
         ' In the case of multipart entities, in which one or more different
@@ -97,17 +96,19 @@ Namespace Core.HttpStream
             ' CRLF or LF are ok as line endings.
             Dim got_cr As Boolean = False
             Dim b As Integer = 0
+
             sb.Length = 0
+
             While True
                 b = data.ReadByte()
                 If b = -1 Then
                     Return Nothing
                 End If
 
-                If b = LF Then
+                If b = ASCII.Byte.LF Then
                     Exit While
                 End If
-                got_cr = (b = CR)
+                got_cr = (b = ASCII.Byte.CR)
                 sb.Append(ChrW(b))
             End While
 
@@ -116,7 +117,6 @@ Namespace Core.HttpStream
             End If
 
             Return sb.ToString()
-
         End Function
 
         Private Shared Function GetContentDispositionAttribute(l As String, name As String) As String
@@ -207,7 +207,7 @@ Namespace Core.HttpStream
                     Return -1
                 End If
 
-                If state = 0 AndAlso c = LF Then
+                If state = 0 AndAlso c = ASCII.Byte.LF Then
                     retval = data.Position - 1
                     If got_cr Then
                         retval -= 1
@@ -215,15 +215,15 @@ Namespace Core.HttpStream
                     state = 1
                     c = data.ReadByte()
                 ElseIf state = 0 Then
-                    got_cr = (c = CR)
+                    got_cr = (c = ASCII.Byte.CR)
                     c = data.ReadByte()
-                ElseIf state = 1 AndAlso c = HYPHEN Then
+                ElseIf state = 1 AndAlso c = ASCII.Byte.Hyphen Then
                     c = data.ReadByte()
                     If c = -1 Then
                         Return -1
                     End If
 
-                    If c <> HYPHEN Then
+                    If c <> ASCII.Byte.Hyphen Then
                         state = 0
                         got_cr = False
                         ' no ReadByte() here
@@ -247,9 +247,9 @@ Namespace Core.HttpStream
                         Continue While
                     End If
 
-                    If buffer(bl - 2) = HYPHEN AndAlso buffer(bl - 1) = HYPHEN Then
+                    If buffer(bl - 2) = ASCII.Byte.Hyphen AndAlso buffer(bl - 1) = ASCII.Byte.Hyphen Then
                         at_eof = True
-                    ElseIf buffer(bl - 2) <> CR OrElse buffer(bl - 1) <> LF Then
+                    ElseIf buffer(bl - 2) <> ASCII.Byte.CR OrElse buffer(bl - 1) <> ASCII.Byte.LF Then
                         state = 0
                         data.Position = retval + 2
                         If got_cr Then
