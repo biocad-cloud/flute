@@ -93,28 +93,17 @@ Namespace Core
         End Property
 
         ''' <summary>
-        ''' ``http://localhost:<see cref="LocalPort"/>``
-        ''' </summary>
-        ''' <returns></returns>
-        Public ReadOnly Property localhost As String
-            <MethodImpl(MethodImplOptions.AggressiveInlining)>
-            Get
-                Return $"http://localhost:{localPort}"
-            End Get
-        End Property
-
-        Shared ReadOnly defaultThreads As [Default](Of Integer) = (LQuerySchedule.Recommended_NUM_THREADS * 8).AsDefault(Function(n) CInt(n) <= 0)
-
-        ''' <summary>
         ''' 
         ''' </summary>
         ''' <param name="port">The network data port of this internal http server listen.</param>
         Public Sub New(port%, Optional threads% = -1)
+            Static defaultThreads As [Default](Of Integer) = (LQuerySchedule.Recommended_NUM_THREADS * 8).AsDefault(Function(n) CInt(n) <= 0)
+
             Me._localPort = port
             Me._httpListener = New TcpListener(IPAddress.Any, _localPort)
             Me._threadPool = New Threads.ThreadPool(threads Or defaultThreads)
-            Me.BufferSize = Val(App.GetVariable("httpserver.buffer_size"))
-            Me.BufferSize = If(BufferSize <= 0, 4096, BufferSize)
+            Me._BufferSize = Val(App.GetVariable("httpserver.buffer_size"))
+            Me._BufferSize = If(BufferSize <= 0, 4096, BufferSize)
 
             Call $"Web server threads_pool_size={_threadPool.NumOfThreads}, buffer_size={BufferSize}bytes".__INFO_ECHO
         End Sub
@@ -126,33 +115,27 @@ Namespace Core
         ''' </summary>
         ''' <returns></returns>
         Public Overridable Function Run() As Integer Implements ITaskDriver.Run
+            Is_active = False
+
             Try
                 Call _httpListener.Start(10240)
+            Catch ex As Exception When ex.IsSocketPortOccupied
+                Call $"Could not start http services at {NameOf(_localPort)}:={_localPort}".__DEBUG_ECHO
+                Call ex.ToString.__DEBUG_ECHO
+                Call Console.WriteLine()
+                Call "Program http server thread was terminated.".__DEBUG_ECHO
+                Call Console.WriteLine()
+                Call Console.WriteLine()
+                Call Console.WriteLine()
             Catch ex As Exception
-                If ex.IsSocketPortOccupied Then
-                    Call $"Could not start http services at {NameOf(_localPort)}:={_localPort}".__DEBUG_ECHO
-                    Call ex.ToString.__DEBUG_ECHO
-                    Call Console.WriteLine()
-                    Call "Program http server thread was terminated.".__DEBUG_ECHO
-                    Call Console.WriteLine()
-                    Call Console.WriteLine()
-                    Call Console.WriteLine()
-                Else
-                    ex = New Exception(CStr(localPort), ex)
-                    Call ex.PrintException
-                    Call App.LogException(ex)
-                End If
+                ex = New Exception(CStr(localPort), ex)
 
-                Call Pause()
-
-                Return -1
+                Call ex.PrintException
+                Call App.LogException(ex)
+            Finally
+                Call $"Http Server Start listen at {_httpListener.LocalEndpoint.ToString}".__INFO_ECHO
             End Try
 
-#Const DEBUG = 0
-            Call $"Http Server Start listen at {_httpListener.LocalEndpoint.ToString}".__INFO_ECHO
-#If DEBUG Then
-            Call RunTask(AddressOf Me.OpenAPI_HOME)
-#End If
             While Is_active
                 If Not _threadPool.FullCapacity Then
                     Call _threadPool.RunTask(AddressOf accept)
@@ -231,6 +214,10 @@ Namespace Core
         Public MustOverride Sub handlePOSTRequest(p As HttpProcessor, inputData$)
         Public MustOverride Sub handlePUTMethod(p As HttpProcessor, inputData$)
         Public MustOverride Sub handleOtherMethod(p As HttpProcessor)
+
+        Public Overrides Function ToString() As String
+            Return $"http://localhost:{localPort}"
+        End Function
 
 #Region "IDisposable Support"
         Private disposedValue As Boolean ' To detect redundant calls
