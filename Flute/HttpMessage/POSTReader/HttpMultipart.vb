@@ -274,7 +274,7 @@ Namespace Core.HttpStream
             Return retval
         End Function
 
-        Public Function ReadNextElement() As StreamElement
+        Friend Function ReadNextElement() As StreamElement
             If at_eof OrElse ReadBoundary() Then
                 Return Nothing
             End If

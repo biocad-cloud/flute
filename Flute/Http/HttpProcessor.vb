@@ -139,13 +139,12 @@ Namespace Core
             Return http_url
         End Function
 
-        Private Function __streamReadLine(inputStream As Stream) As String
+        Private Function streamReadLine(inputStream As Stream) As String
             Dim nextChar As Integer
             Dim chrbuf As New List(Of Char)
             Dim n As Integer
 
             While True
-
                 nextChar = inputStream.ReadByte()
 
                 If nextChar = ASCII.Byte.LF Then
@@ -154,6 +153,7 @@ Namespace Core
                 If nextChar = ASCII.Byte.CR Then
                     Continue While
                 End If
+
                 If nextChar = -1 Then
                     Call Thread.Sleep(1)
                     n += 1
@@ -182,7 +182,7 @@ Namespace Core
             }
 
             Try
-                Call __processInvoker()
+                Call doProcessInvoker()
             Catch e As Exception
                 Call e.PrintException
                 writeFailure(HTTP_RFC.RFC_INTERNAL_SERVER_ERROR, e.ToString)
@@ -215,7 +215,7 @@ Namespace Core
         ''' <summary>
         ''' 在这个方法之中完成对一次http请求的解析到相对应的API处理的完整过程，当这个方法执行完毕之后就会关闭socket断开与浏览器的连接了
         ''' </summary>
-        Private Sub __processInvoker()
+        Private Sub doProcessInvoker()
             ' 解析http请求
             If Not parseRequest() Then
                 ' 没有解析到请求的头部，则不会再做进一步的处理了，直接退出断开连接
@@ -249,7 +249,7 @@ Namespace Core
         ''' </summary>
         ''' <returns></returns>
         Private Function parseRequest() As Boolean
-            Dim request As String = __streamReadLine(_inputStream)
+            Dim request As String = streamReadLine(_inputStream)
 
             If request.StringEmpty Then
                 ' 2017-3-25 因为在__streamReadLine函数之中可能会出现没有数据导致休眠时间长度可能会超过1024ms
@@ -264,7 +264,7 @@ Namespace Core
                     If wait <= 0 Then
                         Return False
                     Else
-                        request = __streamReadLine(_inputStream)
+                        request = streamReadLine(_inputStream)
                         wait -= 1
                     End If
                 Loop
@@ -290,7 +290,7 @@ Namespace Core
 
             Call NameOf(readHeaders).__DEBUG_ECHO
 
-            While (s = __streamReadLine(_inputStream)) IsNot Nothing
+            While (s = streamReadLine(_inputStream)) IsNot Nothing
                 If s.Value.StringEmpty Then
                     Call "got headers".__DEBUG_ECHO
                     Return

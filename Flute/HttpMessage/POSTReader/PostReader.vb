@@ -195,11 +195,11 @@ Namespace Core.HttpStream
 
         Private Sub loadMultiPart(boundary$, input As Stream)
             Dim multi_part As New HttpMultipart(input, boundary, ContentEncoding)
-            Dim read As New Value(Of HttpMultipart.Element)
+            Dim read As New Value(Of StreamElement)
             Dim str As String
 
             While (read = multi_part.ReadNextElement()) IsNot Nothing
-                Dim data As HttpMultipart.Element = +read
+                Dim data As StreamElement = +read
 
                 If data.Filename Is Nothing Then
                     Dim copy As Byte() = New Byte(data.Length - 1) {}
