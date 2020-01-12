@@ -1,4 +1,6 @@
 ﻿Imports System.IO
+Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
+Imports Microsoft.VisualBasic.Language.UnixBash
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 Imports FolderHandle = Microsoft.VisualBasic.FileIO.Directory
 
@@ -50,6 +52,34 @@ Public Class FileSystem
         virtualMaps(key) = resource
 
         Return resource
+    End Function
+
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="directory"></param>
+    ''' <param name="attachTo"></param>
+    ''' <param name="cacheMode">Work in cache mode or mapping mode?</param>
+    ''' <returns></returns>
+    Public Iterator Function AttachFolder(directory$, Optional attachTo$ = "/", Optional cacheMode As Boolean = False) As IEnumerable(Of NamedValue(Of FileObject))
+        Dim resourceUrl$
+        Dim fileObj As FileObject
+
+        For Each file As String In ls - l - r - "*.*" <= directory
+            resourceUrl = attachTo & "/" & RelativePath(directory, file)
+
+            If cacheMode Then
+                fileObj = AddCache(resourceUrl, file)
+            Else
+                fileObj = AddMapping(resourceUrl, file)
+            End If
+
+            Yield New NamedValue(Of FileObject) With {
+                .Name = resourceUrl,
+                .Description = file,
+                .Value = fileObj
+            }
+        Next
     End Function
 
     Private Shared Function resourceUrl(ByRef pathRelative As String) As String
