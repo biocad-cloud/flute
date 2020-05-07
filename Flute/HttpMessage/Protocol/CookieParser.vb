@@ -49,7 +49,7 @@
 ' * Created by LYF610400210
 '
 
-Namespace AppEngine
+Namespace Core.Message
 
     ''' <summary>
     ''' 
