@@ -320,7 +320,7 @@ Namespace Core
 
         Public BUF_SIZE As Integer = 4096
 
-        Public Const packageTooLarge$ = "POST Content-Length({0}) too big for this simple server"
+        Public Const packageTooLarge$ = "POST Content-Length({0}) too big for this web server"
 
         ''' <summary>
         ''' This post data processing just reads everything into a memory stream.
@@ -335,7 +335,7 @@ Namespace Core
             Dim result As (error%, message$) = Nothing
 
             If httpHeaders.ContainsKey(ResponseHeaders.ContentLength) Then
-                result = writeTemp(handle)
+                result = flushPOSTPayload(handle)
             End If
 
             If Not result.message Is Nothing Then
@@ -345,12 +345,19 @@ Namespace Core
             End If
         End Sub
 
-        Private Function writeTemp(handle$) As (error%, message$)
+        ''' <summary>
+        ''' save the payload data of the POST request to a given temp file
+        ''' </summary>
+        ''' <param name="handle">
+        ''' the given temp file for save the POST payload
+        ''' </param>
+        ''' <returns></returns>
+        Private Function flushPOSTPayload(handle As String) As (error%, message$)
             Dim content_len% = Convert.ToInt32(httpHeaders(ResponseHeaders.ContentLength))
 
             ' 小于零的时候不进行限制
             If MAX_POST_SIZE > 0 AndAlso content_len > MAX_POST_SIZE Then
-                Throw New Exception(String.Format(packageTooLarge, content_len))
+                Return (413, String.Format(packageTooLarge, content_len))
             End If
 
             Using content As Stream = handle.Open()
@@ -363,7 +370,7 @@ Namespace Core
                         If to_read = 0 Then
                             Exit While
                         Else
-                            Throw New Exception("client disconnected during post")
+                            Return (900, "client disconnected during post")
                         End If
                     End If
 
@@ -373,6 +380,8 @@ Namespace Core
 
                 Call content.Flush()
             End Using
+
+            Return Nothing
         End Function
 
         ''' <summary>
@@ -453,9 +462,9 @@ Namespace Core
         ''' <summary>
         ''' 404
         ''' </summary>
-        Public Sub writeFailure(errCode%, ex As String)
+        Public Sub writeFailure(error_code%, ex As String)
             Try
-                Call writeFailure(ex)
+                Call writeFailureInternal(error_code, ex)
             Catch e As Exception
                 Call App.LogException(e)
             End Try
@@ -464,7 +473,7 @@ Namespace Core
         ''' <summary>
         ''' 404
         ''' </summary>
-        Private Sub writeFailure(ex As String)
+        Private Sub writeFailureInternal(error_code%, ex As String)
             ' this is an http 404 failure response
             Call outputStream.WriteLine("HTTP/1.0 404 Not Found")
             ' these are the HTTP headers
