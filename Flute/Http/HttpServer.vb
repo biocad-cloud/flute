@@ -182,6 +182,7 @@ Namespace Core
         Public Sub Shutdown()
             Is_active = False
             _httpListener.Stop()
+            _threadPool.Dispose()
         End Sub
 
         ''' <summary>
@@ -228,7 +229,6 @@ Namespace Core
                 If disposing Then
                     ' TODO: dispose managed state (managed objects).
                     Call Shutdown()
-                    Call _threadPool.Dispose()
                 End If
 
                 ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
