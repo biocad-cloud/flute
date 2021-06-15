@@ -127,6 +127,10 @@ Namespace Core.Message
             Return True
         End Function
 
+        Public Sub AddCustomHttpHeader(header As String, value As String)
+            __customHeaders(header) = value
+        End Sub
+
         ''' <summary>
         ''' 将需要保存到浏览器的数据通过response header的形式返回
         ''' </summary>

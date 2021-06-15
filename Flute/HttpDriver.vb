@@ -25,8 +25,10 @@ Public Class HttpDriver
 
     Public Sub AppHandler(request As HttpRequest, response As HttpResponse)
         For Each header In responseHeader
-            response.AccessControlAllowOrigin
+            response.AddCustomHttpHeader(header.Key, header.Value)
         Next
+
+
     End Sub
 
 End Class
