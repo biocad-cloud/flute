@@ -12,4 +12,8 @@ Public Class HttpDriver
         responseHeader.Add(header, value)
     End Sub
 
+    Public Function GetSocket(port As Integer) As HttpSocket
+
+    End Function
+
 End Class
