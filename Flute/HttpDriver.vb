@@ -1,13 +1,17 @@
-﻿Imports System.Net.Sockets
-Imports System.Runtime.CompilerServices
+﻿Imports System.Runtime.CompilerServices
 Imports Flute.Http.Core
 Imports Flute.Http.Core.Message
 
 Public Class HttpDriver
 
     Dim responseHeader As New Dictionary(Of String, String)
+    Dim methods As New Dictionary(Of String, HttpSocket.AppHandler)
 
     Sub New()
+    End Sub
+
+    Public Sub HttpMethod(method As String, handler As HttpSocket.AppHandler)
+        methods(method.ToUpper) = handler
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
@@ -28,7 +32,11 @@ Public Class HttpDriver
             response.AddCustomHttpHeader(header.Key, header.Value)
         Next
 
-
+        If methods.ContainsKey(request.HTTPMethod) Then
+            Call methods(request.HTTPMethod)(request, response)
+        Else
+            Call response.WriteError(501, "501 Not Implemented")
+        End If
     End Sub
 
 End Class
