@@ -56,6 +56,7 @@ Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Threading
 Imports Microsoft.VisualBasic.ApplicationServices
+Imports Microsoft.VisualBasic.ComponentModel
 Imports Microsoft.VisualBasic.Language.C
 Imports Microsoft.VisualBasic.Net.Http
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
@@ -66,7 +67,8 @@ Namespace Core.Message
 
     Public Delegate Sub HttpError(code%, Msg As String)
 
-    Public Class HttpResponse : Implements IDisposable
+    Public Class HttpResponse : Inherits ITextWriter
+        Implements IDisposable
 
         Friend ReadOnly response As StreamWriter
         Friend ReadOnly writeFailed As HttpError
@@ -208,12 +210,12 @@ Namespace Core.Message
             Call response.WriteLine(obj.GetXml)
         End Sub
 
-        Public Sub Write(byts As Byte())
+        Public Overloads Sub Write(byts As Byte())
             __writeData = True
             Call response.BaseStream.Write(byts, Scan0, byts.Length)
         End Sub
 
-        Public Sub Write(byts As Byte(), offset As Integer, count As Integer)
+        Public Overloads Sub Write(byts As Byte(), offset As Integer, count As Integer)
             __writeData = True
             Call response.BaseStream.Write(byts, offset, count)
         End Sub
@@ -269,7 +271,7 @@ Namespace Core.Message
         ''' Writes a character to the stream.
         ''' </summary>
         ''' <param name="value">The character to write to the stream.</param>
-        Public Sub Write(value As Char)
+        Public Overloads Sub Write(value As Char)
             __writeData = True
             Call response.Write(value)
         End Sub
@@ -291,12 +293,12 @@ Namespace Core.Message
         ''' Writes a string to the stream.
         ''' </summary>
         ''' <param name="value">The string to write to the stream. If value is null, nothing is written.</param>
-        Public Sub Write(value As String)
+        Public Overrides Sub Write(value As String)
             __writeData = True
             Call response.Write(value)
         End Sub
 
-        Public Sub WriteLine(s As String)
+        Public Overrides Sub WriteLine(s As String)
             __writeData = True
             Call response.WriteLine(s)
         End Sub
@@ -319,7 +321,7 @@ Namespace Core.Message
         ''' </summary>
         ''' <param name="buffer">A character array containing the data to write. If buffer is null, nothing is
         ''' written.</param>
-        Public Sub Write(buffer() As Char)
+        Public Overloads Sub Write(buffer() As Char)
             __writeData = True
             Call response.Write(buffer)
         End Sub
@@ -352,7 +354,7 @@ Namespace Core.Message
         ''' <param name="buffer">A character array that contains the data to write.</param>
         ''' <param name="index">The character position in the buffer at which to start reading data.</param>
         ''' <param name="count">The maximum number of characters to write.</param>
-        Public Sub Write(buffer() As Char, index As Integer, count As Integer)
+        Public Overloads Sub Write(buffer() As Char, index As Integer, count As Integer)
             __writeData = True
             Call response.Write(buffer, index, count)
         End Sub

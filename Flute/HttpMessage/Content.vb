@@ -73,6 +73,7 @@ Namespace Core.Message
             End If
             If Not String.IsNullOrEmpty(attachment) Then
                 Call outputStream.WriteLine($"Content-Disposition: attachment;filename=""{attachment}""")
+                Call outputStream.WriteLine("Accept-Ranges: bytes")
             End If
         End Sub
     End Structure
