@@ -116,7 +116,7 @@ Namespace Core.Message
 
         Private Function writeSuccess() As Boolean
             Try
-                Call __writeSuccess("text/html", Nothing)
+                Call WriteHttp(New Content With {.type = "text/html"})
             Catch ex As Exception
                 Call App.LogException(ex)
             End Try
@@ -132,29 +132,15 @@ Namespace Core.Message
 
         End Sub
 
-        Public Sub WriteHeader(content_type$, Length&)
-            ' this is the successful HTTP response line
-            response.WriteLine("HTTP/1.0 200 OK")
-            ' these are the HTTP headers...      
-            response.WriteLine("Accept-Ranges: bytes")
-            response.WriteLine("Content-Length: " & Length)
-            response.WriteLine("Content-Type: " & content_type)
-            response.WriteLine(HttpProcessor.XPoweredBy)
-
-            If Not AccessControlAllowOrigin.StringEmpty Then
-                response.WriteLine("Access-Control-Allow-Origin: " & AccessControlAllowOrigin)
-            End If
-
-            ' this terminates the HTTP headers.. everything after this is HTTP body..
-            response.WriteLine()
-            response.Flush()
-        End Sub
-
-        Private Sub __writeSuccess(content_type As String, content As Content)
+        ''' <summary>
+        ''' write http headers
+        ''' </summary>
+        ''' <param name="content"></param>
+        Public Sub WriteHttp(content As Content)
             ' this is the successful HTTP response line
             response.WriteLine("HTTP/1.0 200 OK")
             ' these are the HTTP headers...          
-            response.WriteLine("Content-Type: " & content_type)
+            response.WriteLine("Content-Type: " & content.type)
             response.WriteLine("Connection: close")
             ' ..add your own headers here if you like
 
@@ -193,7 +179,7 @@ Namespace Core.Message
 
             If Not __writeData Then
                 __writeData = True
-                Call WriteHeader(MIME.Json, bytes.Length)
+                Call WriteHttp(New Content With {.length = bytes.Length, .type = MIME.Json})
             End If
 
             Call response.BaseStream.Write(bytes, Scan0, bytes.Length)

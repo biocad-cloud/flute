@@ -24,7 +24,9 @@ Public Class HttpDriver
     End Function
 
     Public Sub AppHandler(request As HttpRequest, response As HttpResponse)
-
+        For Each header In responseHeader
+            response.AccessControlAllowOrigin
+        Next
     End Sub
 
 End Class
