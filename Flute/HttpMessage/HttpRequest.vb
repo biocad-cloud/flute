@@ -186,12 +186,21 @@ Namespace Core.Message
         Sub New(request As HttpProcessor, inputData$)
             Call MyBase.New(request)
 
-            POSTData = New PostReader(
-                inputData,
-                HttpHeaders(HttpHeader.RequestHeaders.ContentType),
-                Encoding.UTF8,
-                HttpHeaders.TryGetValue("fileName") Or uploadfile
-            )
+            If inputData.FileLength > 0 AndAlso HttpHeaders.ContainsKey(HttpHeader.RequestHeaders.ContentType) Then
+                POSTData = New PostReader(
+                    inputData,
+                    HttpHeaders(HttpHeader.RequestHeaders.ContentType),
+                    Encoding.UTF8,
+                    HttpHeaders.TryGetValue("fileName") Or uploadfile
+                )
+            Else
+                POSTData = New PostReader(
+                    input:=inputData,
+                    contentType:="application/octet-stream",
+                    encoding:=Encoding.ASCII,
+                    fileName:=HttpHeaders.TryGetValue("fileName") Or uploadfile
+                )
+            End If
         End Sub
 
         Public Overrides Function GetBoolean(name As String) As Boolean
@@ -206,7 +215,7 @@ Namespace Core.Message
             If Not URL.query.ContainsKey(name) Then
                 Return POSTData.Form.ContainsKey(name)
             Else
-                Return False
+                Return True
             End If
         End Function
     End Class
