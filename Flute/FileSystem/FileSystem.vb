@@ -36,7 +36,7 @@ Namespace FileSystem
 
         Public Function AddCache(resourceUrl$, data As Byte(), Optional mime As ContentType = Nothing) As FileObject
             Dim resource As New MemoryCachedFile(resourceUrl.FileName, data, mime)
-            Dim key$ = FileSystem.resourceUrl(resourceUrl)
+            Dim key$ = resourceUrl.Trim("."c, "/"c, "\"c)
 
             ' add new cache resource or update current 
             ' existed resource
@@ -47,7 +47,7 @@ Namespace FileSystem
 
         Public Function AddMapping(resourceUrl$, file$, Optional mime As ContentType = Nothing) As FileObject
             Dim resource As New VirtualMappedFile(resourceUrl.FileName, file, mime)
-            Dim key$ = FileSystem.resourceUrl(resourceUrl)
+            Dim key$ = resourceUrl.Trim("."c, "/"c, "\"c)
 
             ' add new cache resource or update current 
             ' existed resource
@@ -63,7 +63,9 @@ Namespace FileSystem
         ''' <param name="attachTo"></param>
         ''' <param name="cacheMode">Work in cache mode or mapping mode?</param>
         ''' <returns></returns>
-        Public Iterator Function AttachFolder(directory$, Optional attachTo$ = "/", Optional cacheMode As Boolean = False) As IEnumerable(Of NamedValue(Of FileObject))
+        Public Iterator Function AttachFolder(directory$,
+                                              Optional attachTo$ = "/",
+                                              Optional cacheMode As Boolean = False) As IEnumerable(Of NamedValue(Of FileObject))
             Dim resourceUrl$
             Dim fileObj As FileObject
 
@@ -84,15 +86,23 @@ Namespace FileSystem
             Next
         End Function
 
-        Private Shared Function resourceUrl(ByRef pathRelative As String) As String
+        Private Function resourceUrl(pathRelative As String) As String
             pathRelative = pathRelative.Trim("."c, "/"c, "\"c)
+            pathRelative = wwwroot.GetFullPath(pathRelative)
+
             Return pathRelative
         End Function
 
         Public Function GetContentType(pathRelative As String) As ContentType
             ' test of the physical file at first
             If resourceUrl(pathRelative).FileExists Then
-                Return MIME.ContentTypes(pathRelative.ExtensionSuffix.ToLower)
+                Dim extName As String = "." & pathRelative.ExtensionSuffix.ToLower
+
+                If MIME.SuffixTable.ContainsKey(extName) Then
+                    Return MIME.SuffixTable(extName)
+                Else
+                    Return MIME.UnknownType
+                End If
             Else
                 ' and then test for the logical file
                 If virtualMaps.ContainsKey(pathRelative) Then
@@ -106,7 +116,7 @@ Namespace FileSystem
         Public Function GetFileSize(pathRelative As String) As Integer
             ' test of the physical file at first
             If resourceUrl(pathRelative).FileExists Then
-                Return pathRelative.FileLength
+                Return resourceUrl(pathRelative).FileLength
             Else
                 ' and then test for the logical file
                 If virtualMaps.ContainsKey(pathRelative) Then
@@ -120,7 +130,7 @@ Namespace FileSystem
         Public Function GetResource(pathRelative As String) As Stream
             ' test of the physical file at first
             If resourceUrl(pathRelative).FileExists Then
-                Return pathRelative.Open(FileMode.Open, doClear:=False)
+                Return resourceUrl(pathRelative).Open(FileMode.Open, doClear:=False)
             Else
                 ' and then test for the logical file
                 If virtualMaps.ContainsKey(pathRelative) Then
@@ -131,10 +141,15 @@ Namespace FileSystem
             Return New MemoryStream(buffer:={})
         End Function
 
+        ''' <summary>
+        ''' get file data
+        ''' </summary>
+        ''' <param name="pathRelative"></param>
+        ''' <returns></returns>
         Public Function GetByteBuffer(pathRelative As String) As Byte()
             ' test of the physical file at first
             If resourceUrl(pathRelative).FileExists Then
-                Return pathRelative.ReadBinary
+                Return resourceUrl(pathRelative).ReadBinary
             Else
                 ' and then test for the logical file
                 If virtualMaps.ContainsKey(pathRelative) Then
