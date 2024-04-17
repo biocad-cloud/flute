@@ -102,16 +102,11 @@ Namespace FileSystem
         Public Function GetContentType(pathRelative As String) As ContentType
             ' test of the physical file at first
             If resourceUrl(pathRelative).FileExists Then
-                Dim extName As String = "." & pathRelative.ExtensionSuffix.ToLower
 
-                If MIME.SuffixTable.ContainsKey(extName) Then
-                    Return MIME.SuffixTable(extName)
-                Else
-                    Return MIME.UnknownType
-                End If
+                Return MIME.ContentTypes(pathRelative.ExtensionSuffix.ToLower)
             Else
                 pathRelative = pathRelative.Trim("."c, "\"c, "/"c)
-
+          
                 ' and then test for the logical file
                 If virtualMaps.ContainsKey(pathRelative) Then
                     Return virtualMaps(pathRelative).mime
@@ -124,7 +119,7 @@ Namespace FileSystem
         Public Function GetFileSize(pathRelative As String) As Integer
             ' test of the physical file at first
             If resourceUrl(pathRelative).FileExists Then
-                Return resourceUrl(pathRelative).FileLength
+                Return pathRelative.FileLength
             Else
                 pathRelative = pathRelative.Trim("."c, "\"c, "/"c)
 
