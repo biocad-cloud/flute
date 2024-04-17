@@ -9,7 +9,7 @@ Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Core", "..\..\sciBASIC#\Mic
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "framework", "framework", "{B643252A-ED9B-4E6A-B269-A26A77E4D1CB}"
 EndProject
-Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "SMRUCC.WebCloud.VBScript", "WebCloud\SMRUCC.WebCloud.VBScript\SMRUCC.WebCloud.VBScript.vbproj", "{E3AADF90-948C-4CB9-AE1D-992FECF4F1FE}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Flute.Template", "WebCloud\SMRUCC.WebCloud.VBScript\Flute.Template.vbproj", "{E3AADF90-948C-4CB9-AE1D-992FECF4F1FE}"
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "html_netcore5", "..\..\sciBASIC#\mime\text%html\html_netcore5.vbproj", "{D1E0F82C-1C31-46D4-B717-56640D6B2797}"
 EndProject
