@@ -1,52 +1,52 @@
 ﻿#Region "Microsoft.VisualBasic::28c47be39aae8957b13f043a54d1eeac, WebCloud\SMRUCC.HTTPInternal\Core\HttpRequest\HttpResponse.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xie (genetics@smrucc.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2018 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xie (genetics@smrucc.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2018 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-    ' /********************************************************************************/
+' /********************************************************************************/
 
-    ' Summaries:
+' Summaries:
 
-    '     Class HttpResponse
-    ' 
-    '         Properties: AccessControlAllowOrigin
-    ' 
-    '         Constructor: (+1 Overloads) Sub New
-    ' 
-    '         Function: FlushAsync, (+3 Overloads) WriteAsync, (+4 Overloads) WriteLineAsync, writeSuccess
-    ' 
-    '         Sub: __writeSuccess, Close, (+2 Overloads) Dispose, Flush, Redirect
-    '              SendFile, SetCookies, (+6 Overloads) Write, Write404, WriteHeader
-    '              (+3 Overloads) WriteHTML, WriteJSON, WriteLine, WriteXML
-    ' 
-    '         Operators: <=, >=
-    ' 
-    ' 
-    ' /********************************************************************************/
+'     Class HttpResponse
+' 
+'         Properties: AccessControlAllowOrigin
+' 
+'         Constructor: (+1 Overloads) Sub New
+' 
+'         Function: FlushAsync, (+3 Overloads) WriteAsync, (+4 Overloads) WriteLineAsync, writeSuccess
+' 
+'         Sub: __writeSuccess, Close, (+2 Overloads) Dispose, Flush, Redirect
+'              SendFile, SetCookies, (+6 Overloads) Write, Write404, WriteHeader
+'              (+3 Overloads) WriteHTML, WriteJSON, WriteLine, WriteXML
+' 
+'         Operators: <=, >=
+' 
+' 
+' /********************************************************************************/
 
 #End Region
 
@@ -56,7 +56,9 @@ Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Threading
 Imports Microsoft.VisualBasic.ApplicationServices
+Imports Microsoft.VisualBasic.ComponentModel
 Imports Microsoft.VisualBasic.Language.C
+Imports Microsoft.VisualBasic.Net.Http
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 Imports Microsoft.VisualBasic.Serialization.JSON
 Imports Microsoft.VisualBasic.Text
@@ -65,10 +67,15 @@ Namespace Core.Message
 
     Public Delegate Sub HttpError(code%, Msg As String)
 
-    Public Class HttpResponse : Implements IDisposable
+    Public Class HttpResponse : Inherits ITextWriter
+        Implements IDisposable
 
         Friend ReadOnly response As StreamWriter
         Friend ReadOnly writeFailed As HttpError
+
+        Dim __writeHTML As Boolean = False
+        Dim __writeData As Boolean = False
+        Dim __customHeaders As New Dictionary(Of String, String)
 
         Public Property AccessControlAllowOrigin As String
 
@@ -77,13 +84,13 @@ Namespace Core.Message
             writeFailed = [error]
         End Sub
 
-        Dim __writeHTML As Boolean = False
-        Dim __writeData As Boolean = False
-
         ''' <summary>
         ''' 在这里只需要将错误消息放进来就行了，页面使用自定义的模板
         ''' </summary>
-        ''' <param name="message$"></param>
+        ''' <param name="message"></param>
+        ''' <remarks>
+        ''' calling <see cref="writeFailed"/> function to show error message to the browser
+        ''' </remarks>
         ''' 
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub WriteError(code$, message$)
@@ -95,9 +102,27 @@ Namespace Core.Message
             Call WriteHTML(<script>window.location='%s';</script>, url)
         End Sub
 
+        Public Sub WriteHeader(MIMEType As String, contentLength As Integer)
+            Call WriteHttp(New Content With {.length = contentLength, .type = MIMEType})
+        End Sub
+
         Public Sub SendFile(path As String)
             Dim contentType$ = path.FileMimeType.MIMEType
             Call path.TransferBinary(contentType, Me)
+        End Sub
+
+        ''' <summary>
+        ''' the function <see cref="WriteHttp(Content)"/> should 
+        ''' be called before this function to send data payload.
+        ''' </summary>
+        ''' <param name="data"></param>
+        Public Sub SendData(data As Byte())
+            Using buffer As New MemoryStream(data)
+                Call buffer.CopyTo(
+                    destination:=response.BaseStream
+                )
+                Call response.Flush()
+            End Using
         End Sub
 
         Public Sub WriteHTML(html As String)
@@ -105,17 +130,19 @@ Namespace Core.Message
             If Not __writeHTML AndAlso Not __writeData Then
                 __writeHTML = writeSuccess()
             End If
+
             Call response.WriteLine(html)
         End Sub
 
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub WriteHTML(html As StringBuilder)
-            WriteHTML(html.ToString)
+            Call WriteHTML(html.ToString)
         End Sub
 
+        <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Private Function writeSuccess() As Boolean
             Try
-                Call __writeSuccess("text/html", Nothing)
+                Call WriteHttp(New Content With {.type = "text/html"})
             Catch ex As Exception
                 Call App.LogException(ex)
             End Try
@@ -123,37 +150,42 @@ Namespace Core.Message
             Return True
         End Function
 
+        Public Sub AddCustomHttpHeader(header As String, value As String)
+            __customHeaders(header) = value
+        End Sub
+
         ''' <summary>
         ''' 将需要保存到浏览器的数据通过response header的形式返回
         ''' </summary>
         ''' <param name="cookies"></param>
+        ''' 
+        <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub SetCookies(cookies As Dictionary(Of String, String))
-
+            __customHeaders(HeaderToString(HttpHeaderName.SetCookie)) = (
+                From data As KeyValuePair(Of String, String)
+                In cookies
+                Select $"{data.Key}={data.Value}"
+            ).JoinBy("; ")
         End Sub
 
-        Public Sub WriteHeader(content_type$, Length&)
-            ' this is the successful HTTP response line
-            response.WriteLine("HTTP/1.0 200 OK")
-            ' these are the HTTP headers...      
-            response.WriteLine("Accept-Ranges: bytes")
-            response.WriteLine("Content-Length: " & Length)
-            response.WriteLine("Content-Type: " & content_type)
-            response.WriteLine(HttpProcessor.XPoweredBy)
-
-            If Not AccessControlAllowOrigin.StringEmpty Then
-                response.WriteLine("Access-Control-Allow-Origin: " & AccessControlAllowOrigin)
-            End If
-
-            ' this terminates the HTTP headers.. everything after this is HTTP body..
-            response.WriteLine()
-            response.Flush()
+        Public Sub WriteHttp(contentType As String, contentLength As Integer)
+            Call WriteHttp(New Content With {.type = contentType, .length = contentLength})
         End Sub
 
-        Private Sub __writeSuccess(content_type As String, content As Content)
+        ''' <summary>
+        ''' write http headers
+        ''' </summary>
+        ''' <param name="content"></param>
+        ''' <remarks>
+        ''' this function will terminates the http header and 
+        ''' anything after this function calls should be the 
+        ''' data payload to the browser.
+        ''' </remarks>
+        Public Function WriteHttp(content As Content) As HttpResponse
             ' this is the successful HTTP response line
             response.WriteLine("HTTP/1.0 200 OK")
             ' these are the HTTP headers...          
-            response.WriteLine("Content-Type: " & content_type)
+            response.WriteLine("Content-Type: " & content.type)
             response.WriteLine("Connection: close")
             ' ..add your own headers here if you like
 
@@ -165,10 +197,16 @@ Namespace Core.Message
 
             response.WriteLine(HttpProcessor.XPoweredBy)
 
+            For Each header As KeyValuePair(Of String, String) In __customHeaders
+                response.WriteLine($"{header.Key}: {header.Value}")
+            Next
+
             ' this terminates the HTTP headers.. everything after this is HTTP body..
             response.WriteLine()
             response.Flush()
-        End Sub
+
+            Return Me
+        End Function
 
         ''' <summary>
         ''' %s %d, etc
@@ -192,7 +230,7 @@ Namespace Core.Message
 
             If Not __writeData Then
                 __writeData = True
-                Call WriteHeader(MIME.Json, bytes.Length)
+                Call WriteHttp(New Content With {.length = bytes.Length, .type = MIME.Json})
             End If
 
             Call response.BaseStream.Write(bytes, Scan0, bytes.Length)
@@ -204,12 +242,12 @@ Namespace Core.Message
             Call response.WriteLine(obj.GetXml)
         End Sub
 
-        Public Sub Write(byts As Byte())
+        Public Overloads Sub Write(byts As Byte())
             __writeData = True
             Call response.BaseStream.Write(byts, Scan0, byts.Length)
         End Sub
 
-        Public Sub Write(byts As Byte(), offset As Integer, count As Integer)
+        Public Overloads Sub Write(byts As Byte(), offset As Integer, count As Integer)
             __writeData = True
             Call response.BaseStream.Write(byts, offset, count)
         End Sub
@@ -265,7 +303,7 @@ Namespace Core.Message
         ''' Writes a character to the stream.
         ''' </summary>
         ''' <param name="value">The character to write to the stream.</param>
-        Public Sub Write(value As Char)
+        Public Overloads Sub Write(value As Char)
             __writeData = True
             Call response.Write(value)
         End Sub
@@ -287,14 +325,20 @@ Namespace Core.Message
         ''' Writes a string to the stream.
         ''' </summary>
         ''' <param name="value">The string to write to the stream. If value is null, nothing is written.</param>
-        Public Sub Write(value As String)
-            __writeData = True
+        Public Overrides Sub Write(value As String)
+            Dim bytes As Byte() = Encoding.UTF8.GetBytes(value)
+
+            If Not __writeData Then
+                __writeData = True
+                Call WriteHttp(New Content With {.length = bytes.Length, .type = MIME.Html})
+            End If
+
             Call response.Write(value)
         End Sub
 
-        Public Sub WriteLine(s As String)
-            __writeData = True
-            Call response.WriteLine(s)
+        <MethodImpl(MethodImplOptions.AggressiveInlining)>
+        Public Overrides Sub WriteLine(s As String)
+            Call Write(value:=s & vbCrLf)
         End Sub
 
         ' Exceptions:
@@ -315,7 +359,7 @@ Namespace Core.Message
         ''' </summary>
         ''' <param name="buffer">A character array containing the data to write. If buffer is null, nothing is
         ''' written.</param>
-        Public Sub Write(buffer() As Char)
+        Public Overloads Sub Write(buffer() As Char)
             __writeData = True
             Call response.Write(buffer)
         End Sub
@@ -348,7 +392,7 @@ Namespace Core.Message
         ''' <param name="buffer">A character array that contains the data to write.</param>
         ''' <param name="index">The character position in the buffer at which to start reading data.</param>
         ''' <param name="count">The maximum number of characters to write.</param>
-        Public Sub Write(buffer() As Char, index As Integer, count As Integer)
+        Public Overloads Sub Write(buffer() As Char, index As Integer, count As Integer)
             __writeData = True
             Call response.Write(buffer, index, count)
         End Sub
