@@ -2,6 +2,9 @@
 Imports Flute.Http.Core
 Imports Microsoft.VisualBasic.ComponentModel.Settings.Inf
 
+''' <summary>
+''' http server configuration
+''' </summary>
 <ClassName("Configuration")>
 Public Class Configuration
 
