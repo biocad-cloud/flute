@@ -28,7 +28,7 @@ Module Program
                 Continue For
             End If
 
-            vars(name) = JsonParser.Parse(arg.Value)
+            vars(name) = JsonParser.Parse(arg.Value, strictVectorSyntax:=False)
         Next
 
         For Each template As String In viewfiles
