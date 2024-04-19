@@ -11,6 +11,9 @@ Public Class Configuration
     <Description("a logical value for turn the verbose echo of the debug message on.")>
     Public Property silent As Boolean = True
 
+    <Description("the prefix for the user session id.")>
+    Public Property session_id_prefix As String = "flute_www_"
+
     ''' <summary>
     ''' safe handler for load ini configuration file
     ''' </summary>
