@@ -1,6 +1,10 @@
-﻿Public Class SessionManager : Inherits ServerComponent
+﻿Imports Flute.Http.Core.Message
 
-    Sub New(settings As Configuration)
+Public Class SessionManager : Inherits ServerComponent
+
+    Public ReadOnly Property Id As String
+
+    Sub New(cookies As Cookies, settings As Configuration)
         Call MyBase.New(settings)
     End Sub
 

@@ -142,9 +142,9 @@ Namespace Core.Message
             End If
         End Function
 
-        Public Function GetCookies() As NameValueCollection
+        Public Function GetCookies() As Cookies
             Dim cookie_str As String = HttpHeaders.TryGetValue(RequestHeaders.Cookie)
-            Dim data As NameValueCollection = Cookies.GetCookies(cookie_str)
+            Dim data As Cookies = Cookies.GetCookies(cookie_str)
             Return data
         End Function
 

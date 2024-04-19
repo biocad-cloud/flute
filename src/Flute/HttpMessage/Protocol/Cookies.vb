@@ -39,23 +39,13 @@
 ' /********************************************************************************/
 
 #End Region
-
-'
-' * Solution for CookieContainer bug in .NET 3.5
-' *
-' * Usage:
-' * httpWebRequest.Headers[HttpRequestHeader.Cookie] = CookieParser.ParseSetCookie(httpWebResponse.Headers[HttpResponseHeader.SetCookie]);
-' *
-' * Created by LYF610400210
-'
-
-Imports System.Collections.Specialized
-
 Namespace Core.Message
 
     Public Class Cookies
 
-        Public Shared Function GetCookies(cookies As String) As NameValueCollection
+        ReadOnly cookies As Dictionary(Of String, String())
+
+        Public Shared Function GetCookies(cookies As String) As Cookies
 
         End Function
 

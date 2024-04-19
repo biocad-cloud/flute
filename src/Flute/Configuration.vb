@@ -17,6 +17,9 @@ Public Class Configuration
     <Description("the prefix for the user session id.")>
     Public Property session_id_prefix As String = "flute_www_"
 
+    <Description("the directory folder path for save the session data as files.")>
+    Public Property session_store As String = ""
+
     ''' <summary>
     ''' safe handler for load ini configuration file
     ''' </summary>
