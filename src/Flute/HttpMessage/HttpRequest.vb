@@ -52,10 +52,7 @@
 
 Imports System.Collections.Specialized
 Imports System.Runtime.CompilerServices
-Imports System.Text
-Imports Flute.Http.Core.HttpStream
 Imports Flute.Http.Core.Message.HttpHeader
-Imports Microsoft.VisualBasic.ComponentModel.Collection
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
 Imports Microsoft.VisualBasic.Language.Default
 Imports Microsoft.VisualBasic.Net.Http
@@ -146,9 +143,8 @@ Namespace Core.Message
         End Function
 
         Public Function GetCookies() As NameValueCollection
-            Dim cookies As String = HttpHeaders.TryGetValue(RequestHeaders.Cookie)
-            Dim data As New NameValueCollection
-
+            Dim cookie_str As String = HttpHeaders.TryGetValue(RequestHeaders.Cookie)
+            Dim data As NameValueCollection = Cookies.GetCookies(cookie_str)
             Return data
         End Function
 
