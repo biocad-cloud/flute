@@ -39,6 +39,8 @@
 ' /********************************************************************************/
 
 #End Region
+Imports Microsoft.VisualBasic.Serialization.JSON
+
 Namespace Core.Message
 
     Public Class Cookies
@@ -58,6 +60,10 @@ Namespace Core.Message
 
         Public Shared Function GetCookies(cookies As String) As Cookies
 
+        End Function
+
+        Public Overrides Function ToString() As String
+            Return cookies.Keys.AsEnumerable.GetJson
         End Function
 
     End Class

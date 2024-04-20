@@ -50,7 +50,6 @@
 
 #End Region
 
-Imports System.Collections.Specialized
 Imports System.Runtime.CompilerServices
 Imports Flute.Http.Core.Message.HttpHeader
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel

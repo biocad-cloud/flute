@@ -20,6 +20,9 @@ Public Class Configuration
     <Description("the directory folder path for save the session data as files.")>
     Public Property session_store As String = ""
 
+    <Description("enable the session?")>
+    Public Property session_enable As Boolean = True
+
     ''' <summary>
     ''' safe handler for load ini configuration file
     ''' </summary>
