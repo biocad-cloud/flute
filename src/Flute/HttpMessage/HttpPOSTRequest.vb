@@ -1,6 +1,8 @@
-﻿Imports Flute.Http.Core.HttpStream
+﻿Imports System.Runtime.CompilerServices
+Imports System.Text
+Imports Flute.Http.Core.HttpStream
+Imports Microsoft.VisualBasic.ComponentModel.Collection
 Imports Microsoft.VisualBasic.Language.Default
-Imports System.Runtime.CompilerServices
 
 Namespace Core.Message
 
