@@ -10,7 +10,7 @@ Namespace Configurations
         Public Property session_id_prefix As String = "flute_www_"
 
         <Description("the directory folder path for save the session data as files.")>
-        Public Property session_store As String = ""
+        Public Property session_store As String = "/tmp/flute_sessions/"
 
         <Description("enable the session?")>
         Public Property session_enable As Boolean = True

@@ -19,6 +19,10 @@ Namespace Configurations
         <Description("user session in server backend")>
         Public Property session As Session
 
+        Public Shared Function [Default]() As Configuration
+            Return New Configuration With {.session = New Session}
+        End Function
+
         ''' <summary>
         ''' safe handler for load ini configuration file
         ''' </summary>
