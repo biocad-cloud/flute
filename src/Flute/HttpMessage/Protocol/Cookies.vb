@@ -43,7 +43,18 @@ Namespace Core.Message
 
     Public Class Cookies
 
+        ''' <summary>
+        ''' all key names is in lower case
+        ''' </summary>
         ReadOnly cookies As Dictionary(Of String, String())
+
+        Public Function CheckCookie(name As String) As Boolean
+            Return cookies.ContainsKey(name.ToLower)
+        End Function
+
+        Public Function GetCookie(name As String) As String()
+            Return cookies.TryGetValue(name.ToLower)
+        End Function
 
         Public Shared Function GetCookies(cookies As String) As Cookies
 
