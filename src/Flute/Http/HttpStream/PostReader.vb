@@ -152,7 +152,9 @@ Namespace Core.HttpStream
                         GetType(String()),
                         GetType(Double()),
                         GetType(Double),
-                        GetType(String)
+                        GetType(String),
+                        GetType(Dictionary(Of String, String)),
+                        GetType(Dictionary(Of String, String()))
                     }
 
                     _Objects = json.LoadJSON(Of Dictionary(Of String, Object))(knownTypes:=knows)
