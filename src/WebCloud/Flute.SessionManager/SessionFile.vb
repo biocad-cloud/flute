@@ -52,6 +52,16 @@ Public Class SessionFile
         Return SaveKey(key, Encoding.UTF8.GetBytes(data))
     End Function
 
+    Public Function OpenKeyString(key As String) As String
+        Dim s As MemoryStream = OpenKey(key)
+
+        If s Is Nothing Then
+            Return Nothing
+        Else
+            Return Encoding.UTF8.GetString(s.ToArray)
+        End If
+    End Function
+
     Public Function OpenKey(key As String) As MemoryStream
         Dim region As BufferRegion = SearchKey(key)
 
