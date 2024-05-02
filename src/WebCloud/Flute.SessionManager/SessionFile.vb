@@ -56,28 +56,28 @@ Public Class SessionFile
     End Function
 
     Public Function OpenKeyString(key As String) As String
-        Dim s As MemoryStream = OpenKey(key)
+        Dim s As Byte() = OpenKey(key)
 
         If s Is Nothing Then
             Return Nothing
         Else
-            Return Encoding.UTF8.GetString(s.ToArray)
+            Return Encoding.UTF8.GetString(s)
         End If
     End Function
 
-    Public Function OpenKey(key As String) As MemoryStream
+    Public Function OpenKey(key As String) As Byte()
         Dim region As BufferRegion = SearchKey(key)
 
         If region Is Nothing Then
             Return Nothing
         Else
-            Using s As New FileStream(keyfile, FileMode.Open)
+            Using s As New FileStream(datafile, FileMode.Open)
                 Dim load As Byte() = New Byte(region.size - 1) {}
 
                 Call s.Seek(region.position, SeekOrigin.Begin)
                 Call s.Read(load, Scan0, load.Length)
 
-                Return New MemoryStream(load)
+                Return load
             End Using
         End If
     End Function
