@@ -91,14 +91,13 @@ Public Class SessionFile
         Using s As New BinaryDataReader(New FileStream(keyfile, FileMode.Open), Encoding.ASCII)
             For i As Integer = 0 To 100000
                 Dim skey As String = s.ReadString(BinaryStringFormat.ZeroTerminated)
+                Dim start As Long = s.ReadInt64
                 Dim len As Integer = s.ReadInt32
-                Dim start As Long = s.BaseStream.Position
 
                 If skey = key Then
                     Return New BufferRegion(start, len)
                 Else
                     lastBlock = New BufferRegion(start, len)
-                    s.Seek(lastBlock.nextBlock, SeekOrigin.Begin)
 
                     If s.EndOfStream Then
                         Exit For
