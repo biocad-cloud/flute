@@ -65,6 +65,26 @@ Public Class SessionFile
         End If
     End Function
 
+    Public Function OpenKeyInteger(key As String) As Integer
+        Dim s As Byte() = OpenKey(key)
+
+        If s Is Nothing Then
+            Return Nothing
+        Else
+            Return BitConverter.ToInt32(s, Scan0)
+        End If
+    End Function
+
+    Public Function OpenKeyDouble(key As String) As Double
+        Dim s As Byte() = OpenKey(key)
+
+        If s Is Nothing Then
+            Return Nothing
+        Else
+            Return BitConverter.ToDouble(s, Scan0)
+        End If
+    End Function
+
     Public Function OpenKey(key As String) As Byte()
         Dim region As BufferRegion = SearchKey(key)
 
