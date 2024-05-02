@@ -1,7 +1,6 @@
 Imports System.IO
 Imports System.Text
 Imports Microsoft.VisualBasic.Data.IO
-Imports Microsoft.VisualBasic.Serialization
 
 Public Class SessionFile
 
@@ -20,19 +19,25 @@ Public Class SessionFile
 
     Public Function SaveKey(key As String, data As Byte()) As Boolean
         Dim lastBlock As BufferRegion = Nothing
-        Dim region As BufferRegion = SearchKey(key, lastBlock)
+        Dim offset As Long = 0
+        Dim region As BufferRegion = SearchKey(key, lastBlock, offset)
 
         If region Is Nothing Then
             ' append new region
             Using s As New BinaryDataWriter(New FileStream(keyfile, FileMode.Append), Encoding.ASCII)
                 s.Write(key, BinaryStringFormat.ZeroTerminated)
+                s.Write(lastBlock.nextBlock)
                 s.Write(data.Length)
+                s.Flush()
+            End Using
+            Using s As New FileStream(datafile, FileMode.Open)
+                s.Seek(lastBlock.nextBlock, SeekOrigin.Begin)
                 s.Write(data)
                 s.Flush()
             End Using
         ElseIf data.Length = region.size Then
             ' overrides
-            Using s As New BinaryDataWriter(New FileStream(keyfile, FileMode.Open), Encoding.ASCII)
+            Using s As New BinaryDataWriter(New FileStream(datafile, FileMode.Open), Encoding.ASCII)
                 s.Seek(region.position, SeekOrigin.Begin)
                 s.Write(data)
                 s.Flush()
@@ -40,15 +45,34 @@ Public Class SessionFile
         ElseIf data.Length < region.size Then
             ' update region size and then overrides data
             Using s As New BinaryDataWriter(New FileStream(keyfile, FileMode.Open), Encoding.ASCII)
-                s.Seek(region.position - RawStream.INT32, SeekOrigin.Begin)
+                s.Seek(offset + key.Length + 1 + 8, SeekOrigin.Begin)
                 s.Write(data.Length)
+                s.Flush()
+            End Using
+            Using s As New BinaryDataWriter(New FileStream(datafile, FileMode.Open), Encoding.ASCII)
+                s.Seek(region.position, SeekOrigin.Begin)
                 s.Write(data)
                 s.Flush()
             End Using
         Else
             ' erase the data, and write to new location
+            Dim dataOffset As Long
 
+            Using s As New BinaryDataWriter(New FileStream(datafile, FileMode.Open), Encoding.ASCII)
+                s.Seek(s.BaseStream.Length, SeekOrigin.Begin)
+                dataOffset = s.Position
+                s.Write(data)
+                s.Flush()
+            End Using
+            Using s As New BinaryDataWriter(New FileStream(keyfile, FileMode.Open), Encoding.ASCII)
+                s.Seek(offset + key.Length + 1, SeekOrigin.Begin)
+                s.Write(dataOffset)
+                s.Write(data.Length)
+                s.Flush()
+            End Using
         End If
+
+        Return True
     End Function
 
     Public Function SaveKey(key As String, data As String) As Boolean
@@ -103,11 +127,14 @@ Public Class SessionFile
     End Function
 
     ''' <summary>
-    ''' [keyname => length,next]
+    ''' [keyname => offset,length]
     ''' </summary>
     ''' <param name="key"></param>
     ''' <returns></returns>
-    Public Function SearchKey(key As String, Optional ByRef lastBlock As BufferRegion = Nothing) As BufferRegion
+    Public Function SearchKey(key As String,
+                              Optional ByRef lastBlock As BufferRegion = Nothing,
+                              Optional ByRef keyOffset As Long = 0) As BufferRegion
+
         Using s As New BinaryDataReader(New FileStream(keyfile, FileMode.Open), Encoding.ASCII)
             For i As Integer = 0 To 100000
                 Dim skey As String = s.ReadString(BinaryStringFormat.ZeroTerminated)
@@ -115,6 +142,7 @@ Public Class SessionFile
                 Dim len As Integer = s.ReadInt32
 
                 If skey = key Then
+                    keyOffset = s.Position - 8 - 4 - skey.Length
                     Return New BufferRegion(start, len)
                 Else
                     lastBlock = New BufferRegion(start, len)
