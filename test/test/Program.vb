@@ -1,8 +1,6 @@
-Imports System
-
 Module Program
     Sub Main(args As String())
-        Dim ssfile = Flute.SessionManager.Open("asjkdfshdfjksfs".MD5, "Z:/")
+        Dim ssfile = Flute.SessionManager.Open("Z:/", "asjkdfshdfjksfs".MD5)
 
         Console.WriteLine(ssfile.OpenKeyString("abc"))
         Console.WriteLine(ssfile.OpenKeyDouble("abc1"))

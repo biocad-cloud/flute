@@ -144,20 +144,24 @@ Public Class SessionFile
                               Optional ByRef keyOffset As Long = 0) As BufferRegion
 
         Using s As New BinaryDataReader(New FileStream(keyfile, FileMode.Open), Encoding.ASCII)
+            Dim skey As String
+            Dim start As Long
+            Dim len As Integer
+
             For i As Integer = 0 To 100000
-                Dim skey As String = s.ReadString(BinaryStringFormat.ZeroTerminated)
-                Dim start As Long = s.ReadInt64
-                Dim len As Integer = s.ReadInt32
+                If s.EndOfStream Then
+                    Exit For
+                Else
+                    skey = s.ReadString(BinaryStringFormat.ZeroTerminated)
+                    start = s.ReadInt64
+                    len = s.ReadInt32
+                End If
 
                 If skey = key Then
                     keyOffset = s.Position - 8 - 4 - skey.Length
                     Return New BufferRegion(start, len)
                 Else
                     lastBlock = New BufferRegion(start, len)
-
-                    If s.EndOfStream Then
-                        Exit For
-                    End If
                 End If
             Next
 
