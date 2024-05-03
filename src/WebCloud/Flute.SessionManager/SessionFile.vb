@@ -22,6 +22,10 @@ Public Class SessionFile
         Dim offset As Long = 0
         Dim region As BufferRegion = SearchKey(key, lastBlock, offset)
 
+        If lastBlock Is Nothing Then
+            lastBlock = New BufferRegion
+        End If
+
         If region Is Nothing Then
             ' append new region
             Using s As New BinaryDataWriter(New FileStream(keyfile, FileMode.Append), Encoding.ASCII)
