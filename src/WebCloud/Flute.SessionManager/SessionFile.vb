@@ -75,6 +75,14 @@ Public Class SessionFile
         Return True
     End Function
 
+    Public Function SaveKey(key As String, data As Integer) As Boolean
+        Return SaveKey(key, BitConverter.GetBytes(data))
+    End Function
+
+    Public Function SaveKey(key As String, data As Double) As Boolean
+        Return SaveKey(key, BitConverter.GetBytes(data))
+    End Function
+
     Public Function SaveKey(key As String, data As String) As Boolean
         Return SaveKey(key, Encoding.UTF8.GetBytes(data))
     End Function
