@@ -162,7 +162,7 @@ Public Class SessionFile
                 End If
 
                 If skey = key Then
-                    keyOffset = s.Position - 8 - 4 - skey.Length
+                    keyOffset = s.Position - 8 - 4 - skey.Length - 1
                     Return New BufferRegion(start, len)
                 Else
                     lastBlock = New BufferRegion(start, len)
