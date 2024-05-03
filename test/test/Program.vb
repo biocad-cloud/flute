@@ -14,7 +14,7 @@ Module Program
         Console.WriteLine(ssfile.OpenKeyDouble("abc1"))
         Console.WriteLine(ssfile.OpenKeyInteger("abc2"))
 
-        ssfile.SaveKey("abc", "hello!")
+        ssfile.SaveKey("abc", "hello!~")
 
         Console.WriteLine(ssfile.OpenKeyString("abc"))
 
