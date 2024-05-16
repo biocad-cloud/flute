@@ -80,9 +80,19 @@ Namespace Core.Message
 
         Public Shared Function ParseCookies(cookies As String) As Cookies
             If cookies.StringEmpty Then
-                Return New Cookies With {.cookies = New Dictionary(Of String, String)}
+                Return New Cookies With {
+                    .cookies = New Dictionary(Of String, String)
+                }
             Else
-                Throw New NotImplementedException(cookies)
+                Dim t As String() = cookies.StringSplit("; ")
+                Dim kv = t.Select(Function(ti) ti.GetTagValue("=", trim:=True)) _
+                    .GroupBy(Function(ti) ti.Name.ToLower) _
+                    .ToDictionary(Function(ti) ti.Key,
+                                  Function(ti)
+                                      Return ti.Select(Function(s) s.Value).JoinBy("; ")
+                                  End Function)
+
+                Return New Cookies With {.cookies = kv}
             End If
         End Function
 
