@@ -81,7 +81,7 @@ Public Class HttpDriver
     ''' 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Function HttpMethod(method As String, handler As IAppHandler) As HttpDriver
-        Return HttpMethod(method, AddressOf handler.AppHandler)
+        Return HttpMethod(method, AddressOf handler.getDefault)
     End Function
 
     ''' <summary>
