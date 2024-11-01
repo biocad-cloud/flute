@@ -66,7 +66,7 @@ Namespace Core
 
     Public Interface IAppHandler
 
-        Sub getDefault(request As HttpRequest, response As HttpResponse)
+        Sub AppHandler(request As HttpRequest, response As HttpResponse)
 
     End Interface
 
