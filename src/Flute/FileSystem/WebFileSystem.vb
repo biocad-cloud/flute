@@ -85,6 +85,13 @@ Namespace FileSystem
             End Get
         End Property
 
+        Sub New()
+        End Sub
+
+        Sub New(ParamArray wwwroot As FileSystem())
+            fs = wwwroot
+        End Sub
+
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub WebHandler(request As HttpRequest, response As HttpResponse)
             Dim path As String = CommonGetPath(request)
