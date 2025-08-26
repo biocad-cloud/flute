@@ -158,7 +158,7 @@ Namespace Core
 
                 Return 500
             Finally
-                Call $"Http Server Start listen at {_httpListener.LocalEndpoint.ToString}".info(silent:=_silent)
+                Call $"Http Server Start listen at {_httpListener.LocalEndpoint.ToString}".info(_silent)
             End Try
 
             While Is_active
