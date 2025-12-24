@@ -72,7 +72,7 @@ Module Program
     Public Function Build(view As String, wwwroot As String, args As CommandLine) As Integer
         Dim name As String
         Dim vars As New Dictionary(Of String, Object)
-        Dim excludes As Index(Of String) = {"view", "wwwroot", "args"}
+        Dim excludes As Index(Of String) = {"view", "wwwroot", "args", "listen"}
         Dim listenMode As Boolean = args("--listen")
 
         For Each arg As NamedValue(Of String) In args.AsEnumerable
@@ -93,6 +93,12 @@ Module Program
             }
 
             AddHandler watcher.Changed, Sub(sender, e)
+                                            Call "build template folder on updates...".debug
+                                            Call build(view, wwwroot, vars)
+                                        End Sub
+
+            AddHandler watcher.Created, Sub(sender, e)
+                                            Call "build template folder on updates...".debug
                                             Call build(view, wwwroot, vars)
                                         End Sub
 
@@ -116,9 +122,13 @@ Module Program
         Dim viewfiles As String() = view.EnumerateFiles("*.vbhtml").ToArray
 
         For Each template As String In viewfiles
-            Call VBHtml _
-                .ReadHTML(template, vars) _
-                .SaveTo(wwwroot & "/" & template.BaseName & ".html")
+            Try
+                Call VBHtml _
+                    .ReadHTML(template, vars) _
+                    .SaveTo(wwwroot & "/" & template.BaseName & ".html")
+            Catch ex As Exception
+                Call ex.Message.warning
+            End Try
         Next
     End Sub
 
