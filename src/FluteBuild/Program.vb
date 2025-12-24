@@ -139,7 +139,7 @@ Module Program
                 For Each file As String In $"{view}/{config.markdown.source}".ListFiles("*.md")
                     Try
                         Dim html As String = markdown.Transform(file.ReadAllText)
-                        Dim outputDocs As String = $"{wwwroot}/{PathExtensions.RelativePath(view, file, False).ChangeSuffix("html")}"
+                        Dim outputDocs As String = $"{wwwroot}/{PathExtensions.RelativePath(view, file, False, True).ChangeSuffix("html")}"
 
                         Call config.set("docs", html)
                         Call VBHtml _
