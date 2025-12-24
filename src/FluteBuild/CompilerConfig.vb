@@ -87,7 +87,7 @@ Public Class Menu
         Dim menuItems As New List(Of String)
 
         For Each item As String In section
-            Call menuItems.Add(list.item.Replace("@item", item))
+            Call menuItems.Add(list.item.Replace("@item", item).Replace("@section", section.name))
         Next
 
         Call html.Replace("@list", menuItems.JoinBy(""))
