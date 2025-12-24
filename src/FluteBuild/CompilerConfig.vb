@@ -55,6 +55,12 @@ Public Class MarkdownConfig
     Public Property source As String
     Public Property menu As Menu
 
+    Public Shared Iterator Function LoadMenu(source As String) As IEnumerable(Of NamedCollection(Of String))
+        For Each dir As String In source.ListDirectory
+            Yield New NamedCollection(Of String)(dir.BaseName, dir.ListFiles("*.md").BaseName)
+        Next
+    End Function
+
     Public Function RenderMenuHtml(sections As IEnumerable(Of NamedCollection(Of String))) As String
         If menu Is Nothing Then
             Return ""
