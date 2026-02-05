@@ -80,6 +80,9 @@ Module Program
         Dim listenMode As Boolean = args("--listen")
         Dim config As CompilerConfig = CompilerConfig.Load($"{view}/config.json")
 
+        view = view.GetDirectoryFullPath
+        wwwroot = wwwroot.GetDirectoryFullPath
+
         For Each arg As NamedValue(Of String) In args.AsEnumerable
             name = arg.Name.Trim("-"c, "/"c, "\"c)
 
