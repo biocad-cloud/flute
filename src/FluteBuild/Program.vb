@@ -145,7 +145,7 @@ Module Program
                     Try
                         Dim mdtext As String = file.ReadAllText
                         Dim html As String = markdown.Transform(mdtext)
-                        Dim outputDocs As String = $"{wwwroot}/{PathExtensions.RelativePath(view, file, False, True).ChangeSuffix("html")}"
+                        Dim outputDocs As String = $"{wwwroot}/{PathExtensions.RelativePath(view, file, False, fixZipPath:=False).ChangeSuffix("html")}"
                         Dim title As NamedValue(Of Integer) = MarkdownRender.GetTOC(mdtext).Where(Function(h) h.Value = 1).FirstOrDefault
 
                         Call config.set("title", title.Name)
