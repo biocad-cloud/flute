@@ -1,4 +1,9 @@
 Imports System.ComponentModel
+Imports Flute.Http.Core
+Imports Flute.Http.FileSystem
+Imports Microsoft.VisualBasic.CommandLine
+Imports Microsoft.VisualBasic.CommandLine.Reflection
+Imports Microsoft.VisualBasic.Net
 
 Module Program
 
@@ -38,16 +43,16 @@ Module Program
                     .AttachFolder(attach) _
                     .ToArray
             Else
-                Call localfs.fs(0) _
-                    .AttachFolder(New StreamPack(
-                        buffer:=attach.Open(FileMode.Open, doClear:=False, [readOnly]:=True),
-                        [readonly]:=True
-                    )) _
-                    .ToArray
+                'Call localfs.fs(0) _
+                '    .AttachFolder(New StreamPack(
+                '        buffer:=attach.Open(FileMode.Open, doClear:=False, [readOnly]:=True),
+                '        [readonly]:=True
+                '    )) _
+                '    .ToArray
             End If
         End If
 
-        Call BackgroundTaskUtils.BindToMaster(parentId:=parent, kill:=localhost)
+        ' Call BackgroundTaskUtils.BindToMaster(parentId:=parent, kill:=localhost)
 
         If Not Tcp.PortIsAvailable(port) Then
             Call Console.WriteLine($"local tcp port(={port}) is in used!")
