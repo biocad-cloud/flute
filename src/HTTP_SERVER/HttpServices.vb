@@ -15,7 +15,7 @@ Public Class HttpServices : Implements IDisposable
 
     Public Function StartHttp() As HttpServices
         Dim http = Interop.CreateServer
-        Dim service As Integer = tcp.GetFirstAvailablePort
+        Dim service As Integer = tcp.GetFirstAvailablePort(BEGIN_PORT:=-1)
         Dim args As String = http.GetlistenCommandLine(web, port:=service)
         Dim task = http.CreateSlave(args, workdir:=App.HOME)
 
