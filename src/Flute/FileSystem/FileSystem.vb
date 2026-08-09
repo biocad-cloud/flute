@@ -209,6 +209,8 @@ Namespace FileSystem
 
                 If MIME.SuffixTable.ContainsKey(extName) Then
                     Return MIME.SuffixTable(extName)
+                ElseIf extName = ".js" Then
+                    Return New ContentType("ECMAScript Module JavaScript", "application/javascript", ".js")
                 Else
                     Return MIME.UnknownType
                 End If
