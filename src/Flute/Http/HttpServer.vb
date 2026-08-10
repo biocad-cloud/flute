@@ -235,9 +235,14 @@ Namespace Core
 
             ' wait for active workers to finish (with a reasonable timeout)
             ' so in-flight requests are not abruptly terminated.
-            Dim deadline As DateTime = DateTime.UtcNow.AddSeconds(30)
+            ' note: if Shutdown is called from within a worker thread (e.g.
+            ' the /ctrl/kill handler), that thread itself holds one
+            ' _accept_workers count which it cannot release until this method
+            ' returns. So we wait for the count to drop to at most 1 (the
+            ' calling worker itself) rather than 0.
+            Dim deadline As DateTime = DateTime.UtcNow.AddSeconds(10)
 
-            Do While _accept_workers > 0 AndAlso DateTime.UtcNow < deadline
+            Do While _accept_workers > 1 AndAlso DateTime.UtcNow < deadline
                 Call Thread.Sleep(50)
             Loop
         End Sub
