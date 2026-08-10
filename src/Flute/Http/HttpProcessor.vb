@@ -451,34 +451,24 @@ Namespace Core
         Public Const XPoweredBy$ = "X-Powered-By: "
 
         Private Sub writeSuccess(content_type As String, content As Content)
+            ' HTTP/1.1 keeps the connection alive by default unless the client
+            ' explicitly asked to close it.
+            Dim keepAlive As Boolean = Not httpHeaders.ContainsKey("connection") OrElse
+                Not httpHeaders("connection").TextEquals("close", ignoreCase:=True)
+
             ' this is the successful HTTP response line
-            Call outputStream.WriteLine("HTTP/1.0 200 OK")
+            Call outputStream.WriteLine("HTTP/1.1 200 OK")
             ' these are the HTTP headers...          
             Call outputStream.WriteLine("Content-Length: " & content.length)
             Call outputStream.WriteLine("Content-Type: " & content_type)
-            Call outputStream.WriteLine("Connection: close")
+            Call outputStream.WriteLine("Connection: " & If(keepAlive, "keep-alive", "close"))
+            Call outputStream.WriteLine("Date: " & DateTime.UtcNow.ToString("R"))
+            Call outputStream.WriteLine("Server: " & VBS_platform)
             ' ..add your own headers here if you like
 
             ' Call content.WriteHeader(outputStream)
 
             Call outputStream.WriteLine(XPoweredBy & _settings.x_powered_by)
-            ' 2018-1-31 
-            ' The server committed a protocol violation. 
-            ' Section = ResponseHeader  
-            ' Detail  = CR must be followed by LF
-            '
-            ' RFC 822中的httpHeader必须以CRLF结束的规定的服务器响应。
-            '
-            ' app.config配置文件修改
-            '
-            ' <?xml version="1.0" encoding="utf-8" ?>
-            ' <configuration>
-            ' <system.net> 
-            '        <settings> 
-            '               <httpWebRequest useUnsafeHeaderParsing = "true" />
-            '        </settings>
-            ' </system.net>
-            ' </configuration>
             Call outputStream.WriteLine()
             ' this terminates the HTTP headers.. everything after this is HTTP body..
             Call outputStream.Flush()
@@ -527,10 +517,12 @@ Namespace Core
                               End Function)
 
             ' this is an http 404 failure response
-            Call outputStream.WriteLine($"HTTP/1.0 {CLng(error_code)} " & error_status(error_code))
+            Call outputStream.WriteLine($"HTTP/1.1 {CLng(error_code)} " & error_status(error_code))
             ' these are the HTTP headers
             Call outputStream.WriteLine("Content-Type: text/html")
             Call outputStream.WriteLine("Connection: close")
+            Call outputStream.WriteLine("Date: " & DateTime.UtcNow.ToString("R"))
+            Call outputStream.WriteLine("Server: " & VBS_platform)
             ' ..add your own headers here
             Call outputStream.WriteLine(XPoweredBy & _settings.x_powered_by)
             ' this terminates the HTTP headers.

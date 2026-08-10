@@ -57,6 +57,8 @@
 
 #End Region
 
+Imports System.Collections.Concurrent
+Imports System.Security.Cryptography
 Imports Flute.Http.Configurations
 Imports Flute.Http.Core.Message
 Imports randf = Microsoft.VisualBasic.Math.RandomExtensions
@@ -67,6 +69,14 @@ Public Class SessionManager : Inherits ServerComponent
     Public ReadOnly Property SetCookie As Boolean = False
 
     Public Const CookieName As String = "flute_session"
+
+    ''' <summary>
+    ''' in-memory session store. the default implementation keeps values in
+    ''' process memory; a persistent store can be provided by overriding
+    ''' <see cref="GetSession"/> / <see cref="SaveSession"/> (e.g. the
+    ''' Flute.SessionManager package).
+    ''' </summary>
+    ReadOnly store As New ConcurrentDictionary(Of String, Object)
 
     Sub New(cookies As Cookies, settings As Configuration)
         Call MyBase.New(settings)
@@ -89,15 +99,31 @@ Public Class SessionManager : Inherits ServerComponent
     End Sub
 
     Public Overridable Function GetSession(name As String) As Object
-        Return Nothing
+        ' default in-memory implementation; override to back onto a persistent store
+        Dim value As Object = Nothing
+        Call store.TryGetValue(name, value)
+        Return value
     End Function
 
     Public Sub SaveSession(name As String, value As String)
-
+        Call store.AddOrUpdate(name, value, Function(k, v) value)
     End Sub
 
     Public Sub SaveSession(name As String, value As String())
-
+        ' join the array with a tab so it can be round-tripped by GetSessionArray
+        Call store.AddOrUpdate(name, String.Join(vbTab, value), Function(k, v) String.Join(vbTab, value))
     End Sub
+
+    ''' <summary>
+    ''' retrieve a previously saved session value as a tab-split string array.
+    ''' </summary>
+    Public Overridable Function GetSessionArray(name As String) As String()
+        Dim value As Object = GetSession(name)
+        If value Is Nothing Then
+            Return {}
+        Else
+            Return CStr(value).Split(vbTab)
+        End If
+    End Function
 
 End Class
