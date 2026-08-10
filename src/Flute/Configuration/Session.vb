@@ -53,6 +53,7 @@
 #End Region
 
 Imports System.ComponentModel
+Imports System.IO
 Imports Microsoft.VisualBasic.ComponentModel.Settings.Inf
 
 Namespace Configurations

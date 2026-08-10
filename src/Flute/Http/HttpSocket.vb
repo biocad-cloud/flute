@@ -121,7 +121,7 @@ Namespace Core
 
                 If token.StringEmpty Then
                     Call response.WriteHTML("Remote shutdown is disabled.")
-                ElseIf Not If(req.HttpHeaders.TryGetValue("X-Shutdown-Token"), "").TextEquals(token, ignoreCase:=True) Then
+                ElseIf Not String.Equals(If(req.HttpHeaders.TryGetValue("X-Shutdown-Token"), ""), token, StringComparison.Ordinal) Then
                     Call response.WriteHTML("Invalid shutdown token.")
                 Else
                     Call response.WriteHTML("OK!")

@@ -92,6 +92,7 @@ Namespace Core
         Dim _connectionSemaphore As SemaphoreSlim
 
         Protected Friend ReadOnly _settings As Configuration
+        Protected Friend ReadOnly _httpListener As TcpListener
 
         ''' <summary>
         ''' The network data port of this internal http server listen.
@@ -124,7 +125,6 @@ Namespace Core
             Me._threadPool = threads Or defaultThreads
             Me._BufferSize = Val(App.GetVariable("httpserver.buffer_size"))
             Me._BufferSize = If(BufferSize <= 0, 4096, BufferSize)
-            Me._silent = _settings.silent
             Me._connectionSemaphore = New SemaphoreSlim(_threadPool, _threadPool)
 
             Call $"Web server threads_pool_size={_threadPool}, buffer_size={BufferSize}bytes".info(_settings.silent)
@@ -144,7 +144,7 @@ Namespace Core
             Try
                 _httpListener.Start()
                 Is_active = True
-                Call $"Http Server Start listen at {_httpListener.LocalEndpoint.ToString}".info(_silent)
+                Call $"Http Server Start listen at {_httpListener.LocalEndpoint.ToString}".info(_settings.silent)
             Catch ex As Exception When ex.IsSocketPortOccupied
                 Call $"Could not start http services at port {_localPort}: socket port is occupied.".debug
                 Call App.LogException(ex)
@@ -163,11 +163,9 @@ Namespace Core
             End If
 
             While Is_active
-                If _connectionSemaphore.CurrentCount > 0 Then
-                    Call accept()
-                Else
-                    Call Thread.Sleep(1)
-                End If
+                ' accept() blocks on the connection semaphore internally, so the
+                ' number of concurrently handled connections never exceeds the pool size.
+                Call accept()
             End While
 
             Return 0
@@ -198,7 +196,7 @@ Namespace Core
                 Dim s As TcpClient = _httpListener.AcceptTcpClient
                 Dim processor As HttpProcessor = getHttpProcessor(s, BufferSize)
 
-                Call $"Process client from {s.Client.RemoteEndPoint.ToString}".debug(mute:=_silent)
+                Call $"Process client from {s.Client.RemoteEndPoint.ToString}".debug(mute:=_settings.silent)
                 ' acquire a semaphore slot before scheduling the handler; the slot
                 ' will be released by RunTask once processing completes.
                 Call _connectionSemaphore.Wait()

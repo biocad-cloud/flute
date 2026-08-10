@@ -454,7 +454,7 @@ Namespace Core
             ' HTTP/1.1 keeps the connection alive by default unless the client
             ' explicitly asked to close it.
             Dim keepAlive As Boolean = Not httpHeaders.ContainsKey("connection") OrElse
-                Not httpHeaders("connection").TextEquals("close", ignoreCase:=True)
+                Not httpHeaders("connection").TextEquals("close")
 
             ' this is the successful HTTP response line
             Call outputStream.WriteLine("HTTP/1.1 200 OK")

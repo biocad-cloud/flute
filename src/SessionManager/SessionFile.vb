@@ -1,55 +1,55 @@
 ﻿#Region "Microsoft.VisualBasic::36cd110a84f67285066bb6c64d9a8943, src\SessionManager\SessionFile.vb"
 
-    ' Author:
-    ' 
-    '       asuka (amethyst.asuka@gcmodeller.org)
-    '       xie (genetics@smrucc.org)
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2018 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       asuka (amethyst.asuka@gcmodeller.org)
+'       xie (genetics@smrucc.org)
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2018 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-    ' /********************************************************************************/
+' /********************************************************************************/
 
-    ' Summaries:
-
-
-    ' Code Statistics:
-
-    '   Total Lines: 176
-    '    Code Lines: 139 (78.98%)
-    ' Comment Lines: 9 (5.11%)
-    '    - Xml Docs: 55.56%
-    ' 
-    '   Blank Lines: 28 (15.91%)
-    '     File Size: 6.11 KB
+' Summaries:
 
 
-    ' Class SessionFile
-    ' 
-    '     Constructor: (+1 Overloads) Sub New
-    '     Function: OpenKey, OpenKeyDouble, OpenKeyInteger, OpenKeyString, (+4 Overloads) SaveKey
-    '               SearchKey
-    ' 
-    ' /********************************************************************************/
+' Code Statistics:
+
+'   Total Lines: 176
+'    Code Lines: 139 (78.98%)
+' Comment Lines: 9 (5.11%)
+'    - Xml Docs: 55.56%
+' 
+'   Blank Lines: 28 (15.91%)
+'     File Size: 6.11 KB
+
+
+' Class SessionFile
+' 
+'     Constructor: (+1 Overloads) Sub New
+'     Function: OpenKey, OpenKeyDouble, OpenKeyInteger, OpenKeyString, (+4 Overloads) SaveKey
+'               SearchKey
+' 
+' /********************************************************************************/
 
 #End Region
 
@@ -70,7 +70,7 @@ Public Class SessionFile
     ''' <summary>
     ''' protects all file access; the session store may be hit concurrently by many HTTP requests.
     ''' </summary>
-    ReadOnly syncLock As New Object
+    ReadOnly [syncLock] As New Object
 
     Sub New(keyfile As String, datafile As String)
         Me.datafile = datafile
@@ -83,7 +83,7 @@ Public Class SessionFile
     End Sub
 
     Public Function SaveKey(key As String, data As Byte()) As Boolean
-        SyncLock syncLock
+        SyncLock [syncLock]
             Dim lastBlock As BufferRegion = Nothing
             Dim offset As Long = 0
             Dim region As BufferRegion = SearchKey(key, lastBlock, offset)
@@ -93,21 +93,25 @@ Public Class SessionFile
             End If
 
             If region Is Nothing Then
-                ' append new region
-                Using s As New BinaryDataWriter(New FileStream(keyfile, FileMode.Append), Encoding.ASCII)
-                    s.Write(key, BinaryStringFormat.ZeroTerminated)
-                    s.Write(lastBlock.nextBlock)
-                    s.Write(data.Length)
+                ' append new region. always write data at the current end of the
+                ' data file (not lastBlock.nextBlock) to avoid overwriting an
+                ' earlier key's data when keys are not strictly offset-ordered.
+                Dim dataOffset As Long
+                Using s As New FileStream(datafile, FileMode.Open)
+                    s.Seek(0, SeekOrigin.End)
+                    dataOffset = s.Position
+                    s.Write(data, 0, data.Length)
                     s.Flush()
                 End Using
-                Using s As New FileStream(datafile, FileMode.Open)
-                    s.Seek(lastBlock.nextBlock, SeekOrigin.Begin)
-                    s.Write(data, 0, data.Length)
+                Using s As New BinaryDataWriter(New FileStream(keyfile, FileMode.Append), Encoding.ASCII)
+                    s.Write(key, BinaryStringFormat.ZeroTerminated)
+                    s.Write(dataOffset)
+                    s.Write(data.Length)
                     s.Flush()
                 End Using
 
                 ' update index with the new key location
-                index(key) = {offset, lastBlock.nextBlock, data.Length}
+                index(key) = {offset, dataOffset, data.Length}
             ElseIf data.Length = region.size Then
                 ' overrides
                 Using s As New BinaryDataWriter(New FileStream(datafile, FileMode.Open), Encoding.ASCII)
@@ -229,7 +233,7 @@ Public Class SessionFile
                               Optional ByRef lastBlock As BufferRegion = Nothing,
                               Optional ByRef keyOffset As Long = 0) As BufferRegion
 
-        SyncLock syncLock
+        SyncLock [syncLock]
             Using s As New BinaryDataReader(New FileStream(keyfile, FileMode.Open), Encoding.ASCII)
                 Dim skey As String
                 Dim start As Long
@@ -272,7 +276,7 @@ Public Class SessionFile
 
     ''' <summary>
     ''' build the in-memory key index from the current key file content.
-    ''' caller must hold <see cref="syncLock"/>.
+    ''' caller must hold <see cref="[syncLock]"/>.
     ''' </summary>
     Private Sub buildIndex(s As BinaryDataReader)
         s.Seek(Scan0, SeekOrigin.Begin)

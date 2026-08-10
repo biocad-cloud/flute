@@ -58,7 +58,6 @@
 #End Region
 
 Imports System.Collections.Concurrent
-Imports System.Security.Cryptography
 Imports Flute.Http.Configurations
 Imports Flute.Http.Core.Message
 Imports randf = Microsoft.VisualBasic.Math.RandomExtensions
@@ -88,12 +87,10 @@ Public Class SessionManager : Inherits ServerComponent
         If Id.StringEmpty Then
             ' use a cryptographically secure random id (32 hex chars) instead
             ' of the predictable time + random MD5 substring.
-            Dim bytes(15) As Byte
-            Using rng As New RNGCryptoServiceProvider()
-                Call rng.GetBytes(bytes)
-            End Using
+            Dim bytes() As Byte = randf.getbytes(16)
             Dim sessionId As String = String.Join("", bytes.Select(Function(b) b.ToString("x2")))
-            Id = If(settings.session.session_id_prefix.EmptyOrNull, "flute", settings.session.session_id_prefix) & "_" & sessionId
+
+            Id = If(settings.session.session_id_prefix.StringEmpty(, True), "flute", settings.session.session_id_prefix) & "_" & sessionId
             SetCookie = True
         End If
     End Sub
