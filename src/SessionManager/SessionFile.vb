@@ -145,20 +145,22 @@ Public Class SessionFile
     End Function
 
     Public Function OpenKey(key As String) As Byte()
-        Dim region As BufferRegion = SearchKey(key)
+        SyncLock [syncLock]
+            Dim region As BufferRegion = SearchKey(key)
 
-        If region Is Nothing Then
-            Return Nothing
-        Else
-            Using s As New FileStream(datafile, FileMode.Open)
-                Dim load As Byte() = New Byte(region.size - 1) {}
+            If region Is Nothing Then
+                Return Nothing
+            Else
+                Using s As New FileStream(datafile, FileMode.Open)
+                    Dim load As Byte() = New Byte(region.size - 1) {}
 
-                Call s.Seek(region.position, SeekOrigin.Begin)
-                Call s.Read(load, Scan0, load.Length)
+                    Call s.Seek(region.position, SeekOrigin.Begin)
+                    Call s.Read(load, Scan0, load.Length)
 
-                Return load
-            End Using
-        End If
+                    Return load
+                End Using
+            End If
+        End SyncLock
     End Function
 
     ''' <summary>

@@ -200,7 +200,15 @@ Namespace Core
                 ' acquire a semaphore slot before scheduling the handler; the slot
                 ' will be released by RunTask once processing completes.
                 Call _connectionSemaphore.Wait()
-                Call RunTask(Sub(o) Call processor.Process())
+
+                Try
+                    Call RunTask(Sub(o) Call processor.Process())
+                Catch ex As Exception
+                    ' if RunTask itself throws before the work item is queued,
+                    ' release the slot we just acquired to avoid a leak.
+                    Call _connectionSemaphore.Release()
+                    Throw
+                End Try
             Catch ex As Exception
                 Call App.LogException(ex)
             End Try
@@ -218,7 +226,20 @@ Namespace Core
         ''' </summary>
         Public Sub Shutdown()
             Is_active = False
-            _httpListener.Stop()
+
+            Try
+                _httpListener.Stop()
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
+
+            ' wait for active workers to finish (with a reasonable timeout)
+            ' so in-flight requests are not abruptly terminated.
+            Dim deadline As DateTime = DateTime.UtcNow.AddSeconds(30)
+
+            Do While _accept_workers > 0 AndAlso DateTime.UtcNow < deadline
+                Call Thread.Sleep(50)
+            Loop
         End Sub
 
         ''' <summary>
@@ -265,6 +286,11 @@ Namespace Core
                 If disposing Then
                     ' TODO: dispose managed state (managed objects).
                     Call Shutdown()
+
+                    ' release the connection semaphore to free its unmanaged
+                    ' wait handle. CurrentVersion (net6+) SemaphoreSlim.Dispose()
+                    ' is safe to call after Shutdown.
+                    _connectionSemaphore?.Dispose()
                 End If
 
                 ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
