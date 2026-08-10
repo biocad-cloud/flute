@@ -235,41 +235,45 @@ Public Class SessionFile
 
         SyncLock [syncLock]
             Using s As New BinaryDataReader(New FileStream(keyfile, FileMode.Open), Encoding.ASCII)
-                Dim skey As String
-                Dim start As Long
-                Dim len As Integer
-
-                ' rebuild the in-memory index while scanning, so subsequent
-                ' lookups for any key can skip the linear scan entirely.
-                If index.Count = 0 Then
-                    Call buildIndex(s)
-                End If
-
-                If index.ContainsKey(key) Then
-                    Dim hit As Long() = index(key)
-                    keyOffset = hit(0)
-                    Return New BufferRegion(hit(1), CInt(hit(2)))
-                End If
-
-                ' fall back to a linear scan only when the index is not yet complete
-                ' (e.g. the file grew after the index was built)
-                s.Seek(Scan0, SeekOrigin.Begin)
-
-                While Not s.EndOfStream
-                    Dim entryOffset As Long = s.Position
-                    skey = s.ReadString(BinaryStringFormat.ZeroTerminated)
-                    start = s.ReadInt64
-                    len = s.ReadInt32
-
-                    If skey = key Then
-                        keyOffset = entryOffset
-                        Return New BufferRegion(start, len)
-                    Else
-                        lastBlock = New BufferRegion(start, len)
-                    End If
-                End While
+                Return SearchKey(s, key, lastBlock, keyOffset)
             End Using
         End SyncLock
+    End Function
+
+    Private Function SearchKey(s As BinaryDataReader, key As String, ByRef lastBlock As BufferRegion, ByRef keyOffset As Long)
+        Dim skey As String
+        Dim start As Long
+        Dim len As Integer
+
+        ' rebuild the in-memory index while scanning, so subsequent
+        ' lookups for any key can skip the linear scan entirely.
+        If index.Count = 0 Then
+            Call buildIndex(s)
+        End If
+
+        If index.ContainsKey(key) Then
+            Dim hit As Long() = index(key)
+            keyOffset = hit(0)
+            Return New BufferRegion(hit(1), CInt(hit(2)))
+        End If
+
+        ' fall back to a linear scan only when the index is not yet complete
+        ' (e.g. the file grew after the index was built)
+        s.Seek(Scan0, SeekOrigin.Begin)
+
+        While Not s.EndOfStream
+            Dim entryOffset As Long = s.Position
+            skey = s.ReadString(BinaryStringFormat.ZeroTerminated)
+            start = s.ReadInt64
+            len = s.ReadInt32
+
+            If skey = key Then
+                keyOffset = entryOffset
+                Return New BufferRegion(start, len)
+            Else
+                lastBlock = New BufferRegion(start, len)
+            End If
+        End While
 
         Return Nothing
     End Function
