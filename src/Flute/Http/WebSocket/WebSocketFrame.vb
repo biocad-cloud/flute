@@ -29,6 +29,7 @@
 
 Imports System.IO
 Imports System.Runtime.CompilerServices
+Imports System.Text
 
 Namespace Core.WebSocket
 
