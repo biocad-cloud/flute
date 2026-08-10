@@ -5,6 +5,7 @@ Imports System.Net.Http
 Imports System.Text
 Imports System.Threading
 Imports System.Threading.Tasks
+Imports System.Linq
 
 ' Integration test for the Fluteway.exe HTTP server CLI.
 ' Launches the compiled binary as an external process, then sends
@@ -87,7 +88,7 @@ Module Program
         ' cleanup
         Cleanup()
 
-        Dim failed As Integer = s_results.Count(Function(r) Not r.Passed)
+        Dim failed As Integer = s_results.Where(Function(r) Not r.Passed).Count()
         Return If(failed > 0, 1, 0)
     End Function
 
