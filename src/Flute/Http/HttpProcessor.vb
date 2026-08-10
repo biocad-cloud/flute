@@ -76,7 +76,9 @@ Imports Microsoft.VisualBasic.Net.Http
 Imports Microsoft.VisualBasic.Serialization.JSON
 Imports Microsoft.VisualBasic.Text
 Imports ASCII = Microsoft.VisualBasic.Text.ASCII
+Imports RequestHeaders = Flute.Http.Core.Message.HttpHeader.RequestHeaders
 Imports ResponseHeaders = Flute.Http.Core.Message.HttpHeader.ResponseHeaders
+Imports WebSocketProtocol = Flute.Http.Core.Message.HttpHeader.WebSocketProtocol
 Imports std = System.Math
 
 ' offered to the public domain for any use with no restriction
