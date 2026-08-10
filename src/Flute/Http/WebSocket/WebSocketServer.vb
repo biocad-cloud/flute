@@ -27,8 +27,11 @@
 
 #End Region
 
+Imports System.Threading.Tasks
 Imports Flute.Http.Configurations
 Imports Flute.Http.Core.Message
+Imports Microsoft.VisualBasic.ApplicationServices
+Imports Microsoft.VisualBasic.Net.Http
 
 Namespace Core.WebSocket
 

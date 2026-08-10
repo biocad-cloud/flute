@@ -354,6 +354,20 @@ Namespace Core
         ''' when the websocket feature has been disabled via the server configuration,
         ''' or no application message handler is published on the requested url path.
         ''' </returns>
+        ''' <summary>
+        ''' get a http request header value via the plain dictionary lookup, which
+        ''' never writes a missing key warning message into the server log for an
+        ''' optional request header.
+        ''' </summary>
+        ''' <returns>
+        ''' this function always returns a string value, an empty string will be
+        ''' returned when the given request header is not presented in the request.
+        ''' </returns>
+        Private Function getHeader(name As String) As String
+            Dim value As String = Nothing
+            Return If(httpHeaders.TryGetValue(name, value), value, "")
+        End Function
+
         Private Function isWebSocketRequest() As Boolean
             If _settings IsNot Nothing AndAlso Not _settings.websocket_enabled Then
                 Return False
@@ -377,7 +391,7 @@ Namespace Core
         ''' connection semaphore during its whole lifecycle.
         ''' </remarks>
         Private Sub handleWebSocketUpgrade()
-            Dim version As String = If(httpHeaders.TryGetValue(RequestHeaders.SecWebSocketVersion), "").Trim
+            Dim version As String = getHeader(RequestHeaders.SecWebSocketVersion).Trim
 
             ' RFC6455 section-4.4: the server must reply a 426 response with the
             ' supported protocol version when the client speaks another version.
@@ -386,7 +400,7 @@ Namespace Core
                 Return
             End If
 
-            Dim key As String = httpHeaders.TryGetValue(RequestHeaders.SecWebSocketKey)
+            Dim key As String = getHeader(RequestHeaders.SecWebSocketKey)
 
             If key.StringEmpty Then
                 Call writeFailure(HTTP_RFC.RFC_BAD_REQUEST, "Missing the Sec-WebSocket-Key request header.")
@@ -403,8 +417,11 @@ Namespace Core
             End If
 
             Dim accept As String = WebSocketConnection.CreateAcceptKey(key)
+            ' the ``Sec-WebSocket-Protocol`` request header is optional, so the
+            ' plain dictionary lookup is used at here for avoid the missing key
+            ' warning log of the collection extension helper.
             Dim subProtocol As String = WebSocketConnection.NegotiateSubProtocol(
-                clientOffer:=httpHeaders.TryGetValue(RequestHeaders.SecWebSocketProtocol),
+                clientOffer:=getHeader(RequestHeaders.SecWebSocketProtocol),
                 serverSupports:=_settings.GetWebSocketSubProtocols
             )
             ' the handshake response must be written onto the raw network stream
