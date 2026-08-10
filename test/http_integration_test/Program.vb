@@ -28,7 +28,7 @@ Module Program
         Dim Detail As String
     End Structure
 
-    Async Function Main() As Task(Of Integer)
+    Sub Main()
         Console.WriteLine("="c, 70)
         Console.WriteLine("  HTTP Server Integration Test - Fluteway.exe")
         Console.WriteLine("="c, 70)
@@ -39,7 +39,7 @@ Module Program
         If exePath Is Nothing Then
             Console.WriteLine("[FATAL] Fluteway.exe not found. Please build the solution first:")
             Console.WriteLine("  dotnet build src\HttpCore.sln")
-            Return 1
+            Environment.Exit(1)
         End If
         Console.WriteLine($"  Server binary:  {exePath}")
 
@@ -56,11 +56,11 @@ Module Program
         If Not StartServer(exePath) Then
             Console.WriteLine("[FATAL] Failed to start Fluteway.exe")
             Cleanup()
-            Return 1
+            Environment.Exit(1)
         End If
 
         ' give the server a moment to bind
-        Await Task.Delay(1000)
+        Thread.Sleep(1000)
 
         ' step 5: run tests
         Console.WriteLine("-"c, 70)
@@ -69,15 +69,15 @@ Module Program
         Console.WriteLine()
 
         Try
-            Await RunTest("Static HTML file serving", AddressOf TestStaticHtml)
-            Await RunTest("Directory index (index.html)", AddressOf TestDirectoryIndex)
-            Await RunTest("404 Not Found", AddressOf Test404)
-            Await RunTest("CORS Preflight (OPTIONS)", AddressOf TestCorsPreflight)
-            Await RunTest("Large file streaming (>1MB)", AddressOf TestLargeFile)
-            Await RunTest("Concurrent requests (20 parallel)", AddressOf TestConcurrent)
-            Await RunTest("Path traversal blocked (../)", AddressOf TestPathTraversal)
-            Await RunTest("Content-Type header correctness", AddressOf TestContentType)
-            Await RunTest("Connection keep-alive header", AddressOf TestKeepAlive)
+            RunTest("Static HTML file serving", AddressOf TestStaticHtml).Wait()
+            RunTest("Directory index (index.html)", AddressOf TestDirectoryIndex).Wait()
+            RunTest("404 Not Found", AddressOf Test404).Wait()
+            RunTest("CORS Preflight (OPTIONS)", AddressOf TestCorsPreflight).Wait()
+            RunTest("Large file streaming (>1MB)", AddressOf TestLargeFile).Wait()
+            RunTest("Concurrent requests (20 parallel)", AddressOf TestConcurrent).Wait()
+            RunTest("Path traversal blocked (../)", AddressOf TestPathTraversal).Wait()
+            RunTest("Content-Type header correctness", AddressOf TestContentType).Wait()
+            RunTest("Connection keep-alive header", AddressOf TestKeepAlive).Wait()
         Catch ex As Exception
             Console.WriteLine($"[FATAL] Test suite crashed: {ex.Message}")
         End Try
@@ -89,8 +89,8 @@ Module Program
         Cleanup()
 
         Dim failed As Integer = s_results.Where(Function(r) Not r.Passed).Count()
-        Return If(failed > 0, 1, 0)
-    End Function
+        Environment.Exit(If(failed > 0, 1, 0))
+    End Sub
 
 #Region "Test Cases"
 
@@ -345,8 +345,8 @@ Module Program
         Console.WriteLine("="c, 70)
         Console.WriteLine()
 
-        Dim passed As Integer = s_results.Count(Function(r) r.Passed)
-        Dim failed As Integer = s_results.Count(Function(r) Not r.Passed)
+        Dim passed As Integer = s_results.Where(Function(r) r.Passed).Count()
+        Dim failed As Integer = s_results.Where(Function(r) Not r.Passed).Count()
         Dim total As Integer = s_results.Count
 
         ' if no results were recorded, it means all tests passed
