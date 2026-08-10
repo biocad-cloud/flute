@@ -62,7 +62,7 @@ Namespace Core.WebSocket
     ''' the event handler which is raised when an unhandled error occurs inside
     ''' the websocket data frame processing loop.
     ''' </summary>
-    Public Delegate Sub OnErrorHandler(connection As WebSocketConnection, error As Exception)
+    Public Delegate Sub OnErrorHandler(connection As WebSocketConnection, [error] As Exception)
 
     ''' <summary>
     ''' a complete websocket application message which has been re-assembled
