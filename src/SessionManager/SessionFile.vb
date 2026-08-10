@@ -59,22 +59,24 @@ Imports Microsoft.VisualBasic.Data.IO
 
 Public Class SessionFile
 
-    ReadOnly keyfile As String
-    ReadOnly datafile As String
-
+    Friend ReadOnly keyfile As String
+    Friend ReadOnly datafile As String
     ''' <summary>
     ''' in-memory index of [key => {keyOffsetInKeyfile, dataPosition, dataSize}] built lazily to
     ''' avoid a full linear scan of the key file on every read/write.
     ''' </summary>
-    ReadOnly index As New Dictionary(Of String, Long())
+    Friend ReadOnly index As New Dictionary(Of String, Long())
+
     ''' <summary>
     ''' protects all file access; the session store may be hit concurrently by many HTTP requests.
     ''' </summary>
     ReadOnly [syncLock] As New Object
+    ReadOnly writer As FileWriter
 
     Sub New(keyfile As String, datafile As String)
         Me.datafile = datafile
         Me.keyfile = keyfile
+        Me.writer = New FileWriter With {.session = Me}
 
         If Not Me.keyfile.FileExists Then
             Call (New Byte() {}).FlushStream(Me.keyfile)
@@ -92,74 +94,9 @@ Public Class SessionFile
                 lastBlock = New BufferRegion
             End If
 
-            If region Is Nothing Then
-                ' append new region. always write data at the current end of the
-                ' data file (not lastBlock.nextBlock) to avoid overwriting an
-                ' earlier key's data when keys are not strictly offset-ordered.
-                Dim dataOffset As Long
-                Using s As New FileStream(datafile, FileMode.Open)
-                    s.Seek(0, SeekOrigin.End)
-                    dataOffset = s.Position
-                    s.Write(data, 0, data.Length)
-                    s.Flush()
-                End Using
-                Using s As New BinaryDataWriter(New FileStream(keyfile, FileMode.Append), Encoding.ASCII)
-                    s.Write(key, BinaryStringFormat.ZeroTerminated)
-                    s.Write(dataOffset)
-                    s.Write(data.Length)
-                    s.Flush()
-                End Using
-
-                ' update index with the new key location
-                index(key) = {offset, dataOffset, data.Length}
-            ElseIf data.Length = region.size Then
-                ' overrides
-                Using s As New BinaryDataWriter(New FileStream(datafile, FileMode.Open), Encoding.ASCII)
-                    s.Seek(region.position, SeekOrigin.Begin)
-                    s.Write(data, 0, data.Length)
-                    s.Flush()
-                End Using
-
-                If index.ContainsKey(key) Then
-                    index(key)(2) = data.Length
-                End If
-            ElseIf data.Length < region.size Then
-                ' update region size and then overrides data
-                Using s As New BinaryDataWriter(New FileStream(keyfile, FileMode.Open), Encoding.ASCII)
-                    s.Seek(offset + key.Length + 1 + 8, SeekOrigin.Begin)
-                    s.Write(data.Length)
-                    s.Flush()
-                End Using
-                Using s As New BinaryDataWriter(New FileStream(datafile, FileMode.Open), Encoding.ASCII)
-                    s.Seek(region.position, SeekOrigin.Begin)
-                    s.Write(data, 0, data.Length)
-                    s.Flush()
-                End Using
-
-                If index.ContainsKey(key) Then
-                    index(key)(2) = data.Length
-                End If
-            Else
-                ' erase the data, and write to new location
-                Dim dataOffset As Long
-
-                Using s As New BinaryDataWriter(New FileStream(datafile, FileMode.Open), Encoding.ASCII)
-                    s.Seek(s.BaseStream.Length, SeekOrigin.Begin)
-                    dataOffset = s.Position
-                    s.Write(data, 0, data.Length)
-                    s.Flush()
-                End Using
-                Using s As New BinaryDataWriter(New FileStream(keyfile, FileMode.Open), Encoding.ASCII)
-                    s.Seek(offset + key.Length + 1, SeekOrigin.Begin)
-                    s.Write(dataOffset)
-                    s.Write(data.Length)
-                    s.Flush()
-                End Using
-
-                If index.ContainsKey(key) Then
-                    index(key) = {offset, dataOffset, data.Length}
-                End If
-            End If
+            writer.key = key
+            writer.data = data
+            writer.SaveKey(region, lastBlock, offset)
         End SyncLock
 
         Return True
