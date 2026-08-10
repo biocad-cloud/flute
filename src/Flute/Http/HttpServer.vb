@@ -85,10 +85,13 @@ Namespace Core
         Dim _threadPool As Integer
         Dim _accept_workers As Integer = 0
 
-        Protected Friend ReadOnly _httpListener As TcpListener
-        Protected Friend ReadOnly _silent As Boolean = False
+        ''' <summary>
+        ''' semaphore used to limit the number of concurrent connection handling tasks
+        ''' instead of mutating the global ThreadPool size.
+        ''' </summary>
+        Dim _connectionSemaphore As SemaphoreSlim
 
-        Protected _settings As Configuration
+        Protected Friend ReadOnly _settings As Configuration
 
         ''' <summary>
         ''' The network data port of this internal http server listen.
@@ -122,8 +125,8 @@ Namespace Core
             Me._BufferSize = Val(App.GetVariable("httpserver.buffer_size"))
             Me._BufferSize = If(BufferSize <= 0, 4096, BufferSize)
             Me._silent = _settings.silent
+            Me._connectionSemaphore = New SemaphoreSlim(_threadPool, _threadPool)
 
-            Call ThreadPool.SetMaxThreads(_threadPool, _threadPool)
             Call $"Web server threads_pool_size={_threadPool}, buffer_size={BufferSize}bytes".info(_settings.silent)
         End Sub
 
@@ -141,30 +144,26 @@ Namespace Core
             Try
                 _httpListener.Start()
                 Is_active = True
+                Call $"Http Server Start listen at {_httpListener.LocalEndpoint.ToString}".info(_silent)
             Catch ex As Exception When ex.IsSocketPortOccupied
-                Call $"Could not start http services at {NameOf(_localPort)}:={_localPort}".debug
-                Call ex.ToString.debug
+                Call $"Could not start http services at port {_localPort}: socket port is occupied.".debug
                 Call App.LogException(ex)
-                Call Console.WriteLine()
-                Call "Program http server thread was terminated.".debug
-                Call Console.WriteLine()
-                Call Console.WriteLine()
-                Call Console.WriteLine()
-
                 Return 500
             Catch ex As Exception
                 ex = New Exception(CStr(localPort), ex)
 
                 Call ex.PrintException
                 Call App.LogException(ex)
-
                 Return 500
-            Finally
-                Call $"Http Server Start listen at {_httpListener.LocalEndpoint.ToString}".info(_silent)
             End Try
 
+            ' if the listener failed to start, Is_active stays False and we exit here
+            If Not Is_active Then
+                Return 500
+            End If
+
             While Is_active
-                If _accept_workers <= _threadPool Then
+                If _connectionSemaphore.CurrentCount > 0 Then
                     Call accept()
                 Else
                     Call Thread.Sleep(1)
@@ -180,13 +179,19 @@ Namespace Core
         ''' <param name="task"></param>
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Private Sub RunTask(task As WaitCallback)
-            _accept_workers += 1
-            ThreadPool.QueueUserWorkItem(task)
+            Interlocked.Increment(_accept_workers)
+            ThreadPool.QueueUserWorkItem(
+                Sub(o)
+                    Try
+                        Call task(o)
+                    Finally
+                        Call _connectionSemaphore.Release()
+                        Interlocked.Decrement(_accept_workers)
+                    End Try
+                End Sub)
         End Sub
 
         Private Sub accept()
-            _accept_workers -= 1
-
             Try
                 ' 20250517 do not put the tcp client accept into the thread pool,
                 ' or the worker will be stucked laterly
@@ -194,6 +199,9 @@ Namespace Core
                 Dim processor As HttpProcessor = getHttpProcessor(s, BufferSize)
 
                 Call $"Process client from {s.Client.RemoteEndPoint.ToString}".debug(mute:=_silent)
+                ' acquire a semaphore slot before scheduling the handler; the slot
+                ' will be released by RunTask once processing completes.
+                Call _connectionSemaphore.Wait()
                 Call RunTask(Sub(o) Call processor.Process())
             Catch ex As Exception
                 Call App.LogException(ex)

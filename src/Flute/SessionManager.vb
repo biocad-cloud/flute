@@ -76,7 +76,14 @@ Public Class SessionManager : Inherits ServerComponent
         End If
 
         If Id.StringEmpty Then
-            Id = settings.session.session_id_prefix & "_" & (Now.ToString & randf.NextDouble).MD5.Substring(8, 8)
+            ' use a cryptographically secure random id (32 hex chars) instead
+            ' of the predictable time + random MD5 substring.
+            Dim bytes(15) As Byte
+            Using rng As New RNGCryptoServiceProvider()
+                Call rng.GetBytes(bytes)
+            End Using
+            Dim sessionId As String = String.Join("", bytes.Select(Function(b) b.ToString("x2")))
+            Id = If(settings.session.session_id_prefix.EmptyOrNull, "flute", settings.session.session_id_prefix) & "_" & sessionId
             SetCookie = True
         End If
     End Sub
