@@ -139,7 +139,7 @@ Namespace FileSystem
                 ' target url path is a directory path
                 ' but request a file at here, so we needs
                 ' to redirect to index.html
-                path = path & "/index.html"
+                path = path.TrimEnd("/"c) & "/index.html"
             End If
 
             ' 20250227
@@ -147,20 +147,48 @@ Namespace FileSystem
             Return path.UrlDecode
         End Function
 
+        ''' <summary>
+        ''' threshold (bytes) below which the whole file is buffered into memory,
+        ''' above which it is streamed to the client to avoid large memory usage.
+        ''' </summary>
+        Const STREAM_THRESHOLD% = 1024 * 1024
+
         Private Shared Sub HostStaticFile(ByRef fs As FileSystem, ByRef path As String, ByRef response As HttpResponse)
             Dim mime As ContentType = fs.GetContentType(path)
-            Dim res As Byte() = fs.GetByteBuffer(path)
-            Dim content As New Content With {
-                .type = mime.MIMEType,
-                .length = res.Length
-            }
+            Dim fileSize As Integer = fs.GetFileSize(path)
 
             response.AccessControlAllowOrigin = "*"
-            response _
-                .WriteHttp(content) _
-                .SendData(res)
 
-            Erase res
+            If fileSize <= STREAM_THRESHOLD Then
+                ' small file: read fully into memory and send
+                Dim res As Byte() = fs.GetByteBuffer(path)
+                Dim content As New Content With {
+                    .type = mime.MIMEType,
+                    .length = res.Length
+                }
+
+                response _
+                    .WriteHttp(content) _
+                    .SendData(res)
+
+                Erase res
+            Else
+                ' large file: stream directly from the source stream to the client
+                Using fileStream As Stream = fs.GetResource(path)
+                    Dim content As New Content With {
+                        .type = mime.MIMEType,
+                        .length = CInt(fileSize)
+                    }
+
+                    response.WriteHttp(content)
+
+                    If fileStream IsNot Nothing Then
+                        Call fileStream.CopyTo(response.response.BaseStream, HttpProcessor.BUF_SIZE)
+                    End If
+
+                    Call response.Flush()
+                End Using
+            End If
         End Sub
 
         Public Shared Sub HostStaticFile(fs As FileSystem, request As HttpRequest, response As HttpResponse)

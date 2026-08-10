@@ -55,12 +55,23 @@
 
 Imports System.IO
 Imports System.Text
+Imports Microsoft.VisualBasic.ComponentModel.Collection
 Imports Microsoft.VisualBasic.Data.IO
 
 Public Class SessionFile
 
     ReadOnly keyfile As String
     ReadOnly datafile As String
+
+    ''' <summary>
+    ''' in-memory index of [key => (keyOffsetInKeyfile, dataSize)] built lazily to
+    ''' avoid a full linear scan of the key file on every read/write.
+    ''' </summary>
+    ReadOnly index As New Dictionary(Of String, ValueTuple(Of Long, Integer))
+    ''' <summary>
+    ''' protects all file access; the session store may be hit concurrently by many HTTP requests.
+    ''' </summary>
+    ReadOnly syncLock As New Object
 
     Sub New(keyfile As String, datafile As String)
         Me.datafile = datafile

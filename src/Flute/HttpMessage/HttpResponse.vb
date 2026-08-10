@@ -372,7 +372,8 @@ Namespace Core.Message
                 Call WriteHttp(New Content With {.length = bytes.Length, .type = MIME.Html})
             End If
 
-            Call response.Write(value)
+            ' write the already-encoded bytes directly to avoid a second UTF8 encoding pass
+            Call response.BaseStream.Write(bytes, Scan0, bytes.Length)
         End Sub
 
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
