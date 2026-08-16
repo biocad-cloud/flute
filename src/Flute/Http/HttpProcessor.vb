@@ -65,11 +65,10 @@ Imports System.IO
 Imports System.Net.Sockets
 Imports System.Runtime.CompilerServices
 Imports System.Text
-Imports System.Threading
 Imports Flute.Http.Configurations
 Imports Flute.Http.Core.HttpOptions
-Imports Flute.Http.Core.Message
 Imports Flute.Http.Core.LongPoll
+Imports Flute.Http.Core.Message
 Imports Flute.Http.Core.WebSocket
 Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.Language
@@ -79,8 +78,8 @@ Imports Microsoft.VisualBasic.Text
 Imports ASCII = Microsoft.VisualBasic.Text.ASCII
 Imports RequestHeaders = Flute.Http.Core.Message.HttpHeader.RequestHeaders
 Imports ResponseHeaders = Flute.Http.Core.Message.HttpHeader.ResponseHeaders
-Imports WebSocketProtocol = Flute.Http.Core.Message.HttpHeader.WebSocketProtocol
 Imports std = System.Math
+Imports WebSocketProtocol = Flute.Http.Core.Message.HttpHeader.WebSocketProtocol
 
 ' offered to the public domain for any use with no restriction
 ' and also with no warranty of any kind, please enjoy. - David Jeske. 

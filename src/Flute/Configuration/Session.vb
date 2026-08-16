@@ -54,7 +54,9 @@
 
 Imports System.ComponentModel
 Imports System.IO
+Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.ComponentModel.Settings.Inf
+Imports Microsoft.VisualBasic.Serialization.JSON
 
 Namespace Configurations
 
@@ -70,12 +72,16 @@ Namespace Configurations
         <Description("resolved session store directory (cross-platform).")>
         Public ReadOnly Property sessionStorePath As String
             Get
-                Return If(session_store.StringEmpty, Path.Combine(App.HOME, "flute_sessions"), session_store)
+                Return If(session_store.StringEmpty, Path.Combine(TempFileSystem.TempDir, "flute_sessions"), session_store)
             End Get
         End Property
 
         <Description("enable the session?")>
         Public Property session_enable As Boolean = True
+
+        Public Overrides Function ToString() As String
+            Return Me.GetJson
+        End Function
 
     End Class
 End Namespace

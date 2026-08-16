@@ -33,9 +33,7 @@ Imports System.Net.Sockets
 Imports System.Runtime.CompilerServices
 Imports System.Security.Cryptography
 Imports System.Text
-Imports System.Threading
 Imports Flute.Http.Core.Message.HttpHeader
-Imports Microsoft.VisualBasic.ApplicationServices
 
 Namespace Core.WebSocket
 

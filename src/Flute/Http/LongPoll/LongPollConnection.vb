@@ -28,8 +28,6 @@
 #End Region
 
 Imports System.Net
-Imports System.Threading
-Imports System.Threading.Tasks
 
 Namespace Core.LongPoll
 

@@ -29,7 +29,6 @@
 
 Imports System.Collections.Concurrent
 Imports System.Text
-Imports Microsoft.VisualBasic.ApplicationServices
 
 Namespace Core.WebSocket
 

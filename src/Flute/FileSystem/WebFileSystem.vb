@@ -63,6 +63,7 @@ Imports System.Runtime.CompilerServices
 Imports Flute.Http.Core
 Imports Flute.Http.Core.Message
 Imports Microsoft.VisualBasic.ApplicationServices
+Imports Microsoft.VisualBasic.ComponentModel.Ranges.Unit
 Imports Microsoft.VisualBasic.Net.Http
 Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 
@@ -152,7 +153,7 @@ Namespace FileSystem
         ''' threshold (bytes) below which the whole file is buffered into memory,
         ''' above which it is streamed to the client to avoid large memory usage.
         ''' </summary>
-        Const STREAM_THRESHOLD% = 1024 * 1024
+        Const STREAM_THRESHOLD% = ByteSize.MB
 
         Private Shared Sub HostStaticFile(ByRef fs As FileSystem, ByRef path As String, ByRef response As HttpResponse)
             ' security: prevent path traversal (../) attacks by ensuring the

@@ -55,6 +55,7 @@
 #End Region
 
 Imports System.ComponentModel
+Imports System.Runtime.CompilerServices
 Imports Flute.Http.Core
 Imports Microsoft.VisualBasic.ComponentModel.Settings.Inf
 
@@ -130,6 +131,7 @@ Namespace Configurations
             End If
         End Function
 
+        <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Shared Function [Default]() As Configuration
             Return New Configuration With {.session = New Session}
         End Function
@@ -155,6 +157,7 @@ Namespace Configurations
             End Try
         End Function
 
+        <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Shared Function Save(settings As Configuration, inifile As String) As Boolean
             Return ClassMapper.WriteClass(settings, inifile, clean:=True)
         End Function
