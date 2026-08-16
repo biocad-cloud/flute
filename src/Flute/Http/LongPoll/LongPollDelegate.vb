@@ -1,4 +1,4 @@
-#Region "Microsoft.VisualBasic::00000000000000000000000000000000, src\Flute\Http\LongPoll\LongPollDelegate.vb"
+﻿#Region "Microsoft.VisualBasic::f8c51ba5d348630ac08c5754cd50c686, src\Flute\Http\LongPoll\LongPollDelegate.vb"
 
     ' Author:
     ' 
@@ -24,6 +24,59 @@
     ' 
     ' You should have received a copy of the GNU General Public License
     ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+
+    ' /********************************************************************************/
+
+    ' Summaries:
+
+
+    ' Code Statistics:
+
+    '   Total Lines: 160
+    '    Code Lines: 50 (31.25%)
+    ' Comment Lines: 90 (56.25%)
+    '    - Xml Docs: 100.00%
+    ' 
+    '   Blank Lines: 20 (12.50%)
+    '     File Size: 7.05 KB
+
+
+    '     Class LongPollMessage
+    ' 
+    '         Properties: ContentType, Data, Length
+    ' 
+    '         Constructor: (+1 Overloads) Sub New
+    '         Function: Binary, JSON, Text, ToString
+    ' 
+    '     Delegate Function
+    ' 
+    ' 
+    '     Delegate Sub
+    ' 
+    ' 
+    '     Interface ILongPollHandler
+    ' 
+    '         Function: OnPoll
+    ' 
+    '         Sub: OnComplete
+    ' 
+    '     Class LongPollHandler
+    ' 
+    '         Properties: Complete, Poll
+    ' 
+    '         Constructor: (+2 Overloads) Sub New
+    ' 
+    '         Function: OnPoll
+    ' 
+    '         Sub: OnComplete
+    ' 
+    ' 
+    ' 
+    ' 
+    ' 
+    ' /********************************************************************************/
 
 #End Region
 

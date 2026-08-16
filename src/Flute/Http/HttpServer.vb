@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::b2f3db263e449569daa720562bc6d13a, src\Flute\Http\HttpServer.vb"
+﻿#Region "Microsoft.VisualBasic::dac52f95f1e43b14f06983be432eb77b, src\Flute\Http\HttpServer.vb"
 
     ' Author:
     ' 
@@ -34,18 +34,18 @@
 
     ' Code Statistics:
 
-    '   Total Lines: 227
-    '    Code Lines: 114 (50.22%)
-    ' Comment Lines: 81 (35.68%)
-    '    - Xml Docs: 70.37%
+    '   Total Lines: 314
+    '    Code Lines: 141 (44.90%)
+    ' Comment Lines: 134 (42.68%)
+    '    - Xml Docs: 64.93%
     ' 
-    '   Blank Lines: 32 (14.10%)
-    '     File Size: 8.90 KB
+    '   Blank Lines: 39 (12.42%)
+    '     File Size: 13.25 KB
 
 
     '     Class HttpServer
     ' 
-    '         Properties: BufferSize, isRunning, localPort
+    '         Properties: BufferSize, isRunning, localPort, LongPoll, WebSocket
     ' 
     '         Constructor: (+1 Overloads) Sub New
     ' 

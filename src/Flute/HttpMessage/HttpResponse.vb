@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::e28c5a8f740a4eb9007516bd183c8930, src\Flute\HttpMessage\HttpResponse.vb"
+﻿#Region "Microsoft.VisualBasic::7826a2182bfa0f518dd2c22c30607ed2, src\Flute\HttpMessage\HttpResponse.vb"
 
     ' Author:
     ' 
@@ -34,13 +34,13 @@
 
     ' Code Statistics:
 
-    '   Total Lines: 580
-    '    Code Lines: 233 (40.17%)
-    ' Comment Lines: 270 (46.55%)
-    '    - Xml Docs: 41.11%
+    '   Total Lines: 600
+    '    Code Lines: 243 (40.50%)
+    ' Comment Lines: 277 (46.17%)
+    '    - Xml Docs: 41.52%
     ' 
-    '   Blank Lines: 77 (13.28%)
-    '     File Size: 23.45 KB
+    '   Blank Lines: 80 (13.33%)
+    '     File Size: 24.65 KB
 
 
     '     Delegate Sub

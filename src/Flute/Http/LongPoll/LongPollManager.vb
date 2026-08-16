@@ -1,4 +1,4 @@
-#Region "Microsoft.VisualBasic::00000000000000000000000000000000, src\Flute\Http\LongPoll\LongPollManager.vb"
+﻿#Region "Microsoft.VisualBasic::9c015ab6a278a283c8b33cbdac577814, src\Flute\Http\LongPoll\LongPollManager.vb"
 
     ' Author:
     ' 
@@ -24,6 +24,38 @@
     ' 
     ' You should have received a copy of the GNU General Public License
     ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+
+    ' /********************************************************************************/
+
+    ' Summaries:
+
+
+    ' Code Statistics:
+
+    '   Total Lines: 388
+    '    Code Lines: 160 (41.24%)
+    ' Comment Lines: 179 (46.13%)
+    '    - Xml Docs: 96.65%
+    ' 
+    '   Blank Lines: 49 (12.63%)
+    '     File Size: 17.14 KB
+
+
+    '     Class LongPollManager
+    ' 
+    '         Properties: Count, Routes
+    ' 
+    '         Function: Broadcast, BroadcastJSON, BroadcastText, CanHandle, DefaultRoute
+    '                   GetConnection, (+2 Overloads) GetConnections, GetPendingCount, NormalizePath, (+2 Overloads) Push
+    '                   PushBinary, PushJSON, PushText, pushTo, RemoveRoute
+    '                   ResolveHandler, (+3 Overloads) Route
+    ' 
+    '         Sub: CloseAll, Register, Unregister
+    ' 
+    ' 
+    ' /********************************************************************************/
 
 #End Region
 

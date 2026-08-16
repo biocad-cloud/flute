@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::27022bd464373733c5e1d90e7956731e, src\Flute\Http\HttpProcessor.vb"
+﻿#Region "Microsoft.VisualBasic::c747dbe94a32532880463d63b3fd303d, src\Flute\Http\HttpProcessor.vb"
 
     ' Author:
     ' 
@@ -34,13 +34,13 @@
 
     ' Code Statistics:
 
-    '   Total Lines: 529
-    '    Code Lines: 306 (57.84%)
-    ' Comment Lines: 140 (26.47%)
-    '    - Xml Docs: 55.71%
+    '   Total Lines: 936
+    '    Code Lines: 525 (56.09%)
+    ' Comment Lines: 276 (29.49%)
+    '    - Xml Docs: 56.52%
     ' 
-    '   Blank Lines: 83 (15.69%)
-    '     File Size: 20.08 KB
+    '   Blank Lines: 135 (14.42%)
+    '     File Size: 40.88 KB
 
 
     '     Class HttpProcessor
@@ -50,11 +50,13 @@
     ' 
     '         Constructor: (+1 Overloads) Sub New
     ' 
-    '         Function: flushPOSTPayload, GetSettings, openResponseStream, parseRequest, processHttpRequest
-    '                   streamReadLine, ToString
+    '         Function: flushPOSTPayload, getHeader, GetSettings, isLongPollRequest, isWebSocketRequest
+    '                   openResponseStream, parseRequest, processHttpRequest, streamReadLine, ToString
     ' 
-    '         Sub: (+2 Overloads) Dispose, handleGETRequest, HandlePOSTRequest, Process, readHeaders
-    '              WriteData, writeFailure, writeFailureInternal, WriteLine, (+3 Overloads) writeSuccess
+    '         Sub: (+2 Overloads) Dispose, handleGETRequest, handleLongPoll, HandlePOSTRequest, handleWebSocketUpgrade
+    '              Process, readHeaders, WriteData, writeFailure, writeFailureInternal
+    '              WriteLine, writeLongPollRejected, writeLongPollResponse, writeLongPollTimeout, (+3 Overloads) writeSuccess
+    '              writeWebSocketVersionMismatch
     ' 
     ' 
     ' /********************************************************************************/

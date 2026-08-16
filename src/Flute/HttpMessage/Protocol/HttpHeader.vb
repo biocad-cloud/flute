@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::4c9d006feafc57b5c1735f88f7aba42b, src\Flute\HttpMessage\Protocol\HttpHeader.vb"
+﻿#Region "Microsoft.VisualBasic::c6e46896b0c5795e0d328c208241e916, src\Flute\HttpMessage\Protocol\HttpHeader.vb"
 
     ' Author:
     ' 
@@ -34,13 +34,13 @@
 
     ' Code Statistics:
 
-    '   Total Lines: 41
-    '    Code Lines: 35 (85.37%)
-    ' Comment Lines: 0 (0.00%)
-    '    - Xml Docs: 0.00%
+    '   Total Lines: 112
+    '    Code Lines: 52 (46.43%)
+    ' Comment Lines: 46 (41.07%)
+    '    - Xml Docs: 100.00%
     ' 
-    '   Blank Lines: 6 (14.63%)
-    '     File Size: 1.73 KB
+    '   Blank Lines: 14 (12.50%)
+    '     File Size: 4.80 KB
 
 
     '     Class RequestHeaders
@@ -48,6 +48,10 @@
     '         Constructor: (+1 Overloads) Sub New
     ' 
     '     Class ResponseHeaders
+    ' 
+    '         Constructor: (+1 Overloads) Sub New
+    ' 
+    '     Class WebSocketProtocol
     ' 
     '         Constructor: (+1 Overloads) Sub New
     ' 

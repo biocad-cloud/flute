@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::4ba6d7f49c17ca6c0b26ea3b2eeb7dc0, src\Flute\Http\HttpSocket.vb"
+﻿#Region "Microsoft.VisualBasic::5713192e7d5c0ffacb2e06c4e71779b6, src\Flute\Http\HttpSocket.vb"
 
     ' Author:
     ' 
@@ -34,13 +34,13 @@
 
     ' Code Statistics:
 
-    '   Total Lines: 63
-    '    Code Lines: 41 (65.08%)
-    ' Comment Lines: 7 (11.11%)
-    '    - Xml Docs: 85.71%
+    '   Total Lines: 80
+    '    Code Lines: 53 (66.25%)
+    ' Comment Lines: 11 (13.75%)
+    '    - Xml Docs: 54.55%
     ' 
-    '   Blank Lines: 15 (23.81%)
-    '     File Size: 2.33 KB
+    '   Blank Lines: 16 (20.00%)
+    '     File Size: 3.33 KB
 
 
     '     Interface IAppHandler

@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::7991f8f7f9b319259ddd40149164ca7c, src\Flute\Configuration\Configuration.vb"
+﻿#Region "Microsoft.VisualBasic::e22a3debc7e778e7b2dfe4a25be808a3, src\Flute\Configuration\Configuration.vb"
 
     ' Author:
     ' 
@@ -34,20 +34,22 @@
 
     ' Code Statistics:
 
-    '   Total Lines: 52
-    '    Code Lines: 31 (59.62%)
-    ' Comment Lines: 11 (21.15%)
+    '   Total Lines: 110
+    '    Code Lines: 69 (62.73%)
+    ' Comment Lines: 18 (16.36%)
     '    - Xml Docs: 100.00%
     ' 
-    '   Blank Lines: 10 (19.23%)
-    '     File Size: 1.84 KB
+    '   Blank Lines: 23 (20.91%)
+    '     File Size: 5.40 KB
 
 
     '     Class Configuration
     ' 
-    '         Properties: session, silent, x_powered_by
+    '         Properties: cors_allow_headers, cors_allow_methods, cors_allow_origin, longpoll_enabled, longpoll_max_connections
+    '                     longpoll_timeout, request_timeout, session, shutdown_token, silent
+    '                     websocket_enabled, websocket_max_message_size, websocket_read_timeout, websocket_subprotocols, x_powered_by
     ' 
-    '         Function: [Default], Load, Save
+    '         Function: [Default], GetWebSocketSubProtocols, Load, Save
     ' 
     ' 
     ' /********************************************************************************/

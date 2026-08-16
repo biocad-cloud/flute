@@ -1,4 +1,4 @@
-#Region "Microsoft.VisualBasic::00000000000000000000000000000000, src\Flute\Http\LongPoll\LongPollConnection.vb"
+﻿#Region "Microsoft.VisualBasic::c606955be7ed0e77c1419af7c2cecd3d, src\Flute\Http\LongPoll\LongPollConnection.vb"
 
     ' Author:
     ' 
@@ -24,6 +24,38 @@
     ' 
     ' You should have received a copy of the GNU General Public License
     ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+
+    ' /********************************************************************************/
+
+    ' Summaries:
+
+
+    ' Code Statistics:
+
+    '   Total Lines: 152
+    '    Code Lines: 51 (33.55%)
+    ' Comment Lines: 90 (59.21%)
+    '    - Xml Docs: 96.67%
+    ' 
+    '   Blank Lines: 11 (7.24%)
+    '     File Size: 6.52 KB
+
+
+    '     Class LongPollConnection
+    ' 
+    '         Properties: Headers, Id, IsPending, Path, Remote
+    '                     Session, Timestamp, Url
+    ' 
+    '         Constructor: (+1 Overloads) Sub New
+    ' 
+    '         Function: Complete, ToString, WaitForData
+    ' 
+    '         Sub: Cancel
+    ' 
+    ' 
+    ' /********************************************************************************/
 
 #End Region
 

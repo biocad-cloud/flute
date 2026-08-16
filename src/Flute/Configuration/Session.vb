@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::449eb1f8193f2b84d0bccdec5c3425c9, src\Flute\Configuration\Session.vb"
+﻿#Region "Microsoft.VisualBasic::19b2ce7477ce5d2de8a9049955152dc6, src\Flute\Configuration\Session.vb"
 
     ' Author:
     ' 
@@ -34,18 +34,20 @@
 
     ' Code Statistics:
 
-    '   Total Lines: 19
-    '    Code Lines: 13 (68.42%)
+    '   Total Lines: 33
+    '    Code Lines: 25 (75.76%)
     ' Comment Lines: 0 (0.00%)
     '    - Xml Docs: 0.00%
     ' 
-    '   Blank Lines: 6 (31.58%)
-    '     File Size: 606 B
+    '   Blank Lines: 8 (24.24%)
+    '     File Size: 1.22 KB
 
 
     '     Class Session
     ' 
-    '         Properties: session_enable, session_id_prefix, session_store
+    '         Properties: session_enable, session_id_prefix, session_store, sessionStorePath
+    ' 
+    '         Function: ToString
     ' 
     ' 
     ' /********************************************************************************/

@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::2e8ca49f88a0f22d4ffd73333949f227, src\HTTP_SERVER\Program.vb"
+﻿#Region "Microsoft.VisualBasic::d59d6197138905104fe776208e813ab9, src\HTTP_SERVER\Program.vb"
 
     ' Author:
     ' 
@@ -34,19 +34,22 @@
 
     ' Code Statistics:
 
-    '   Total Lines: 64
-    '    Code Lines: 44 (68.75%)
-    ' Comment Lines: 11 (17.19%)
-    '    - Xml Docs: 36.36%
+    '   Total Lines: 108
+    '    Code Lines: 68 (62.96%)
+    ' Comment Lines: 23 (21.30%)
+    '    - Xml Docs: 17.39%
     ' 
-    '   Blank Lines: 9 (14.06%)
-    '     File Size: 2.30 KB
+    '   Blank Lines: 17 (15.74%)
+    '     File Size: 4.65 KB
 
 
     ' Module Program
     ' 
     '     Constructor: (+1 Overloads) Sub New
+    ' 
     '     Function: listen, listenCurrentFolder, Main
+    ' 
+    '     Sub: ProcessRequest
     ' 
     ' /********************************************************************************/
 

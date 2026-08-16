@@ -1,4 +1,4 @@
-﻿#Region "Microsoft.VisualBasic::dcb1fb6fc7993b619eef40a99b4dc3ef, src\Flute\Http\Options\Preflight.vb"
+﻿#Region "Microsoft.VisualBasic::fe139aa835fb03272b666df9377ea0b0, src\Flute\Http\Options\Preflight.vb"
 
     ' Author:
     ' 
@@ -34,13 +34,13 @@
 
     ' Code Statistics:
 
-    '   Total Lines: 52
-    '    Code Lines: 28 (53.85%)
-    ' Comment Lines: 18 (34.62%)
+    '   Total Lines: 53
+    '    Code Lines: 29 (54.72%)
+    ' Comment Lines: 18 (33.96%)
     '    - Xml Docs: 83.33%
     ' 
-    '   Blank Lines: 6 (11.54%)
-    '     File Size: 2.49 KB
+    '   Blank Lines: 6 (11.32%)
+    '     File Size: 2.68 KB
 
 
     '     Module Preflight

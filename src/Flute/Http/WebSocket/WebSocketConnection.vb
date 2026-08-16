@@ -1,4 +1,4 @@
-#Region "Microsoft.VisualBasic::00000000000000000000000000000000, src\Flute\Http\WebSocket\WebSocketConnection.vb"
+﻿#Region "Microsoft.VisualBasic::39401268a41988f07999924707174a3f, src\Flute\Http\WebSocket\WebSocketConnection.vb"
 
     ' Author:
     ' 
@@ -24,6 +24,40 @@
     ' 
     ' You should have received a copy of the GNU General Public License
     ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+
+    ' /********************************************************************************/
+
+    ' Summaries:
+
+
+    ' Code Statistics:
+
+    '   Total Lines: 601
+    '    Code Lines: 328 (54.58%)
+    ' Comment Lines: 183 (30.45%)
+    '    - Xml Docs: 84.15%
+    ' 
+    '   Blank Lines: 90 (14.98%)
+    '     File Size: 26.32 KB
+
+
+    '     Class WebSocketConnection
+    ' 
+    '         Properties: Headers, Id, IsOpen, Path, Remote
+    '                     Session, SubProtocol, Url
+    ' 
+    '         Constructor: (+1 Overloads) Sub New
+    ' 
+    '         Function: CreateAcceptKey, frameLoop, IsWebSocketUpgrade, NegotiateSubProtocol, SendBinary
+    '                   SendFrame, SendPing, SendText, ToString
+    ' 
+    '         Sub: CloseConnection, (+2 Overloads) Dispose, raiseClose, raiseConnect, raiseError
+    '              raiseMessage, RunLoop, WriteHandshakeResponse
+    ' 
+    ' 
+    ' /********************************************************************************/
 
 #End Region
 
