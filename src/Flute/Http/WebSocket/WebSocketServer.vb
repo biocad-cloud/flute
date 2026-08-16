@@ -237,6 +237,10 @@ Namespace Core.WebSocket
             Call m_http.Shutdown()
         End Sub
 
+        ''' <summary>
+        ''' the string representation of this server: its listen address and port.
+        ''' </summary>
+        ''' <returns>a "websocket://0.0.0.0:port/" description string.</returns>
         Public Overrides Function ToString() As String
             Return $"websocket://0.0.0.0:{Port}/"
         End Function

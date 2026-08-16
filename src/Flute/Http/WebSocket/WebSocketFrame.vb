@@ -164,7 +164,13 @@ Namespace Core.WebSocket
         ''' </summary>
         ''' <returns></returns>
         Public Property Rsv1 As Boolean
+        ''' <summary>
+        ''' the reserved bit 2, must be zero when no extension has been negotiated
+        ''' </summary>
         Public Property Rsv2 As Boolean
+        ''' <summary>
+        ''' the reserved bit 3, must be zero when no extension has been negotiated
+        ''' </summary>
         Public Property Rsv3 As Boolean
         ''' <summary>
         ''' the payload data type of current data frame

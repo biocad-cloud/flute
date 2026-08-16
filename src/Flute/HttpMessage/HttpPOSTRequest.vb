@@ -69,6 +69,10 @@ Namespace Core.Message
     ''' </summary>
     Public Class HttpPOSTRequest : Inherits HttpRequest
 
+        ''' <summary>
+        ''' the parsed POST body, exposing form fields, json objects and uploaded
+        ''' files extracted from the request body.
+        ''' </summary>
         Public ReadOnly Property POSTData As PostReader
 
         Default Public Overrides ReadOnly Property Argument(name As String) As DefaultString
