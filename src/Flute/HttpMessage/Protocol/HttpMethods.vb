@@ -1,6 +1,15 @@
-﻿Imports Microsoft.VisualBasic.Scripting.MetaData
+﻿Namespace Core.Message.HttpHeader
 
-Namespace Core.Message.HttpHeader
+    <AttributeUsage(AttributeTargets.Method, AllowMultiple:=False, Inherited:=True)>
+    Public Class ExportAPIAttribute : Inherits Attribute
+
+        Public ReadOnly Property Url As String
+
+        Sub New(url As String)
+            _Url = url
+        End Sub
+
+    End Class
 
     <AttributeUsage(AttributeTargets.Method, AllowMultiple:=False, Inherited:=True)>
     Public Class HttpGet : Inherits ExportAPIAttribute
@@ -10,7 +19,7 @@ Namespace Core.Message.HttpHeader
         End Sub
 
         Public Overrides Function ToString() As String
-            Return $"http-get('{Name}')"
+            Return $"http-get('{Url}')"
         End Function
 
     End Class
@@ -23,7 +32,7 @@ Namespace Core.Message.HttpHeader
         End Sub
 
         Public Overrides Function ToString() As String
-            Return $"http-post('{Name}')"
+            Return $"http-post('{Url}')"
         End Function
     End Class
 End Namespace

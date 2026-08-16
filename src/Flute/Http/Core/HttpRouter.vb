@@ -178,7 +178,7 @@ Namespace Core
                     Continue For
                 End If
 
-                Dim url As String = If(getAttr IsNot Nothing, getAttr.Name, postAttr.Name)
+                Dim url As String = If(getAttr IsNot Nothing, getAttr.Url, postAttr.Url)
                 Dim entry As New RouteEntry With {
                     .target = controller,
                     .method = method,
@@ -236,7 +236,7 @@ Namespace Core
         ''' <param name="response">the response object to be written to the client.</param>
         Public Sub AppHandler(request As HttpRequest, response As HttpResponse) Implements IAppHandler.AppHandler
             Dim table As Dictionary(Of String, RouteEntry)
-            Dim entry As RouteEntry
+            Dim entry As RouteEntry = Nothing
             Dim key As String = normalize(request.URL.path)
 
             ' POST requests arrive as HttpPOSTRequest and are routed against the
