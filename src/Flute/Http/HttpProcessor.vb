@@ -180,6 +180,13 @@ Namespace Core
             End Get
         End Property
 
+        ''' <summary>
+        ''' create a new http processor for one tcp connection.
+        ''' </summary>
+        ''' <param name="socket">the accepted tcp client for this connection.</param>
+        ''' <param name="srv">the owning http server instance.</param>
+        ''' <param name="MAX_POST_SIZE%">the maximum allowed POST body size in bytes; a value &lt;= 0 keeps the default 16MB limit.</param>
+        ''' <param name="settings">the server wide configuration instance.</param>
         Public Sub New(socket As TcpClient, srv As HttpServer, MAX_POST_SIZE%, settings As Configuration)
             Me.socket = socket
             Me.srv = srv
@@ -188,25 +195,46 @@ Namespace Core
             Me._settings = settings
         End Sub
 
+        ''' <summary>
+        ''' get the server wide configuration instance that this processor uses.
+        ''' </summary>
+        ''' <returns>the shared <see cref="Configuration"/> instance.</returns>
         Public Function GetSettings() As Configuration
             Return _settings
         End Function
 
+        ''' <summary>
+        ''' write raw bytes directly onto the underlying response network stream.
+        ''' </summary>
+        ''' <param name="data">the bytes to write.</param>
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub WriteData(data As Byte())
             Call outputStream.BaseStream.Write(data, Scan0, data.Length)
         End Sub
 
+        ''' <summary>
+        ''' write one line of text (with the configured new-line) onto the response stream.
+        ''' </summary>
+        ''' <param name="s">the text line to write.</param>
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub WriteLine(s As String)
             Call outputStream.WriteLine(s)
         End Sub
 
+        ''' <summary>
+        ''' the string representation of this processor, which is the request url.
+        ''' </summary>
+        ''' <returns>the requested url string.</returns>
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Overrides Function ToString() As String
             Return http_url
         End Function
 
+        ''' <summary>
+        ''' build a fresh <see cref="HttpResponse"/> bound to this processor's
+        ''' output stream and failure writer.
+        ''' </summary>
+        ''' <returns>a new <see cref="HttpResponse"/> ready to be written to.</returns>
         Public Function openResponseStream() As HttpResponse
             Dim response As New HttpResponse(outputStream, AddressOf writeFailure, _settings)
             response.m_requestHeaders = httpHeaders
@@ -246,6 +274,12 @@ Namespace Core
             Return chrbuf.ToString
         End Function
 
+        ''' <summary>
+        ''' the public entry point that drives the full request lifecycle: it
+        ''' parses the http request, dispatches to the matching handler
+        ''' (websocket upgrade / long poll / GET / POST / OPTIONS) and finally
+        ''' flushes and closes the response stream and the underlying socket.
+        ''' </summary>
         Public Sub Process()
             ' we can't use a StreamReader for input, because it buffers up extra data on us inside it's
             ' "processed" view of the world, and we want the data raw after the headers
@@ -756,6 +790,10 @@ Namespace Core
             Return True
         End Function
 
+        ''' <summary>
+        ''' read the http request headers from the input stream until the blank
+        ''' line that terminates the header block, populating <see cref="httpHeaders"/>.
+        ''' </summary>
         Public Sub readHeaders()
             Dim line As String = "", s As New Value(Of String)
             Dim separator As Integer
@@ -787,13 +825,24 @@ Namespace Core
             End While
         End Sub
 
+        ''' <summary>
+        ''' forward a parsed GET request to the owning http server for dispatch.
+        ''' </summary>
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub handleGETRequest()
             Call srv.handleGETRequest(Me)
         End Sub
 
+        ''' <summary>
+        ''' the size of the read buffer used while streaming POST request bodies.
+        ''' </summary>
         Public Const BUF_SIZE% = 4096
 
+        ''' <summary>
+        ''' the format string for the error message emitted when a POST body
+        ''' exceeds the configured maximum size; the single argument is the
+        ''' received content length.
+        ''' </summary>
         Public Const packageTooLarge$ = "POST Content-Length({0}) too big for this web server"
 
         ''' <summary>
@@ -867,10 +916,11 @@ Namespace Core
         End Function
 
         ''' <summary>
-        ''' 默认是html文件类型
+        ''' write a successful HTTP 200 response header with the given content
+        ''' length and an optional content type (defaults to text/html).
         ''' </summary>
-        ''' <param name="len"></param>
-        ''' <param name="content_type"></param>
+        ''' <param name="len">the content length in bytes of the response body.</param>
+        ''' <param name="content_type">the mime type of the response body.</param>
         Public Sub writeSuccess(len&, Optional content_type As String = "text/html")
             Try
                 Call writeSuccess(
@@ -912,6 +962,11 @@ Namespace Core
             Call outputStream.Flush()
         End Sub
 
+        ''' <summary>
+        ''' write a successful HTTP 200 response header using the type and length
+        ''' carried by the given <see cref="Content"/> object.
+        ''' </summary>
+        ''' <param name="content">the content descriptor that carries the response type and length.</param>
         Public Sub writeSuccess(content As Content)
             Try
                 Call writeSuccess(content.type, content)
@@ -932,8 +987,12 @@ Namespace Core
         Public errorPage As New HttpHeader.HttpError
 
         ''' <summary>
-        ''' 404
+        ''' write a failure http response with the given RFC status code and a
+        ''' detailed error message; the error page is rendered through the
+        ''' configured <see cref="errorPage"/> handler.
         ''' </summary>
+        ''' <param name="error_code">the <see cref="HTTP_RFC"/> status code of the failure.</param>
+        ''' <param name="ex">the detailed error message rendered into the error page.</param>
         Public Sub writeFailure(error_code As HTTP_RFC, ex As String)
             Try
                 Call writeFailureInternal(error_code, ex)
