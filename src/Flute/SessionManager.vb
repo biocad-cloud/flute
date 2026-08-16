@@ -113,6 +113,13 @@ Public Class SessionManager : Inherits ServerComponent
         End If
     End Sub
 
+    ''' <summary>
+    ''' retrieve a previously saved session value by name. the default
+    ''' implementation reads from the in-memory store; override this to back
+    ''' onto a persistent session store.
+    ''' </summary>
+    ''' <param name="name">the session key to look up.</param>
+    ''' <returns>the stored value, or <c>Nothing</c> when not present.</returns>
     Public Overridable Function GetSession(name As String) As Object
         ' default in-memory implementation; override to back onto a persistent store
         Dim value As Object = Nothing
@@ -120,10 +127,21 @@ Public Class SessionManager : Inherits ServerComponent
         Return value
     End Function
 
+    ''' <summary>
+    ''' save a single string value into the session store under the given key.
+    ''' </summary>
+    ''' <param name="name">the session key.</param>
+    ''' <param name="value">the string value to store.</param>
     Public Sub SaveSession(name As String, value As String)
         Call store.AddOrUpdate(name, value, Function(k, v) value)
     End Sub
 
+    ''' <summary>
+    ''' save a string array into the session store, encoded as a tab separated
+    ''' string so it can be round-tripped by <see cref="GetSessionArray"/>.
+    ''' </summary>
+    ''' <param name="name">the session key.</param>
+    ''' <param name="value">the string array to store.</param>
     Public Sub SaveSession(name As String, value As String())
         ' join the array with a tab so it can be round-tripped by GetSessionArray
         Call store.AddOrUpdate(name, String.Join(vbTab, value), Function(k, v) String.Join(vbTab, value))
