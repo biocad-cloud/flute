@@ -62,7 +62,6 @@ Imports Flute.Http.Core.HttpSocket
 Imports Flute.Http.Core.Message
 Imports Flute.Http.Core.Message.HttpHeader
 Imports Microsoft.VisualBasic.Net.Http
-Imports Microsoft.VisualBasic.Scripting.MetaData
 
 Namespace Core
 
