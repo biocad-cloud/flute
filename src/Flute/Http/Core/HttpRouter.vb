@@ -57,8 +57,10 @@
 #End Region
 
 Imports System.Reflection
+Imports System.Runtime.CompilerServices
 Imports Flute.Http.Core.Message
 Imports Flute.Http.Core.Message.HttpHeader
+Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.Scripting.MetaData
 
 Namespace Core
@@ -233,6 +235,7 @@ Namespace Core
         ''' <param name="response">the response object to be written to the client.</param>
         Public Sub AppHandler(request As HttpRequest, response As HttpResponse) Implements IAppHandler.AppHandler
             Dim table As Dictionary(Of String, RouteEntry)
+            Dim entry As RouteEntry
             Dim key As String = normalize(request.URL.path)
 
             ' POST requests arrive as HttpPOSTRequest and are routed against the
@@ -243,7 +246,7 @@ Namespace Core
                 table = getRoutes
             End If
 
-            If table.TryGetValue(key, entry:=Nothing) Then
+            If table.TryGetValue(key, entry) Then
                 Try
                     Call entry.Invoke(request, response)
                 Catch ex As TargetInvocationException
@@ -255,7 +258,7 @@ Namespace Core
                     Call response.WriteError(HTTP_RFC.RFC_INTERNAL_SERVER_ERROR, ex.Message)
                 End Try
             Else
-                Call $"no route registered for {request.HTTPMethod} '{key}'".Warning()
+                Call $"no route registered for {request.HTTPMethod} '{key}'".warning()
                 Call response.WriteError(HTTP_RFC.RFC_NOT_FOUND, $"404 Not Found: {request.HTTPMethod} {key}")
             End If
         End Sub
