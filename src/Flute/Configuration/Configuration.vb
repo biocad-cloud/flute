@@ -133,6 +133,11 @@ Namespace Configurations
             End If
         End Function
 
+        ''' <summary>
+        ''' create a new configuration instance populated with the default
+        ''' values, including a fresh <see cref="Session"/> object.
+        ''' </summary>
+        ''' <returns>a default <see cref="Configuration"/> instance.</returns>
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Shared Function [Default]() As Configuration
             Return New Configuration With {.session = New Session}
@@ -141,7 +146,7 @@ Namespace Configurations
         ''' <summary>
         ''' safe handler for load ini configuration file
         ''' </summary>
-        ''' <param name="inifile"></param>
+        ''' <param name="inifile">the path of the ini configuration file to load.</param>
         ''' <returns>
         ''' this function returns the default configuration file if the
         ''' given <paramref name="inifile"/> missing or invalid file format.
@@ -159,6 +164,13 @@ Namespace Configurations
             End Try
         End Function
 
+        ''' <summary>
+        ''' persist the given configuration into an ini file, overwriting any
+        ''' existing content with the serialized values.
+        ''' </summary>
+        ''' <param name="settings">the configuration instance to save.</param>
+        ''' <param name="inifile">the target ini file path.</param>
+        ''' <returns><c>True</c> if the file was written successfully.</returns>
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Shared Function Save(settings As Configuration, inifile As String) As Boolean
             Return ClassMapper.WriteClass(settings, inifile, clean:=True)

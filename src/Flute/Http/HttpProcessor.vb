@@ -120,9 +120,8 @@ Namespace Core
         Private m_webSocketHijacked As Boolean = False
 
         ''' <summary>
-        ''' 
+        ''' the http request method (GET/POST/OPTIONS/...), always upper case.
         ''' </summary>
-        ''' <returns></returns>
         ''' <remarks>
         ''' http方法名是大写的
         ''' </remarks>
@@ -131,7 +130,7 @@ Namespace Core
         ''' <summary>
         ''' returns the raw http request header
         ''' </summary>
-        ''' <returns></returns>
+        ''' <returns>the full raw request header text accumulated during parsing.</returns>
         Public ReadOnly Property raw As String
             Get
                 Return _raw.ToString
@@ -139,11 +138,17 @@ Namespace Core
         End Property
 
         ''' <summary>
-        ''' File location or GET/POST request arguments
+        ''' the requested url path, or the GET/POST request arguments.
         ''' </summary>
-        ''' <returns></returns>
+        ''' <returns>the request url string as sent by the client.</returns>
         Public Property http_url As String
+        ''' <summary>
+        ''' the http protocol version string declared by the client (e.g. HTTP/1.1).
+        ''' </summary>
         Public Property http_protocol_versionstring As String
+        ''' <summary>
+        ''' the parsed http request headers, keyed case-insensitively.
+        ''' </summary>
         Public Property httpHeaders As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
 
         ''' <summary>
