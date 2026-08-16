@@ -102,6 +102,15 @@ Namespace Configurations
         <Description("the socket read timeout in milliseconds of an established websocket connection. Default 0 means infinite waiting for the next data frame.")>
         Public Property websocket_read_timeout As Integer = 0
 
+        <Description("a logical value for enable the HTTP long polling endpoint on this http server. Default is enabled.")>
+        Public Property longpoll_enabled As Boolean = True
+
+        <Description("the maximum time in milliseconds that a long poll request will be blocked before it returns an empty response. Default 30000 (30s). A value which is less than or equals to zero means infinite waiting.")>
+        Public Property longpoll_timeout As Integer = 30000
+
+        <Description("the maximum number of the concurrent pending long poll connections. A new long poll request will be rejected with a 503 response when this limit is exceeded. Default 1000.")>
+        Public Property longpoll_max_connections As Integer = 1000
+
         ''' <summary>
         ''' get the websocket sub-protocol name list from the
         ''' <see cref="websocket_subprotocols"/> configuration value.

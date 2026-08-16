@@ -69,6 +69,7 @@ Imports System.Threading
 Imports Flute.Http.Configurations
 Imports Flute.Http.Core.HttpOptions
 Imports Flute.Http.Core.Message
+Imports Flute.Http.Core.LongPoll
 Imports Flute.Http.Core.WebSocket
 Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.Language
@@ -329,6 +330,15 @@ Namespace Core
                 Return Nothing
             End If
 
+            ' the HTTP long polling request is a regular http GET request which
+            ' blocks the worker thread until a push operation arrives or the poll
+            ' is timed out, it must be detected at here before the request is
+            ' dispatched to the regular http request handlers.
+            If isLongPollRequest() Then
+                Call handleLongPoll()
+                Return Nothing
+            End If
+
             ' 调用相对应的API进行请求的处理
             If http_method = "GET" Then
                 handleGETRequest()
@@ -483,6 +493,227 @@ Namespace Core
                 Call outputStream.WriteLine("Server: " & VBS_platform)
                 Call outputStream.WriteLine()
                 Call outputStream.WriteLine($"Only the websocket protocol version {WebSocketProtocol.SupportedVersion} is supported by this server.")
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
+        End Sub
+
+#End Region
+
+#Region "HTTP long polling"
+
+        ''' <summary>
+        ''' test of current http request is a long polling request which should
+        ''' be served by this server or not.
+        ''' </summary>
+        ''' <returns>
+        ''' the long polling request will be treated as a regular http request
+        ''' when the long polling feature has been disabled via the server
+        ''' configuration, or no application handler is published on the
+        ''' requested url path.
+        ''' </returns>
+        Private Function isLongPollRequest() As Boolean
+            If _settings IsNot Nothing AndAlso Not _settings.longpoll_enabled Then
+                Return False
+            Else
+                ' let the regular http request handler produces a 404 response when
+                ' no long polling endpoint is published on the requested url path.
+                Return srv.LongPoll.CanHandle(http_url)
+            End If
+        End Function
+
+        ''' <summary>
+        ''' handle a long polling request: register a pending connection into the
+        ''' long poll manager, block current worker thread until a push operation
+        ''' arrives or the poll is timed out, then write the http response and
+        ''' return.
+        ''' </summary>
+        ''' <remarks>
+        ''' current worker thread will be blocked inside this method until the
+        ''' push data arrives or the poll is timed out, which is the expected
+        ''' behaviour as one long poll connection occupies one connection slot
+        ''' of the server connection semaphore during its whole lifecycle.
+        ''' </remarks>
+        Private Sub handleLongPoll()
+            ' reject the request when the maximum concurrent pending connection
+            ' limit is exceeded, so that the worker thread will not be exhausted.
+            If _settings.longpoll_max_connections > 0 AndAlso
+               srv.LongPoll.Count >= _settings.longpoll_max_connections Then
+
+                Call writeLongPollRejected()
+                Return
+            End If
+
+            Dim handler As ILongPollHandler = srv.LongPoll.ResolveHandler(http_url)
+
+            If handler Is Nothing Then
+                ' the route table was modified by another thread just after the
+                ' isLongPollRequest() check has been passed.
+                Call writeFailure(HTTP_RFC.RFC_NOT_FOUND, $"No long poll endpoint is published on '{http_url}'.")
+                Return
+            End If
+
+            Dim remoteEP As System.Net.EndPoint = Nothing
+
+            Try
+                remoteEP = socket.Client.RemoteEndPoint
+            Catch ex As Exception
+                ' the socket may have already been disconnected
+            End Try
+
+            Dim connection As New LongPollConnection(
+                path:=LongPollManager.NormalizePath(http_url),
+                url:=http_url,
+                headers:=httpHeaders,
+                remote:=remoteEP
+            )
+
+            ' give the application handler a chance to return an immediate
+            ' response without blocking, i.e. for a pending message in a queue.
+            Dim immediate As LongPollMessage = Nothing
+
+            Try
+                immediate = handler.OnPoll(connection)
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
+
+            If immediate IsNot Nothing Then
+                ' the application handler returns an immediate message, skip the
+                ' blocking wait and write the response directly.
+                Try
+                    Call handler.OnComplete(connection, immediate, False)
+                Catch ex As Exception
+                    Call App.LogException(ex)
+                End Try
+
+                Call writeLongPollResponse(immediate)
+                Return
+            End If
+
+            ' register the pending connection into the manager so that a push
+            ' operation from another thread could find and complete it.
+            Call srv.LongPoll.Register(connection)
+            Call $"long poll connection [{connection.Id}] on {connection.Path} has been established from {connection.Remote}.".info(_settings.silent)
+
+            ' block current worker thread until the push data arrives or the poll
+            ' is timed out. the socket receive timeout is reset to infinite so
+            ' that the blocked worker thread will not be interrupted by the
+            ' socket read timeout mechanism during the waiting.
+            Dim timeoutMs As Integer = _settings.longpoll_timeout
+
+            If timeoutMs > 0 Then
+                Try
+                    socket.ReceiveTimeout = 0
+                Catch ex As Exception
+                    Call App.LogException(ex)
+                End Try
+            End If
+
+            Dim message As LongPollMessage = connection.WaitForData(timeoutMs)
+            Dim timedOut As Boolean = message Is Nothing
+
+            ' unregister the connection from the manager, the connection may have
+            ' already been unregistered by the push operation, this is safe as the
+            ' TryRemove is a no-op when the key is not found.
+            Call srv.LongPoll.Unregister(connection)
+
+            ' raise the completion event to the application handler
+            Try
+                Call handler.OnComplete(connection, message, timedOut)
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
+
+            If timedOut Then
+                ' the poll is timed out or cancelled, write an empty response so
+                ' that the client could re-connect.
+                Call writeLongPollTimeout()
+            Else
+                Call writeLongPollResponse(message)
+            End If
+
+            Call $"long poll connection [{connection.Id}] has been finished: {If(timedOut, "timed out", "pushed")}.".info(_settings.silent)
+        End Sub
+
+        ''' <summary>
+        ''' write the http response of a long poll request with the pushed message
+        ''' payload. the response is a regular http 200 response with the content
+        ''' type which is carried by the push message.
+        ''' </summary>
+        Private Sub writeLongPollResponse(message As LongPollMessage)
+            If message Is Nothing Then
+                Call writeLongPollTimeout()
+                Return
+            End If
+
+            Try
+                Dim keepAlive As Boolean = Not httpHeaders.ContainsKey("connection") OrElse
+                    Not httpHeaders("connection").TextEquals("close")
+
+                Call outputStream.WriteLine("HTTP/1.1 200 OK")
+                Call outputStream.WriteLine("Content-Length: " & message.Length)
+                Call outputStream.WriteLine("Content-Type: " & message.ContentType)
+                Call outputStream.WriteLine("Connection: " & If(keepAlive, "keep-alive", "close"))
+                Call outputStream.WriteLine("Date: " & DateTime.UtcNow.ToString("R"))
+                Call outputStream.WriteLine("Server: " & VBS_platform)
+                Call outputStream.WriteLine(XPoweredBy & _settings.x_powered_by)
+                ' this terminates the HTTP headers.. everything after this is HTTP body..
+                Call outputStream.WriteLine()
+                Call outputStream.Flush()
+
+                ' write the message payload as the http body
+                If message.Length > 0 Then
+                    Call outputStream.BaseStream.Write(message.Data, Scan0, message.Length)
+                    Call outputStream.BaseStream.Flush()
+                End If
+            Catch ex As Exception
+                ' the remote client may have already disconnected during the long
+                ' poll waiting, the response writing failure is expected at here.
+                Call App.LogException(ex)
+            End Try
+        End Sub
+
+        ''' <summary>
+        ''' write an empty http 204 response for a timed out long poll request,
+        ''' so that the client could re-connect and poll again.
+        ''' </summary>
+        Private Sub writeLongPollTimeout()
+            Try
+                Dim keepAlive As Boolean = Not httpHeaders.ContainsKey("connection") OrElse
+                    Not httpHeaders("connection").TextEquals("close")
+
+                Call outputStream.WriteLine("HTTP/1.1 204 No Content")
+                Call outputStream.WriteLine("Content-Length: 0")
+                Call outputStream.WriteLine("Connection: " & If(keepAlive, "keep-alive", "close"))
+                Call outputStream.WriteLine("Date: " & DateTime.UtcNow.ToString("R"))
+                Call outputStream.WriteLine("Server: " & VBS_platform)
+                Call outputStream.WriteLine(XPoweredBy & _settings.x_powered_by)
+                ' this terminates the HTTP headers..
+                Call outputStream.WriteLine()
+                Call outputStream.Flush()
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
+        End Sub
+
+        ''' <summary>
+        ''' write a ``503 Service Unavailable`` response for a long poll request
+        ''' which is rejected due to the maximum concurrent pending connection
+        ''' limit is exceeded.
+        ''' </summary>
+        Private Sub writeLongPollRejected()
+            Call $"reject the long poll request on '{http_url}': the maximum concurrent pending connection limit ({_settings.longpoll_max_connections}) is exceeded.".warning(_settings.silent)
+
+            Try
+                Call outputStream.WriteLine("HTTP/1.1 503 Service Unavailable")
+                Call outputStream.WriteLine("Content-Type: text/plain")
+                Call outputStream.WriteLine("Connection: close")
+                Call outputStream.WriteLine("Date: " & DateTime.UtcNow.ToString("R"))
+                Call outputStream.WriteLine("Server: " & VBS_platform)
+                Call outputStream.WriteLine(XPoweredBy & _settings.x_powered_by)
+                Call outputStream.WriteLine()
+                Call outputStream.WriteLine($"The server is busy, the maximum concurrent long poll connection limit ({_settings.longpoll_max_connections}) is exceeded.")
             Catch ex As Exception
                 Call App.LogException(ex)
             End Try

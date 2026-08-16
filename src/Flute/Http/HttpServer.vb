@@ -65,6 +65,7 @@ Imports System.Threading
 Imports Flute.Http.Configurations
 Imports Microsoft.VisualBasic.ComponentModel
 Imports Microsoft.VisualBasic.Language
+Imports Flute.Http.Core.LongPoll
 Imports Flute.Http.Core.WebSocket
 Imports Microsoft.VisualBasic.Language.Default
 Imports Microsoft.VisualBasic.Parallel.Linq
@@ -116,6 +117,21 @@ Namespace Core
         ''' Call server.WebSocket.Route("/ws/echo", WebSocketHandler.Echo)
         ''' </example>
         Public ReadOnly Property WebSocket As New WebSocketManager
+
+        ''' <summary>
+        ''' the long polling connection manager of current http server, a http GET
+        ''' request will be treated as a long poll request and blocked for waiting
+        ''' a push operation only when an application handler has been registered
+        ''' into this connection manager via its route table.
+        ''' </summary>
+        ''' <returns>
+        ''' this property value is always available, an empty routing table just
+        ''' means that no long poll endpoint is published on current http server.
+        ''' </returns>
+        ''' <example>
+        ''' Call server.LongPoll.Route("/poll/messages")
+        ''' </example>
+        Public ReadOnly Property LongPoll As New LongPollManager
 
         ''' <summary>
         ''' Indicates this http server is running status or not. 
@@ -254,6 +270,15 @@ Namespace Core
             ' waiting loop below until the timeout deadline is reached.
             Try
                 Call WebSocket.CloseAll()
+            Catch ex As Exception
+                Call App.LogException(ex)
+            End Try
+
+            ' wake up all of the pending long poll connections, otherwise those
+            ' blocked worker threads will block the shutdown waiting loop below
+            ' until the long poll timeout deadline is reached.
+            Try
+                Call LongPoll.CloseAll()
             Catch ex As Exception
                 Call App.LogException(ex)
             End Try
