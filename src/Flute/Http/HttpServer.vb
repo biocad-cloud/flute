@@ -336,9 +336,24 @@ Namespace Core
         ''' 
         ''' </example>
         Public MustOverride Sub handleGETRequest(p As HttpProcessor)
+        ''' <summary>
+        ''' handle a parsed POST request for the given processor, with its decoded body.
+        ''' </summary>
+        ''' <param name="p">the http processor that carried the POST request.</param>
+        ''' <param name="inputData$">the decoded POST body string.</param>
         Public MustOverride Sub handlePOSTRequest(p As HttpProcessor, inputData$)
+        ''' <summary>
+        ''' handle any http method other than GET/POST (e.g. PUT, DELETE, OPTIONS)
+        ''' for the given processor.
+        ''' </summary>
+        ''' <param name="p">the http processor that carried the request.</param>
         Public MustOverride Sub handleOtherMethod(p As HttpProcessor)
 
+        ''' <summary>
+        ''' the string representation of this server: its local address and the
+        ''' number of currently active http worker threads.
+        ''' </summary>
+        ''' <returns>a "[http://localhost:port] http_workers: n" description string.</returns>
         Public Overrides Function ToString() As String
             Return $"[http://localhost:{localPort}] http_workers: {_accept_workers}"
         End Function

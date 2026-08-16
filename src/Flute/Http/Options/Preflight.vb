@@ -59,6 +59,9 @@ Imports Flute.Http.Core.Message
 
 Namespace Core.HttpOptions
 
+    ''' <summary>
+    ''' helpers for handling CORS preflight (OPTIONS) requests.
+    ''' </summary>
     Module Preflight
 
         ''' <summary>
@@ -76,9 +79,12 @@ Namespace Core.HttpOptions
         '''   server that When the actual request Is sent, it will
         '''   have the X-PINGOTHER And Content-Type headers.
         '''   
+        ''' A request is considered a preflight when its
+        ''' <c>Sec-Fetch-Mode</c> header is <c>cors</c> and it carries an
+        ''' <c>Access-Control-Request-Method</c> header.
         ''' </summary>
-        ''' <param name="p"></param>
-        ''' <returns></returns>
+        ''' <param name="p">the http processor that carried the request.</param>
+        ''' <returns><c>True</c> when the request is a CORS preflight request.</returns>
         Public Function IsPreflightRequest(p As HttpProcessor) As Boolean
             Dim cors As Boolean = p.httpHeaders.TryGetValue("Sec-Fetch-Mode").TextEquals("cors")
             Dim testMethod As Boolean = p.httpHeaders.ContainsKey("Access-Control-Request-Method")
@@ -86,6 +92,12 @@ Namespace Core.HttpOptions
             Return cors AndAlso testMethod
         End Function
 
+        ''' <summary>
+        ''' write a CORS preflight response (HTTP 204 No Content) for the given
+        ''' request, echoing the configured allow-origin/methods/headers onto the
+        ''' response headers and closing the connection.
+        ''' </summary>
+        ''' <param name="p">the http processor that carried the preflight request.</param>
         Public Sub HandlePreflightRequest(p As HttpProcessor)
             Dim request As New HttpRequest(p)
             Dim response As New HttpResponse(p.outputStream, AddressOf p.writeFailure, p._settings)
