@@ -64,9 +64,20 @@ Imports randf = Microsoft.VisualBasic.Math.RandomExtensions
 
 Public Class SessionManager : Inherits ServerComponent
 
+    ''' <summary>
+    ''' the unique session identifier for the current client, either taken
+    ''' from the incoming request cookie or freshly generated on first visit.
+    ''' </summary>
     Public ReadOnly Property Id As String
+    ''' <summary>
+    ''' indicates that a new session id was generated during construction and a
+    ''' <c>Set-Cookie</c> response header must be emitted to the client.
+    ''' </summary>
     Public ReadOnly Property SetCookie As Boolean = False
 
+    ''' <summary>
+    ''' the name of the cookie that carries the flute session identifier.
+    ''' </summary>
     Public Const CookieName As String = "flute_session"
 
     ''' <summary>
@@ -77,6 +88,13 @@ Public Class SessionManager : Inherits ServerComponent
     ''' </summary>
     ReadOnly store As New ConcurrentDictionary(Of String, Object)
 
+    ''' <summary>
+    ''' initialize a session for the incoming request. the session id is
+    ''' recovered from the request cookie when present, otherwise a new secure
+    ''' random id is generated (and <see cref="SetCookie"/> is set to true).
+    ''' </summary>
+    ''' <param name="cookies">the cookies parsed from the incoming http request.</param>
+    ''' <param name="settings">the server wide configuration instance.</param>
     Sub New(cookies As Cookies, settings As Configuration)
         Call MyBase.New(settings)
 
