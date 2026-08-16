@@ -71,34 +71,56 @@ Namespace FileSystem
     ''' </summary>
     Public Class FileSystem
 
+        ''' <summary>
+        ''' the root filesystem environment (physical folder or virtual archive)
+        ''' that this web file system serves files from.
+        ''' </summary>
         Public ReadOnly Property wwwroot As IFileSystemEnvironment
 
+        ''' <summary>
+        ''' the registered virtual (cache/mapping) resources keyed by their trimmed url.
+        ''' </summary>
         ReadOnly virtualMaps As New Dictionary(Of String, FileObject)
 
         ''' <summary>
-        ''' Create a new filesystem proxy for http web services
+        ''' create a new filesystem proxy for http web services, backed by the
+        ''' given physical wwwroot folder.
         ''' </summary>
-        ''' <param name="wwwroot"></param>
+        ''' <param name="wwwroot">the physical root directory path to serve.</param>
         Sub New(wwwroot As String)
             Me.wwwroot = New FolderHandle(directory:=wwwroot)
         End Sub
 
+        ''' <summary>
+        ''' create a new filesystem proxy backed by a virtual filesystem
+        ''' environment, attaching all of its contents in cache mode.
+        ''' </summary>
+        ''' <param name="virtual">the virtual filesystem environment to serve.</param>
         Sub New(virtual As IFileSystemEnvironment)
             Me.wwwroot = virtual
             Call AttachFolder(virtual).ToArray
         End Sub
 
         ''' <summary>
-        ''' 这个函数只适用于小文件的缓存
+        ''' cache a physical file's bytes under the given resource url (suitable
+        ''' for small files only).
         ''' </summary>
-        ''' <param name="resourceUrl$"></param>
-        ''' <param name="file$"></param>
-        ''' <param name="mime"></param>
-        ''' <returns></returns>
+        ''' <param name="resourceUrl$">the url the resource is served at.</param>
+        ''' <param name="file$">the path of the local file to cache.</param>
+        ''' <param name="mime">the optional content type; auto-detected when omitted.</param>
+        ''' <returns>the created <see cref="FileObject"/> cache entry.</returns>
         Public Function AddCache(resourceUrl$, file$, Optional mime As ContentType = Nothing) As FileObject
             Return AddCache(resourceUrl, file.ReadBinary, mime)
         End Function
 
+        ''' <summary>
+        ''' cache raw bytes in memory under the given resource url (suitable for
+        ''' small files only).
+        ''' </summary>
+        ''' <param name="resourceUrl$">the url the resource is served at.</param>
+        ''' <param name="data">the raw bytes to cache.</param>
+        ''' <param name="mime">the optional content type; auto-detected when omitted.</param>
+        ''' <returns>the created <see cref="MemoryCachedFile"/> entry.</returns>
         Public Function AddCache(resourceUrl$, data As Byte(), Optional mime As ContentType = Nothing) As FileObject
             Dim resource As New MemoryCachedFile(resourceUrl.FileName, data, mime)
             Dim key$ = resourceUrl.Trim("."c, "/"c, "\"c)
@@ -110,6 +132,14 @@ Namespace FileSystem
             Return resource
         End Function
 
+        ''' <summary>
+        ''' map a resource url onto a physical file path (mapping mode: content
+        ''' is read on demand rather than cached in memory).
+        ''' </summary>
+        ''' <param name="resourceUrl$">the url the resource is served at.</param>
+        ''' <param name="file$">the path of the local file to map.</param>
+        ''' <param name="mime">the optional content type; auto-detected when omitted.</param>
+        ''' <returns>the created <see cref="VirtualMappedFile"/> entry.</returns>
         Public Function AddMapping(resourceUrl$, file$, Optional mime As ContentType = Nothing) As FileObject
             Dim resource As New VirtualMappedFile(resourceUrl.FileName, file, mime)
             Dim key$ = resourceUrl.Trim("."c, "/"c, "\"c)
@@ -122,12 +152,13 @@ Namespace FileSystem
         End Function
 
         ''' <summary>
-        ''' 
+        ''' recursively attach every file in the given physical directory to the
+        ''' virtual maps, either in cache or mapping mode.
         ''' </summary>
-        ''' <param name="directory"></param>
-        ''' <param name="attachTo"></param>
+        ''' <param name="directory">the physical directory to scan recursively.</param>
+        ''' <param name="attachTo">the url prefix the files are served under, defaults to "/".</param>
         ''' <param name="cacheMode">Work in cache mode or mapping mode?</param>
-        ''' <returns></returns>
+        ''' <returns>the enumerated file objects that were attached.</returns>
         Public Iterator Function AttachFolder(directory$,
                                               Optional attachTo$ = "/",
                                               Optional cacheMode As Boolean = False) As IEnumerable(Of NamedValue(Of FileObject))
@@ -160,11 +191,12 @@ Namespace FileSystem
         End Function
 
         ''' <summary>
-        ''' 
+        ''' attach all contents of a virtual filesystem environment to the virtual
+        ''' maps (always in cache mode, reading each file fully into memory).
         ''' </summary>
-        ''' <param name="fs"></param>
-        ''' <param name="attachTo"></param>
-        ''' <returns></returns>
+        ''' <param name="fs">the virtual filesystem environment to attach.</param>
+        ''' <param name="attachTo">the url prefix the files are served under, defaults to "/".</param>
+        ''' <returns>the enumerated file objects that were attached.</returns>
         ''' <remarks>
         ''' attach the contents from a archive file, always running in cache mode
         ''' </remarks>
@@ -222,6 +254,13 @@ Namespace FileSystem
             End If
         End Function
 
+        ''' <summary>
+        ''' resolve the content type (mime) of a resource, checking the physical
+        ''' file first and then the virtual maps; falls back to
+        ''' <c>application/javascript</c> for .js and <see cref="MIME.UnknownType"/> otherwise.
+        ''' </summary>
+        ''' <param name="pathRelative">the request relative path of the resource.</param>
+        ''' <returns>the resolved <see cref="ContentType"/>.</returns>
         Public Function GetContentType(pathRelative As String) As ContentType
             Dim extName As String = "." & pathRelative.ExtensionSuffix.ToLower
             Dim virtualKey As String = Nothing
@@ -247,6 +286,12 @@ Namespace FileSystem
             Return MIME.UnknownType
         End Function
 
+        ''' <summary>
+        ''' get the byte size of a resource, checking the physical file first and
+        ''' then the virtual maps; returns -1 when the resource does not exist.
+        ''' </summary>
+        ''' <param name="pathRelative">the request relative path of the resource.</param>
+        ''' <returns>the content length in bytes, or -1 when not found.</returns>
         Public Function GetFileSize(pathRelative As String) As Integer
             Dim virtualKey As String = Nothing
             Dim physical As String = resolveFile(pathRelative, virtualKey)
@@ -262,6 +307,12 @@ Namespace FileSystem
             Return -1
         End Function
 
+        ''' <summary>
+        ''' open a readable stream for the resource, checking the physical file
+        ''' first and then the virtual maps; returns an empty stream when missing.
+        ''' </summary>
+        ''' <param name="pathRelative">the request relative path of the resource.</param>
+        ''' <returns>the resource stream.</returns>
         Public Function GetResource(pathRelative As String) As Stream
             Dim virtualKey As String = Nothing
             Dim physical As String = resolveFile(pathRelative, virtualKey)
@@ -278,10 +329,11 @@ Namespace FileSystem
         End Function
 
         ''' <summary>
-        ''' get file data
+        ''' get the full byte content of a resource, checking the physical file
+        ''' first and then the virtual maps; returns an empty array when missing.
         ''' </summary>
-        ''' <param name="pathRelative"></param>
-        ''' <returns></returns>
+        ''' <param name="pathRelative">the request relative path of the resource.</param>
+        ''' <returns>the resource bytes.</returns>
         Public Function GetByteBuffer(pathRelative As String) As Byte()
             Dim virtualKey As String = Nothing
             Dim physical As String = resolveFile(pathRelative, virtualKey)
@@ -297,6 +349,13 @@ Namespace FileSystem
             Return {}
         End Function
 
+        ''' <summary>
+        ''' test whether a resource exists, checking the physical file first and
+        ''' then the virtual maps (a <see cref="VirtualMappedFile"/> is only valid
+        ''' when its underlying file still exists).
+        ''' </summary>
+        ''' <param name="pathRelative">the request relative path of the resource.</param>
+        ''' <returns><c>True</c> when the resource exists.</returns>
         Public Function FileExists(pathRelative As String) As Boolean
             Dim virtualKey As String = Nothing
             Dim physical As String = resolveFile(pathRelative, virtualKey)
@@ -316,6 +375,10 @@ Namespace FileSystem
             Return False
         End Function
 
+        ''' <summary>
+        ''' the string representation of this file system: its wwwroot environment.
+        ''' </summary>
+        ''' <returns>the wwwroot environment description.</returns>
         Public Overrides Function ToString() As String
             Return wwwroot.ToString
         End Function

@@ -71,13 +71,6 @@ Namespace Core.Message
     Public Class HttpRequest
 
         ''' <summary>
-        ''' GET/POST/PUT/DELETE....
-        ''' </summary>
-        ''' <returns></returns>
-        ''' <remarks>
-        ''' http方法名是大写的
-        ''' </remarks>
-        ''' <summary>
         ''' GET/POST/PUT/DELETE.... the http request method, always upper case.
         ''' </summary>
         ''' <remarks>

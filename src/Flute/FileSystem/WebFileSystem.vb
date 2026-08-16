@@ -70,19 +70,33 @@ Imports Microsoft.VisualBasic.Net.Protocols.ContentTypes
 Namespace FileSystem
 
     ''' <summary>
-    ''' combine this object with the <see cref="Flute.Http.Core.HttpSocket"/> 
-    ''' module to create a simple local filesystem listener
+    ''' a static file server listener: combine this object with the
+    ''' <see cref="Flute.Http.Core.HttpSocket"/> module to serve files from one or
+    ''' more <see cref="FileSystem"/> roots over http.
     ''' </summary>
     Public Class WebFileSystemListener
 
+        ''' <summary>
+        ''' the set of file system roots that this listener serves files from.
+        ''' </summary>
         Public Property fs As FileSystem()
 
+        ''' <summary>
+        ''' the first (primary) file system's root environment, exposed as the web
+        ''' application context.
+        ''' </summary>
+        ''' <returns>the root <see cref="IFileSystemEnvironment"/> of the first file system.</returns>
         Public ReadOnly Property webContext As IFileSystemEnvironment
             Get
                 Return fs(0).wwwroot
             End Get
         End Property
 
+        ''' <summary>
+        ''' the physical folder path of the primary wwwroot, when it is backed by a
+        ''' real directory; otherwise <c>Nothing</c>.
+        ''' </summary>
+        ''' <returns>the wwwroot folder path, or <c>Nothing</c>.</returns>
         Public ReadOnly Property wwwroot As String
             Get
                 If TypeOf fs(0).wwwroot Is Microsoft.VisualBasic.FileIO.Directory Then
@@ -93,13 +107,26 @@ Namespace FileSystem
             End Get
         End Property
 
+        ''' <summary>
+        ''' create an empty web file system listener (roots added later).
+        ''' </summary>
         Sub New()
         End Sub
 
+        ''' <summary>
+        ''' create a web file system listener serving the given file system roots.
+        ''' </summary>
+        ''' <param name="wwwroot">the file system roots to serve files from.</param>
         Sub New(ParamArray wwwroot As FileSystem())
             fs = wwwroot
         End Sub
 
+        ''' <summary>
+        ''' the request handler: resolve the request path, then host the matching
+        ''' static file (or first matching root) back to the client.
+        ''' </summary>
+        ''' <param name="request">the incoming http request.</param>
+        ''' <param name="response">the response to write the file to.</param>
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Public Sub WebHandler(request As HttpRequest, response As HttpResponse)
             Dim path As String = CommonGetPath(request)
@@ -116,6 +143,12 @@ Namespace FileSystem
             End If
         End Sub
 
+        ''' <summary>
+        ''' test whether the requested resource exists in any of the served file
+        ''' systems.
+        ''' </summary>
+        ''' <param name="request">the incoming http request.</param>
+        ''' <returns><c>True</c> when the resource exists.</returns>
         Public Function CheckResourceFileExists(request As HttpRequest) As Boolean
             Dim path As String = CommonGetPath(request)
 
@@ -200,6 +233,13 @@ Namespace FileSystem
             End If
         End Sub
 
+        ''' <summary>
+        ''' resolve the request path, then host the matching static file (or a 404
+        ''' error response when the resource does not exist).
+        ''' </summary>
+        ''' <param name="fs">the file system to serve the resource from.</param>
+        ''' <param name="request">the incoming http request.</param>
+        ''' <param name="response">the response to write the file to.</param>
         Public Shared Sub HostStaticFile(fs As FileSystem, request As HttpRequest, response As HttpResponse)
             Dim path As String = CommonGetPath(request)
 

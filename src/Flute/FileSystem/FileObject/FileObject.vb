@@ -80,12 +80,25 @@ Namespace FileSystem
         ''' <summary>
         ''' 文件的类型
         ''' </summary>
-        ''' <returns></returns>
+        ''' <returns>the content (mime) type of the file.</returns>
         Public ReadOnly Property mime As ContentType
+        ''' <summary>
+        ''' the file name (without path) that this object represents.
+        ''' </summary>
         Public ReadOnly Property fileName As String
 
+        ''' <summary>
+        ''' the byte length of the file content.
+        ''' </summary>
+        ''' <returns>the content length in bytes.</returns>
         Public MustOverride ReadOnly Property ContentLength As Long
 
+        ''' <summary>
+        ''' create a file object with the given file name and an optional content
+        ''' type, auto-detecting the mime type from the file name when omitted.
+        ''' </summary>
+        ''' <param name="fileName$">the file name of the resource.</param>
+        ''' <param name="mime">the optional content type; auto-detected when empty.</param>
         Sub New(fileName$, Optional mime As ContentType = Nothing)
             Me.fileName = fileName
             Me.mime = mime
@@ -95,9 +108,21 @@ Namespace FileSystem
             End If
         End Sub
 
+        ''' <summary>
+        ''' open a readable stream over the file content.
+        ''' </summary>
+        ''' <returns>the resource stream.</returns>
         Public MustOverride Function GetResource() As Stream
+        ''' <summary>
+        ''' get the full byte content of the file.
+        ''' </summary>
+        ''' <returns>the file bytes.</returns>
         Public MustOverride Function GetByteBuffer() As Byte()
 
+        ''' <summary>
+        ''' the string representation of this file object: its file name.
+        ''' </summary>
+        ''' <returns>the file name.</returns>
         Public Overrides Function ToString() As String
             Return fileName
         End Function
