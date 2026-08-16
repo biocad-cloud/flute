@@ -1,66 +1,67 @@
 #Region "Microsoft.VisualBasic::http-router, src\Flute\Http\Core\HttpRouter.vb"
 
-    ' Author:
-    ' 
-    '       xieguigang (xie.guigang@live.com)
-    ' 
-    ' Copyright (c) 2018 GPL3 Licensed
-    ' 
-    ' 
-    ' GNU GENERAL PUBLIC LICENSE (GPL3)
-    ' 
-    ' 
-    ' This program is free software: you can redistribute it and/or modify
-    ' it under the terms of the GNU General Public License as published by
-    ' the Free Software Foundation, either version 3 of the License, or
-    ' (at your option) any later version.
-    ' 
-    ' This program is distributed in the hope that it will be useful,
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ' GNU General Public License for more details.
-    ' 
-    ' You should have received a copy of the GNU General Public License
-    ' along with this program. If not, see <http://www.gnu.org/licenses/>.
+' Author:
+' 
+'       xieguigang (xie.guigang@live.com)
+' 
+' Copyright (c) 2018 GPL3 Licensed
+' 
+' 
+' GNU GENERAL PUBLIC LICENSE (GPL3)
+' 
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-    ' /********************************************************************************/
+' /********************************************************************************/
 
-    ' Summaries:
-
-
-    ' Code Statistics:
-
-    '   Total Lines: 
-    '    Code Lines: 
-    ' Comment Lines: 
-    '    - Xml Docs: 
-    ' 
-    '   Blank Lines: 
-    '     File Size: 
+' Summaries:
 
 
-    '     Class HttpRouter
-    ' 
-    '         Properties: Routes
-    ' 
-    '         Constructor: (+2 Overloads) Sub New
-    ' 
-    '         Function: RegisterController, Register
-    ' 
-    '         Sub: AppHandler
-    ' 
-    ' 
-    ' 
-    ' /********************************************************************************/
+' Code Statistics:
+
+'   Total Lines: 
+'    Code Lines: 
+' Comment Lines: 
+'    - Xml Docs: 
+' 
+'   Blank Lines: 
+'     File Size: 
+
+
+'     Class HttpRouter
+' 
+'         Properties: Routes
+' 
+'         Constructor: (+2 Overloads) Sub New
+' 
+'         Function: RegisterController, Register
+' 
+'         Sub: AppHandler
+' 
+' 
+' 
+' /********************************************************************************/
 
 #End Region
 
 Imports System.Reflection
 Imports System.Runtime.CompilerServices
+Imports Flute.Http.Core.HttpSocket
 Imports Flute.Http.Core.Message
 Imports Flute.Http.Core.Message.HttpHeader
-Imports Microsoft.VisualBasic.ApplicationServices
+Imports Microsoft.VisualBasic.Net.Http
 Imports Microsoft.VisualBasic.Scripting.MetaData
 
 Namespace Core
@@ -81,10 +82,10 @@ Namespace Core
 
         ''' <summary>
         ''' a single resolved route entry, either backed by a reflected method
-        ''' (with its owning <paramref name="target"/> instance) or by a manually
+        ''' (with its owning <see name="RouteEntry.target"/> instance) or by a manually
         ''' registered delegate.
         ''' </summary>
-        Private Structure RouteEntry
+        Private Class RouteEntry
 
             ''' <summary>
             ''' the controller instance that owns <see cref="method"/>; nothing
@@ -112,7 +113,7 @@ Namespace Core
                     Call method.Invoke(target, {request, response})
                 End If
             End Sub
-        End Structure
+        End Class
 
         ''' <summary>
         ''' route tables keyed by the normalized url path for each http method.
@@ -185,10 +186,10 @@ Namespace Core
                 }
 
                 If getAttr IsNot Nothing Then
-                    Call getRoutes(normalize(url)) = entry
+                    getRoutes(normalize(url)) = entry
                     Call $"registered GET route {getAttr.ToString} -> {type.Name}.{method.Name}".debug()
                 Else
-                    Call postRoutes(normalize(url)) = entry
+                    postRoutes(normalize(url)) = entry
                     Call $"registered POST route {postAttr.ToString} -> {type.Name}.{method.Name}".debug()
                 End If
             Next
@@ -215,10 +216,10 @@ Namespace Core
             Dim key As String = normalize(url)
 
             If String.Equals(httpMethod, "POST", StringComparison.OrdinalIgnoreCase) Then
-                Call postRoutes(key) = entry
+                postRoutes(key) = entry
                 Call $"registered POST route '{key}' (manual)".debug()
             Else
-                Call getRoutes(key) = entry
+                getRoutes(key) = entry
                 Call $"registered GET route '{key}' (manual)".debug()
             End If
 
