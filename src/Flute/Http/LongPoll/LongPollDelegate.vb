@@ -79,15 +79,15 @@ Namespace Core.LongPoll
         ''' <summary>
         ''' create a text push message with the ``text/plain`` content type
         ''' </summary>
-        Public Shared Function Text(text As String) As LongPollMessage
-            Return New LongPollMessage(Encoding.UTF8.GetBytes(If(text, "")), "text/plain")
+        Public Shared Function Text(content As String) As LongPollMessage
+            Return New LongPollMessage(Encoding.UTF8.GetBytes(If(content, "")), "text/plain")
         End Function
 
         ''' <summary>
         ''' create a json push message with the ``application/json`` content type
         ''' </summary>
-        Public Shared Function JSON(json As String) As LongPollMessage
-            Return New LongPollMessage(Encoding.UTF8.GetBytes(If(json, "")), "application/json")
+        Public Shared Function JSON(content As String) As LongPollMessage
+            Return New LongPollMessage(Encoding.UTF8.GetBytes(If(content, "")), "application/json")
         End Function
 
         ''' <summary>
