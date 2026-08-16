@@ -97,10 +97,14 @@ Namespace Core
         Protected Friend ReadOnly _httpListener As TcpListener
 
         ''' <summary>
-        ''' The network data port of this internal http server listen.
+        ''' The network data port that this internal http server is listening on.
         ''' </summary>
-        ''' <returns></returns>
+        ''' <returns>the local tcp port bound by the listener.</returns>
         Public ReadOnly Property localPort As Integer
+        ''' <summary>
+        ''' the size of the read/write buffer (in bytes) used when streaming
+        ''' request and response data.
+        ''' </summary>
         Public Property BufferSize As Integer = 4096
 
         ''' <summary>
@@ -145,9 +149,12 @@ Namespace Core
         End Property
 
         ''' <summary>
-        ''' 
+        ''' create a new http server core listening on the given port, bound to an
+        ''' optional configuration and a worker thread pool size.
         ''' </summary>
         ''' <param name="port">The network data port of this internal http server listen.</param>
+        ''' <param name="threads%">the size of the connection worker pool; a value &lt;= 0 uses the CPU core count.</param>
+        ''' <param name="configs">the optional server wide configuration.</param>
         Public Sub New(port%, Optional threads% = -1, Optional configs As Configuration = Nothing)
             Static defaultThreads As [Default](Of Integer) = (LQuerySchedule.CPU_NUMBER).AsDefault(Function(n) CInt(n) <= 0)
 
@@ -247,10 +254,12 @@ Namespace Core
         End Sub
 
         ''' <summary>
-        ''' New HttpProcessor(Client, Me) with {._404Page = "...."}
+        ''' create a new <see cref="HttpProcessor"/> bound to the accepted tcp
+        ''' client and this server, with the given read buffer size.
         ''' </summary>
-        ''' <param name="client"></param>
-        ''' <returns></returns>
+        ''' <param name="client">the accepted tcp client for the incoming connection.</param>
+        ''' <param name="bufferSize%">the read buffer size (in bytes) for the processor.</param>
+        ''' <returns>a new <see cref="HttpProcessor"/> instance ready to process the request.</returns>
         Protected MustOverride Function getHttpProcessor(client As TcpClient, bufferSize%) As HttpProcessor
 
         ''' <summary>
@@ -298,9 +307,11 @@ Namespace Core
         End Sub
 
         ''' <summary>
-        ''' 
+        ''' handle a parsed GET request for the given processor. derived servers
+        ''' must implement the route dispatch, write the response through the
+        ''' processor, and finally call its <see cref="HttpProcessor.Dispose"/>.
         ''' </summary>
-        ''' <param name="p"></param>
+        ''' <param name="p">the http processor that carried the GET request.</param>
         ''' <example>
         ''' 
         ''' If p.http_url.Equals("/Test.png") Then
