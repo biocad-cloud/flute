@@ -171,7 +171,7 @@ Namespace Core
 
                 ' signature must be: Sub(HttpRequest, HttpResponse)
                 If Not matchSignature(method) Then
-                    Call $"Skip route method '{type.Name}.{method.Name}' due to incompatible signature.".Warning()
+                    Call $"Skip route method '{type.Name}.{method.Name}' due to incompatible signature.".warning()
                     Continue For
                 End If
 
@@ -184,10 +184,10 @@ Namespace Core
 
                 If getAttr IsNot Nothing Then
                     Call getRoutes.Add(normalize(url), entry)
-                    Call $"registered GET route {getAttr.ToString} -> {type.Name}.{method.Name}".Debug()
+                    Call $"registered GET route {getAttr.ToString} -> {type.Name}.{method.Name}".debug()
                 Else
                     Call postRoutes.Add(normalize(url), entry)
-                    Call $"registered POST route {postAttr.ToString} -> {type.Name}.{method.Name}".Debug()
+                    Call $"registered POST route {postAttr.ToString} -> {type.Name}.{method.Name}".debug()
                 End If
             Next
 
@@ -214,10 +214,10 @@ Namespace Core
 
             If String.Equals(httpMethod, "POST", StringComparison.OrdinalIgnoreCase) Then
                 Call postRoutes.Add(key, entry)
-                Call $"registered POST route '{key}' (manual)".Debug()
+                Call $"registered POST route '{key}' (manual)".debug()
             Else
                 Call getRoutes.Add(key, entry)
-                Call $"registered GET route '{key}' (manual)".Debug()
+                Call $"registered GET route '{key}' (manual)".debug()
             End If
 
             Return Me
