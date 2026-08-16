@@ -185,10 +185,10 @@ Namespace Core
                 }
 
                 If getAttr IsNot Nothing Then
-                    Call getRoutes.Add(normalize(url), entry)
+                    Call getRoutes(normalize(url)) = entry
                     Call $"registered GET route {getAttr.ToString} -> {type.Name}.{method.Name}".debug()
                 Else
-                    Call postRoutes.Add(normalize(url), entry)
+                    Call postRoutes(normalize(url)) = entry
                     Call $"registered POST route {postAttr.ToString} -> {type.Name}.{method.Name}".debug()
                 End If
             Next
@@ -215,10 +215,10 @@ Namespace Core
             Dim key As String = normalize(url)
 
             If String.Equals(httpMethod, "POST", StringComparison.OrdinalIgnoreCase) Then
-                Call postRoutes.Add(key, entry)
+                Call postRoutes(key) = entry
                 Call $"registered POST route '{key}' (manual)".debug()
             Else
-                Call getRoutes.Add(key, entry)
+                Call getRoutes(key) = entry
                 Call $"registered GET route '{key}' (manual)".debug()
             End If
 
