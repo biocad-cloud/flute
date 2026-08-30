@@ -66,10 +66,16 @@ Public Module ColorTool
     ''' the ``var(...)`` css function color value is not a valid color
     ''' value, you should resolves the css variable at first.
     ''' </param>
+    ''' <param name="overBackground">
+    ''' the solid background color that is used for compositing the
+    ''' semi-transparent color value, if this parameter is not specified
+    ''' then the black or the white color will be used based on the alpha
+    ''' channel value.
+    ''' </param>
     ''' <returns>
     ''' this function returns a color value in ``#rrggbb`` hex text format
     ''' </returns>
-    Public Function ParseColor(expression As String) As String
+    Public Function ParseColor(expression As String, Optional overBackground As String = Nothing) As String
         If expression Is Nothing Then
             Return InvalidColor
         End If
@@ -90,7 +96,7 @@ Public Module ColorTool
         If value.First = "#"c Then
             Return parseHexColor(value)
         ElseIf value.StartsWith("rgb") Then
-            Return parseRgbFunction(value)
+            Return parseRgbFunction(value, overBackground)
         ElseIf value.StartsWith("hsl") Then
             Return parseHslFunction(value)
         ElseIf namedColors.ContainsKey(value) Then
@@ -119,7 +125,7 @@ Public Module ColorTool
         End If
     End Function
 
-    Private Function parseRgbFunction(value As String) As String
+    Private Function parseRgbFunction(value As String, Optional overBackground As String = Nothing) As String
         Dim args As String() = functionArgs(value)
 
         If args Is Nothing OrElse args.Length < 3 Then
