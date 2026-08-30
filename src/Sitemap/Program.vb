@@ -281,6 +281,7 @@ Module Program
                                         changefreq:="weekly",
                                         patterns:=Nothing,
                                         includeOrphans:=False,
+                                        rawMd5:=False,
                                         verbose:=False)
 
         If data Is Nothing Then
@@ -340,6 +341,7 @@ Module Program
                                         changefreq:="weekly",
                                         patterns:=Nothing,
                                         includeOrphans:=False,
+                                        rawMd5:=False,
                                         verbose:=False)
 
         If data Is Nothing Then
@@ -379,6 +381,7 @@ Module Program
     ''' <param name="changefreq"></param>
     ''' <param name="patterns"></param>
     ''' <param name="includeOrphans"></param>
+    ''' <param name="rawMd5"></param>
     ''' <param name="verbose"></param>
     ''' <returns>
     ''' this function returns Nothing if the given site parameter value is
@@ -392,6 +395,7 @@ Module Program
                               changefreq As String,
                               patterns As String(),
                               includeOrphans As Boolean,
+                              rawMd5 As Boolean,
                               verbose As Boolean) As SiteData
 
         Try
@@ -402,6 +406,7 @@ Module Program
                     .MaxUrls = maxUrls,
                     .ChangeFreq = changefreq,
                     .ExcludePatterns = patterns,
+                    .RawMd5 = rawMd5,
                     .Verbose = verbose
                 }.Crawl(site)
             ElseIf Directory.Exists(site) Then
@@ -409,11 +414,16 @@ Module Program
                     Call warn("the --host parameter is not specified, using 'http://localhost/' as the website base url.")
                 End If
 
+                ' the in-site link reference counting is only required by
+                ' the /make command, the /xsl and the /theme command does
+                ' not needs such data.
                 Return New StaticScanner With {
                     .Host = host,
                     .MaxUrls = maxUrls,
                     .IncludeOrphans = includeOrphans,
                     .ExcludePatterns = patterns,
+                    .RawMd5 = rawMd5,
+                    .CountInLinks = (maxUrls > 2),
                     .Verbose = verbose
                 }.Scan(site)
             End If

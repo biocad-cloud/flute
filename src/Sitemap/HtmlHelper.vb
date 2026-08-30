@@ -101,15 +101,6 @@ Public Module HtmlHelper
         Return links
     End Function
 
-        For Each link As String In links _
-            .Where(Function(s) Not String.IsNullOrWhiteSpace(s)) _
-            .Select(Function(s) s.Trim) _
-            .Distinct
-
-            Yield link
-        Next
-    End Function
-
     ''' <summary>
     ''' extract the css file reference url from the ``&lt;link rel="stylesheet">``
     ''' tags of a html document.

@@ -63,7 +63,7 @@ Public Module ContentHash
 
         Dim text As String = If(rawMd5, html, Normalize(html))
         Dim buffer As Byte() = Encoding.UTF8.GetBytes(text)
-        Dim hash As Byte() = Cryptography.MD5.HashData(buffer)
+        Dim hash As Byte() = Security.Cryptography.MD5.HashData(buffer)
 
         Return ToHex(hash)
     End Function
