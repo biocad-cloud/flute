@@ -82,7 +82,7 @@ Public Module SitemapWriter
     ''' save the sitemap xml document as a utf-8 encoded text file
     ''' </summary>
     ''' <param name="document"></param>
-    ''' <param name="path"></param>
+    ''' <param name="saveTo"></param>
     ''' <returns></returns>
     Public Function Save(document As XDocument, saveTo As String) As Boolean
         Dim settings As New XmlWriterSettings With {

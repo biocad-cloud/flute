@@ -161,7 +161,7 @@ Public Module XslTemplate
     ''' save the sitemap.xsl document as a utf-8 encoded text file
     ''' </summary>
     ''' <param name="xsl"></param>
-    ''' <param name="path"></param>
+    ''' <param name="saveTo"></param>
     ''' <returns></returns>
     Public Function Save(xsl As String, saveTo As String) As Boolean
         Dim dir As String = Path.GetDirectoryName(Path.GetFullPath(saveTo))

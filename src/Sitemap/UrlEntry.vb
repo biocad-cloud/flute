@@ -35,7 +35,7 @@ Public Class UrlEntry
     ''' <returns></returns>
     Public Property Depth As Integer
     ''' <summary>
-    ''' The <see cref="HtmlTitle"/> text of the page, this value is optional
+    ''' the html ``&lt;title>`` text of the page, this value is optional
     ''' and is only used for the rendering of the sitemap.xsl page.
     ''' </summary>
     ''' <returns></returns>
@@ -127,7 +127,7 @@ Public Class UrlEntry
     ''' get the last modified time of a local html file, if the file is not
     ''' exists on the local filesystem then returns the current time.
     ''' </summary>
-    ''' <param name="file"></param>
+    ''' <param name="pageFile"></param>
     ''' <returns></returns>
     Public Shared Function LastModOf(pageFile As String) As String
         If pageFile Is Nothing OrElse Not System.IO.File.Exists(pageFile) Then
