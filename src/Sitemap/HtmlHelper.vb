@@ -59,7 +59,7 @@ Public Module HtmlHelper
             For Each anchor As HtmlElement In document.getElementsByTagName("a")
                 Dim href As ValueAttribute = anchor("href")
 
-                If href.Value IsNot Nothing Then
+                If Not String.IsNullOrEmpty(href.Value) Then
                     links.Add(href.Value)
                 End If
             Next
