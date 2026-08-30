@@ -325,18 +325,18 @@ Public Class ThemeOverride
         End If
 
         Dim theme As New ThemeOverride With {
-            .Background = args("--bg"),
-            .Surface = args("--surface"),
-            .Primary = args("--primary"),
-            .TextColor = args("--text"),
-            .LinkColor = args("--link"),
-            .FontFamily = args("--font"),
-            .Radius = args("--radius")
+            .Background = nullIfEmpty(args("--bg").ToString()),
+            .Surface = nullIfEmpty(args("--surface").ToString()),
+            .Primary = nullIfEmpty(args("--primary").ToString()),
+            .TextColor = nullIfEmpty(args("--text").ToString()),
+            .LinkColor = nullIfEmpty(args("--link").ToString()),
+            .FontFamily = nullIfEmpty(args("--font").ToString()),
+            .Radius = nullIfEmpty(args("--radius").ToString())
         }
 
-        If args("--dark") = "true" OrElse args.GetBoolean("--dark") Then
+        If CBool(args("--dark")) Then
             theme.IsDark = True
-        ElseIf args("--light") = "true" OrElse args.GetBoolean("--light") Then
+        ElseIf CBool(args("--light")) Then
             theme.IsDark = False
         End If
 
@@ -345,6 +345,14 @@ Public Class ThemeOverride
         End If
 
         Return theme
+    End Function
+
+    Private Shared Function nullIfEmpty(value As String) As String
+        If String.IsNullOrWhiteSpace(value) Then
+            Return Nothing
+        End If
+
+        Return value.Trim
     End Function
 End Class
 
