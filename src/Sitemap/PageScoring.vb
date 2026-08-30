@@ -196,8 +196,8 @@ Public Module PageScoring
             Dim entry As UrlEntry = entries(i)
             Dim changefreq As String
 
-            If intervals(i) > 0 Then
-                changefreq = ChangeFreqOf(intervals(i))
+            If entry.UpdateInterval > 0 Then
+                changefreq = ChangeFreqOf(entry.UpdateInterval)
             Else
                 changefreq = normalizeFreq(defaultChangeFreq)
             End If
