@@ -210,10 +210,6 @@ Public Module PageScoring
                 entry.Priority = MinPriority
             End If
 
-            If Environment.GetEnvironmentVariable("SITEMAP_DEBUG_SCORE") = "1" Then
-                Console.WriteLine($"  dbg {entry.Loc} depth={entry.Depth} role={entry.Role} links={entry.InLinks} size={entry.ContentSize} raw={raws(i).ToString("F4")} pri={entry.Priority}")
-            End If
-
             If distribution.ContainsKey(changefreq) Then
                 distribution(changefreq) += 1
             Else
