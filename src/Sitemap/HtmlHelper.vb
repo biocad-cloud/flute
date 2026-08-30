@@ -60,6 +60,33 @@ Public Module HtmlHelper
             links.AddRange(linksFromDom(html))
         End If
 
+        ' the regex fallback extractor
+        If links.Count = 0 Then
+            For Each m As Match In anchorHref.Matches(html)
+                links.Add(matchValue(m))
+            Next
+        End If
+
+        For Each link As String In links _
+            .Where(Function(s) Not String.IsNullOrWhiteSpace(s)) _
+            .Select(Function(s) s.Trim) _
+            .Distinct
+
+            Yield link
+        Next
+    End Function
+
+    ''' <summary>
+    ''' extract the hyper links from a html document by the DOM tree parser
+    ''' </summary>
+    ''' <param name="html"></param>
+    ''' <returns></returns>
+    Private Function linksFromDom(html As String) As List(Of String)
+        Dim links As New List(Of String)
+
+        Try
+            Dim document As HtmlDocument = HtmlDocument.LoadDocument(ensureTextStream(html), strip:=False)
+
             For Each anchor As HtmlElement In document.getElementsByTagName("a")
                 Dim href As ValueAttribute = anchor("href")
 
@@ -71,12 +98,8 @@ Public Module HtmlHelper
             ' the html document parser is failed, use the regex fallback
         End Try
 
-        ' the regex fallback extractor
-        If links.Count = 0 Then
-            For Each m As Match In anchorHref.Matches(html)
-                links.Add(matchValue(m))
-            Next
-        End If
+        Return links
+    End Function
 
         For Each link As String In links _
             .Where(Function(s) Not String.IsNullOrWhiteSpace(s)) _
