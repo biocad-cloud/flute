@@ -127,7 +127,7 @@ Module Program
         Description:="Override the hyper link text color of the generated sitemap.xsl file, example as #ff3b2f. If this parameter is not specified then the link color will be extracted from the css style of the target website.")>
     <Argument("--font", True, CLITypes.String,
         AcceptTypes:={GetType(String)},
-        Description:="Override the font family stack of the generated sitemap.xsl file, example as ""Inter"", ""Segoe UI"", sans-serif. If this parameter is not specified then the font family will be extracted from the css style of the target website.")>
+        Description:="Override the font family stack of the generated sitemap.xsl file, example as 'Inter', 'Segoe UI', sans-serif. If this parameter is not specified then the font family will be extracted from the css style of the target website.">
     <Argument("--radius", True, CLITypes.String,
         AcceptTypes:={GetType(String)},
         Description:="Override the border radius value of the card element inside the generated sitemap.xsl file, example as 6px. If this parameter is not specified then the border radius value will be extracted from the css style of the target website.")>
@@ -149,43 +149,25 @@ Module Program
         Dim noXsl As Boolean = flag(args, "--no-xsl")
 
         If String.IsNullOrWhiteSpace(site) Then
-            Call error("the --site parameter value can not be empty!")
+            Call [error]("the --site parameter value can not be empty!")
             Return -1
         End If
 
         Dim patterns As String() = splitPatterns(exclude)
-        Dim data As SiteData
+        Dim data As SiteData = LoadSite(site,
+                                        host:=host,
+                                        sleep:=sleep,
+                                        depth:=If(depth <= 0, 1, depth),
+                                        maxUrls:=If(max_urls <= 0, 50000, max_urls),
+                                        changefreq:=changefreq,
+                                        patterns:=patterns,
+                                        includeOrphans:=Not flag(args, "--no-orphans"),
+                                        verbose:=verbose)
 
-        Try
-            If UrlTool.IsHttpUrl(site) Then
-                data = New WebCrawler With {
-                    .SleepSeconds = sleep,
-                    .MaxDepth = If(depth <= 0, 1, depth),
-                    .MaxUrls = If(max_urls <= 0, 50000, max_urls),
-                    .ChangeFreq = changefreq,
-                    .ExcludePatterns = patterns,
-                    .Verbose = verbose
-                }.Crawl(site)
-            ElseIf Directory.Exists(site) Then
-                If String.IsNullOrWhiteSpace(host) Then
-                    Call warn("the --host parameter is not specified, using 'http://localhost/' as the website base url.")
-                End If
-
-                data = New StaticScanner With {
-                    .Host = host,
-                    .MaxUrls = If(max_urls <= 0, 50000, max_urls),
-                    .IncludeOrphans = Not flag(args, "--no-orphans"),
-                    .ExcludePatterns = patterns,
-                    .Verbose = verbose
-                }.Scan(site)
-            Else
-                Call error($"the --site parameter value '{site}' is neither a valid http url nor an exists local directory path!")
-                Return -404
-            End If
-        Catch ex As Exception
-            Call error(ex.Message)
-            Return -500
-        End Try
+        If data Is Nothing Then
+            Call [error]($"the --site parameter value '{site}' is neither a valid http url nor an exists local directory path!")
+            Return -404
+        End If
 
         If data.Entries.Count = 0 Then
             Call warn("there is no in-site url that is found from the target website, the generated sitemap file will be empty.")
@@ -210,7 +192,7 @@ Module Program
                 Call XslTemplate.Save(XslTemplate.Build(theme, data.BaseUrl), xslPath)
             End If
         Catch ex As Exception
-            Call error(ex.Message)
+            Call [error](ex.Message)
             Return -500
         End Try
 
@@ -227,7 +209,8 @@ Module Program
     End Function
 
     ''' <summary>
-    ''' regenerate the sitemap.xsl stylesheet file only
+    ''' regenerate the sitemap.xsl stylesheet file only, the sitemap.xml
+    ''' file will not be touched by this command.
     ''' </summary>
     ''' <param name="site">
     ''' the target website: an online website url or a local directory path
@@ -254,13 +237,43 @@ Module Program
                                    Optional out As String = "./",
                                    Optional args As CommandLine = Nothing) As Integer
 
-        Return MakeSitemap(site,
-                           host:=host,
-                           out:=out,
-                           sleep:=0,
-                           depth:=0,
-                           max_urls:=1,
-                           args:=args)
+        If String.IsNullOrWhiteSpace(site) Then
+            Call [error]("the --site parameter value can not be empty!")
+            Return -1
+        End If
+
+        ' only the index page and the css files are required for the
+        ' website theme extraction
+        Dim data As SiteData = LoadSite(site,
+                                        host:=host,
+                                        sleep:=0,
+                                        depth:=1,
+                                        maxUrls:=2,
+                                        changefreq:="weekly",
+                                        patterns:=Nothing,
+                                        includeOrphans:=False,
+                                        verbose:=False)
+
+        If data Is Nothing Then
+            Call [error]($"the --site parameter value '{site}' is neither a valid http url nor an exists local directory path!")
+            Return -404
+        End If
+
+        Dim theme As SiteTheme = AnalyzeTheme(data, args)
+        Dim outDir As String = Path.GetFullPath(If(String.IsNullOrWhiteSpace(out), "./", out))
+        Dim xslPath As String = Path.Combine(outDir, SitemapXsl)
+
+        Try
+            Call XslTemplate.Save(XslTemplate.Build(theme, data.BaseUrl), xslPath)
+        Catch ex As Exception
+            Call [error](ex.Message)
+            Return -500
+        End Try
+
+        Call Console.WriteLine($"sitemap.xsl  -> {xslPath}")
+        Call Console.WriteLine($"website theme: {theme}")
+
+        Return 0
     End Function
 
     ''' <summary>
@@ -286,35 +299,24 @@ Module Program
                                Optional args As CommandLine = Nothing) As Integer
 
         If String.IsNullOrWhiteSpace(site) Then
-            Call error("the --site parameter value can not be empty!")
+            Call [error]("the --site parameter value can not be empty!")
             Return -1
         End If
 
-        Dim data As SiteData
+        Dim data As SiteData = LoadSite(site,
+                                        host:=host,
+                                        sleep:=0,
+                                        depth:=1,
+                                        maxUrls:=2,
+                                        changefreq:="weekly",
+                                        patterns:=Nothing,
+                                        includeOrphans:=False,
+                                        verbose:=False)
 
-        Try
-            If UrlTool.IsHttpUrl(site) Then
-                data = New WebCrawler With {
-                    .SleepSeconds = 0,
-                    .MaxDepth = 0,
-                    .MaxUrls = 1,
-                    .Verbose = False
-                }.Crawl(site)
-            ElseIf Directory.Exists(site) Then
-                data = New StaticScanner With {
-                    .Host = host,
-                    .MaxUrls = 1,
-                    .IncludeOrphans = False,
-                    .Verbose = False
-                }.Scan(site)
-            Else
-                Call error($"the --site parameter value '{site}' is neither a valid http url nor an exists local directory path!")
-                Return -404
-            End If
-        Catch ex As Exception
-            Call error(ex.Message)
-            Return -500
-        End Try
+        If data Is Nothing Then
+            Call [error]($"the --site parameter value '{site}' is neither a valid http url nor an exists local directory path!")
+            Return -404
+        End If
 
         Dim theme As SiteTheme = AnalyzeTheme(data, args)
 
@@ -334,6 +336,64 @@ Module Program
         Call Console.WriteLine($"css rules     : {theme.CssRules}")
 
         Return 0
+    End Function
+
+    ''' <summary>
+    ''' crawl or scan the target website as the <see cref="SiteData"/>
+    ''' model based on the type of the given site parameter value.
+    ''' </summary>
+    ''' <param name="site"></param>
+    ''' <param name="host"></param>
+    ''' <param name="sleep"></param>
+    ''' <param name="depth"></param>
+    ''' <param name="maxUrls"></param>
+    ''' <param name="changefreq"></param>
+    ''' <param name="patterns"></param>
+    ''' <param name="includeOrphans"></param>
+    ''' <param name="verbose"></param>
+    ''' <returns>
+    ''' this function returns Nothing if the given site parameter value is
+    ''' neither a valid http url nor an exists local directory path.
+    ''' </returns>
+    Private Function LoadSite(site As String,
+                              host As String,
+                              sleep As Double,
+                              depth As Integer,
+                              maxUrls As Integer,
+                              changefreq As String,
+                              patterns As String(),
+                              includeOrphans As Boolean,
+                              verbose As Boolean) As SiteData
+
+        Try
+            If UrlTool.IsHttpUrl(site) Then
+                Return New WebCrawler With {
+                    .SleepSeconds = sleep,
+                    .MaxDepth = depth,
+                    .MaxUrls = maxUrls,
+                    .ChangeFreq = changefreq,
+                    .ExcludePatterns = patterns,
+                    .Verbose = verbose
+                }.Crawl(site)
+            ElseIf Directory.Exists(site) Then
+                If String.IsNullOrWhiteSpace(host) Then
+                    Call warn("the --host parameter is not specified, using 'http://localhost/' as the website base url.")
+                End If
+
+                Return New StaticScanner With {
+                    .Host = host,
+                    .MaxUrls = maxUrls,
+                    .IncludeOrphans = includeOrphans,
+                    .ExcludePatterns = patterns,
+                    .Verbose = verbose
+                }.Scan(site)
+            End If
+        Catch ex As Exception
+            Call [error](ex.Message)
+            Return Nothing
+        End Try
+
+        Return Nothing
     End Function
 
     ''' <summary>
@@ -357,7 +417,7 @@ Module Program
             Dim scheme As String = data.ColorScheme.ToLower
 
             If scheme.IndexOf("dark", StringComparison.Ordinal) > -1 AndAlso
-               scheme.IndexOf("light", StringComparison.Ordinal) = -1 Then
+                scheme.IndexOf("light", StringComparison.Ordinal) = -1 Then
 
                 themeOverride.IsDark = True
             ElseIf scheme.IndexOf("light", StringComparison.Ordinal) > -1 Then
