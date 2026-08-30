@@ -120,6 +120,11 @@ Module Program
     <Argument("--theme", True, CLITypes.String,
         AcceptTypes:={GetType(String)},
         Description:="The website theme override switches of the generated sitemap.xsl stylesheet file. The available switches are: --primary, --bg, --surface, --text, --link, --font, --radius, --dark and --light. The color switch value should be a css color expression, example as #ff3b2f. If these switches are not specified, then the whole visual style of the sitemap.xsl file will be extracted from the css style of the target website automatically.")>
+    <Argument("--history", True, CLITypes.Integer,
+        AcceptTypes:={GetType(Integer)},
+        Description:="The max size limit of the page update timestamp queue of a single url inside the history database. The default value of this parameter is 32, a bigger value keeps much more history data for the update frequency calculation but the database file will be much larger.")>
+    <Argument("--raw-md5", True, CLITypes.Boolean,
+        Description:="Calculate the md5 fingerprint of the page content from the raw html document text instead of the normalized html document text. The normalization removes the html comment, the script block, the style block and the noscript block at first, so that the volatile fragments of the html document will not be treated as a page content update.")>
     Public Function MakeSitemap(site As String,
                                 Optional host As String = Nothing,
                                 Optional out As String = "./",
@@ -128,6 +133,7 @@ Module Program
                                 Optional max_urls As Integer = 5000,
                                 Optional changefreq As String = "weekly",
                                 Optional exclude As String = Nothing,
+                                Optional history As Integer = DefaultMaxHistory,
                                 Optional args As CommandLine = Nothing) As Integer
 
         Dim verbose As Boolean = Not flag(args, "--quiet")
@@ -139,6 +145,7 @@ Module Program
         End If
 
         Dim patterns As String() = splitPatterns(exclude)
+        Dim rawMd5 As Boolean = flag(args, "--raw-md5")
         Dim data As SiteData = LoadSite(site,
                                         host:=host,
                                         sleep:=sleep,
@@ -147,6 +154,7 @@ Module Program
                                         changefreq:=changefreq,
                                         patterns:=patterns,
                                         includeOrphans:=Not flag(args, "--no-orphans"),
+                                        rawMd5:=rawMd5,
                                         verbose:=verbose)
 
         If data Is Nothing Then
@@ -158,6 +166,33 @@ Module Program
             Call warn("there is no in-site url that is found from the target website, the generated sitemap file will be empty.")
         End If
 
+        Dim outDir As String = Path.GetFullPath(If(String.IsNullOrWhiteSpace(out), "./", out))
+        Dim xmlPath As String = Path.Combine(outDir, SitemapXml)
+        Dim xslPath As String = Path.Combine(outDir, SitemapXsl)
+        Dim dbPath As String = Path.Combine(outDir, HistoryDbName)
+
+        ' sync the page content fingerprint with the history database: the
+        ' update timestamp of the changed page will be pushed into the
+        ' timestamp queue of such url, and then the update frequency and the
+        ' page priority value will be calculated from these timestamp queue.
+        Dim buildTime As Long = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+        Dim historyDb As HistoryDb = HistoryDb.Load(dbPath)
+
+        If Not historyDb.ErrorMessage Is Nothing Then
+            Call warn(historyDb.ErrorMessage)
+        End If
+
+        Dim historyStats As HistoryStats = historyDb.Sync(
+            entries:=data.Entries,
+            now:=buildTime,
+            maxTimestamps:=If(history <= 0, DefaultMaxHistory, history))
+        Dim changeFrequencies As Dictionary(Of String, Integer) = PageScoring.Apply(
+            data:=data,
+            defaultChangeFreq:=changefreq,
+            now:=buildTime)
+
+        Call data.SortByPriority()
+
         Dim theme As SiteTheme = AnalyzeTheme(data, args)
 
         If verbose Then
@@ -166,16 +201,17 @@ Module Program
             Call Console.WriteLine($"css documents: {data.CssTexts.Count}, css rules: {theme.CssRules}")
         End If
 
-        Dim outDir As String = Path.GetFullPath(If(String.IsNullOrWhiteSpace(out), "./", out))
-        Dim xmlPath As String = Path.Combine(outDir, SitemapXml)
-        Dim xslPath As String = Path.Combine(outDir, SitemapXsl)
-
         Try
             Call SitemapWriter.Save(SitemapWriter.Build(data.Entries, If(noXsl, Nothing, SitemapXsl)), xmlPath)
 
             If Not noXsl Then
                 Call XslTemplate.Save(XslTemplate.Build(theme, data.BaseUrl), xslPath)
             End If
+
+            ' the history database should only be saved when the sitemap
+            ' files have been generated successfully, so that a failed build
+            ' will not pollute the page update history.
+            Call historyDb.Save(dbPath)
         Catch ex As Exception
             Call [error](ex.Message)
             Return -500
@@ -188,7 +224,15 @@ Module Program
             Call Console.WriteLine($"sitemap.xsl  -> {xslPath}")
         End If
 
+        Call Console.WriteLine($"sitemap.json -> {dbPath}")
         Call Console.WriteLine($"{data.Entries.Count} url entries, {data.VisitedPages} pages visited.")
+        Call Console.WriteLine($"history: {historyStats}, {historyStats.TotalPages} urls tracked.")
+
+        If changeFrequencies.Count > 0 Then
+            Call Console.WriteLine("changefreq: " & String.Join(", ", changeFrequencies _
+                .OrderByDescending(Function(f) f.Value) _
+                .Select(Function(f) $"{f.Key}={f.Value}")))
+        End If
 
         Return 0
     End Function
