@@ -61,6 +61,22 @@ Public Class StaticScanner
     Public Property ChangeFreq As String = "weekly"
 
     ''' <summary>
+    ''' calculate the md5 fingerprint of the page from the raw html document
+    ''' text instead of the normalized html document text?
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property RawMd5 As Boolean = False
+
+    ''' <summary>
+    ''' count the in-site link reference of every page of the website? this
+    ''' option requires an extra link extraction pass on the html files that
+    ''' are not linked by the index page of the website, so that it will
+    ''' takes a little bit more time to finish the scan job.
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property CountInLinks As Boolean = True
+
+    ''' <summary>
     ''' scan a local static website directory
     ''' </summary>
     ''' <param name="wwwroot">
