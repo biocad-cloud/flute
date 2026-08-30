@@ -28,6 +28,16 @@ Module Program
     ''' the default output file name of the sitemap xsl stylesheet
     ''' </summary>
     Const SitemapXsl As String = "sitemap.xsl"
+    ''' <summary>
+    ''' the file name of the json based page history database, the file name
+    ''' is started with a dot character so that it will be a hidden file in
+    ''' the linux filesystem.
+    ''' </summary>
+    Const HistoryDbName As String = ".sitemap-history.json"
+    ''' <summary>
+    ''' the default size limit of the update timestamp queue of a single url
+    ''' </summary>
+    Const DefaultMaxHistory As Integer = 32
 
     Public Function Main(args As String()) As Integer
         Return GetType(Program).RunCLI(App.CommandLine)
