@@ -110,31 +110,9 @@ Module Program
         Description:="Do not include the html files that are not linked by any other page of the website. This parameter only works in the local directory scan mode, the orphan pages are included in the sitemap file by default.")>
     <Argument("--quiet", True, CLITypes.Boolean,
         Description:="Do not print the crawl or scan progress message to the console stdout.")>
-    <Argument("--primary", True, CLITypes.String,
+    <Argument("--theme", True, CLITypes.String,
         AcceptTypes:={GetType(String)},
-        Description:="Override the theme accent color of the generated sitemap.xsl file, example as #ff3b2f. If this parameter is not specified then the accent color will be extracted from the css style of the target website.")>
-    <Argument("--bg", True, CLITypes.String,
-        AcceptTypes:={GetType(String)},
-        Description:="Override the page background color of the generated sitemap.xsl file, example as #0a0d12. If this parameter is not specified then the background color will be extracted from the css style of the target website.")>
-    <Argument("--surface", True, CLITypes.String,
-        AcceptTypes:={GetType(String)},
-        Description:="Override the card and the table header background color of the generated sitemap.xsl file, example as #10141c. If this parameter is not specified then the surface color will be extracted from the css style of the target website.")>
-    <Argument("--text", True, CLITypes.String,
-        AcceptTypes:={GetType(String)},
-        Description:="Override the body text color of the generated sitemap.xsl file, example as #eef2f7. If this parameter is not specified then the text color will be extracted from the css style of the target website.")>
-    <Argument("--link", True, CLITypes.String,
-        AcceptTypes:={GetType(String)},
-        Description:="Override the hyper link text color of the generated sitemap.xsl file, example as #ff3b2f. If this parameter is not specified then the link color will be extracted from the css style of the target website.")>
-    <Argument("--font", True, CLITypes.String,
-        AcceptTypes:={GetType(String)},
-        Description:="Override the font family stack of the generated sitemap.xsl file, example as 'Inter', 'Segoe UI', sans-serif. If this parameter is not specified then the font family will be extracted from the css style of the target website.">
-    <Argument("--radius", True, CLITypes.String,
-        AcceptTypes:={GetType(String)},
-        Description:="Override the border radius value of the card element inside the generated sitemap.xsl file, example as 6px. If this parameter is not specified then the border radius value will be extracted from the css style of the target website.")>
-    <Argument("--dark", True, CLITypes.Boolean,
-        Description:="Force the generated sitemap.xsl file to use the dark theme mode instead of the auto detection result from the css style of the target website.")>
-    <Argument("--light", True, CLITypes.Boolean,
-        Description:="Force the generated sitemap.xsl file to use the light theme mode instead of the auto detection result from the css style of the target website.")>
+        Description:="The website theme override switches of the generated sitemap.xsl stylesheet file. The available switches are: --primary, --bg, --surface, --text, --link, --font, --radius, --dark and --light. The color switch value should be a css color expression, example as #ff3b2f. If these switches are not specified, then the whole visual style of the sitemap.xsl file will be extracted from the css style of the target website automatically.")>
     Public Function MakeSitemap(site As String,
                                 Optional host As String = Nothing,
                                 Optional out As String = "./",

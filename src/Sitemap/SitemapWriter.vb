@@ -84,7 +84,7 @@ Public Module SitemapWriter
     ''' <param name="document"></param>
     ''' <param name="path"></param>
     ''' <returns></returns>
-    Public Function Save(document As XDocument, path As String) As Boolean
+    Public Function Save(document As XDocument, saveTo As String) As Boolean
         Dim settings As New XmlWriterSettings With {
             .Encoding = New UTF8Encoding(False),
             .Indent = True,
@@ -92,13 +92,13 @@ Public Module SitemapWriter
             .OmitXmlDeclaration = False
         }
 
-        Dim dir As String = Path.GetDirectoryName(Path.GetFullPath(path))
+        Dim dir As String = Path.GetDirectoryName(Path.GetFullPath(saveTo))
 
         If Not String.IsNullOrEmpty(dir) AndAlso Not Directory.Exists(dir) Then
             Call Directory.CreateDirectory(dir)
         End If
 
-        Using writer As XmlWriter = XmlWriter.Create(path, settings)
+        Using writer As XmlWriter = XmlWriter.Create(saveTo, settings)
             Call document.Save(writer)
         End Using
 

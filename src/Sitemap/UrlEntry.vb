@@ -129,11 +129,11 @@ Public Class UrlEntry
     ''' </summary>
     ''' <param name="file"></param>
     ''' <returns></returns>
-    Public Shared Function LastModOf(file As String) As String
-        If file Is Nothing OrElse Not File.Exists(file) Then
+    Public Shared Function LastModOf(pageFile As String) As String
+        If pageFile Is Nothing OrElse Not System.IO.File.Exists(pageFile) Then
             Return LastModOf(DateTime.Now)
         End If
 
-        Return LastModOf(New FileInfo(file).LastWriteTime)
+        Return LastModOf(New FileInfo(pageFile).LastWriteTime)
     End Function
 End Class

@@ -164,27 +164,27 @@ Public Class StaticScanner
             End If
 
             For Each href As String In HtmlHelper.GetLinks(html)
-                Dim file As String = UrlTool.ResolveLocalPath(href, current.file, root)
+                Dim linkFile As String = UrlTool.ResolveLocalPath(href, current.file, root)
 
-                If file Is Nothing OrElse Not File.Exists(file) Then
+                If linkFile Is Nothing OrElse Not System.IO.File.Exists(linkFile) Then
                     Continue For
                 End If
 
-                If Not UrlTool.IsStaticFile(file) Then
+                If Not UrlTool.IsStaticFile(linkFile) Then
                     Continue For
                 End If
 
-                If Not visited.Add(file) Then
+                If Not visited.Add(linkFile) Then
                     Continue For
                 End If
 
-                Dim siteUrl As String = UrlTool.ToSiteUrl(file, root, host)
+                Dim siteUrl As String = UrlTool.ToSiteUrl(linkFile, root, host)
 
                 If UrlTool.IsExcluded(siteUrl, ExcludePatterns) Then
                     Continue For
                 End If
 
-                Call queue.Enqueue((file, current.depth + 1))
+                Call queue.Enqueue((linkFile, current.depth + 1))
             Next
         Loop
 
@@ -241,17 +241,17 @@ Public Class StaticScanner
     ''' <returns></returns>
     Private Iterator Function indexPages(root As String) As IEnumerable(Of String)
         For Each name As String In {"index.html", "index.htm", "default.html", "default.htm", "home.html"}
-            Dim file As String = Path.Combine(root, name)
+            Dim pageFile As String = System.IO.Path.Combine(root, name)
 
-            If File.Exists(file) Then
-                Yield file
+            If System.IO.File.Exists(pageFile) Then
+                Yield pageFile
                 Return
             End If
         Next
 
-        For Each file As String In Directory.EnumerateFiles(root, "*.htm*", SearchOption.TopDirectoryOnly)
-            If UrlTool.IsStaticFile(file) Then
-                Yield file
+        For Each pageFile As String In Directory.EnumerateFiles(root, "*.htm*", SearchOption.TopDirectoryOnly)
+            If UrlTool.IsStaticFile(pageFile) Then
+                Yield pageFile
             End If
         Next
     End Function
@@ -296,9 +296,9 @@ Public Class StaticScanner
         Loop
     End Function
 
-    Private Function ReadText(file As String) As String
+    Private Function ReadText(pageFile As String) As String
         Try
-            Return File.ReadAllText(file)
+            Return System.IO.File.ReadAllText(pageFile)
         Catch ex As Exception
             Return Nothing
         End Try

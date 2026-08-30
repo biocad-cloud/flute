@@ -240,16 +240,16 @@ Public Module UrlTool
         End If
 
         ' translate the wildcard pattern as the regex pattern
-        Dim regex As String
+        Dim regexPattern As String
 
         If pattern.IndexOfAny({"^"c, "$"c, "["c, "("c}) > -1 Then
-            regex = pattern
+            regexPattern = pattern
         Else
-            regex = "^" & Regex.Escape(pattern).Replace("\*", ".*").Replace("\?", ".") & "$"
+            regexPattern = "^" & Regex.Escape(pattern).Replace("\*", ".*").Replace("\?", ".") & "$"
         End If
 
         Try
-            Return Regex.IsMatch(url, regex, RegexOptions.IgnoreCase)
+            Return Regex.IsMatch(url, regexPattern, RegexOptions.IgnoreCase)
         Catch ex As Exception
             Return url.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) > -1
         End Try
@@ -265,8 +265,8 @@ Public Module UrlTool
             Return False
         End If
 
-        Dim path As String = urlPath(url)
-        Dim extension As String = Path.GetExtension(path).ToLower
+        Dim pagePath As String = urlPath(url)
+        Dim extension As String = System.IO.Path.GetExtension(pagePath).ToLower
 
         If extension.Length > 0 Then
             If assetExtensions.Contains(extension) Then
@@ -371,28 +371,28 @@ Public Module UrlTool
             Return Nothing
         End If
 
-        Dim dir As String = Path.GetDirectoryName(Path.GetFullPath(pageFile))
-        Dim path As String
+        Dim dir As String = System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(pageFile))
+        Dim fullPath As String
 
         If raw.StartsWith("/") Then
-            path = Path.Combine(Path.GetFullPath(wwwroot), raw.Trim("/"c).Replace("/"c, "\"c))
+            fullPath = System.IO.Path.Combine(System.IO.Path.GetFullPath(wwwroot), raw.Trim("/"c).Replace("/"c, "\"c))
         Else
-            path = Path.Combine(dir, raw.Replace("/"c, "\"c))
+            fullPath = System.IO.Path.Combine(dir, raw.Replace("/"c, "\"c))
         End If
 
         Try
-            path = Path.GetFullPath(path)
+            fullPath = System.IO.Path.GetFullPath(fullPath)
         Catch ex As Exception
             Return Nothing
         End Try
 
-        Dim root As String = Path.GetFullPath(wwwroot).TrimEnd("\"c) & "\"
+        Dim root As String = System.IO.Path.GetFullPath(wwwroot).TrimEnd("\"c) & "\"
 
-        If Not path.StartsWith(root, StringComparison.OrdinalIgnoreCase) Then
+        If Not fullPath.StartsWith(root, StringComparison.OrdinalIgnoreCase) Then
             Return Nothing
         End If
 
-        Return path
+        Return fullPath
     End Function
 
     ''' <summary>

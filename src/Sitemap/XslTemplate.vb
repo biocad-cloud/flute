@@ -163,14 +163,14 @@ Public Module XslTemplate
     ''' <param name="xsl"></param>
     ''' <param name="path"></param>
     ''' <returns></returns>
-    Public Function Save(xsl As String, path As String) As Boolean
-        Dim dir As String = Path.GetDirectoryName(Path.GetFullPath(path))
+    Public Function Save(xsl As String, saveTo As String) As Boolean
+        Dim dir As String = Path.GetDirectoryName(Path.GetFullPath(saveTo))
 
         If Not String.IsNullOrEmpty(dir) AndAlso Not Directory.Exists(dir) Then
             Call Directory.CreateDirectory(dir)
         End If
 
-        Call File.WriteAllText(path, xsl, New UTF8Encoding(False))
+        Call File.WriteAllText(saveTo, xsl, New UTF8Encoding(False))
 
         Return True
     End Function
