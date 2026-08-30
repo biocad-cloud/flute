@@ -12,7 +12,7 @@ Public Module XslTemplate
     ''' <summary>
     ''' the placeholder that will be replaced by the theme css style block
     ''' </summary>
-    Const ThemeCssSlot As String = "/* @@THEME_CSS@@ */"
+    Const ThemeCssSlot As String = "@@THEME_CSS@@"
     ''' <summary>
     ''' the placeholder that will be replaced by the website title
     ''' </summary>

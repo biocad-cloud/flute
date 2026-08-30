@@ -5,7 +5,6 @@ Imports System.Linq
 Imports System.Text
 Imports System.Text.RegularExpressions
 Imports Microsoft.VisualBasic.CommandLine
-Imports Microsoft.VisualBasic.MIME.Html.Language.CSS
 
 ''' <summary>
 ''' The website theme model that is extracted from the css style of the
@@ -461,29 +460,15 @@ Friend Class ThemeStatistics
     ''' </summary>
     ''' <param name="cssText"></param>
     Public Sub Collect(cssText As String)
-        Dim css As CSSFile
+        Dim rules As List(Of CssRule) = CssRuleParser.Parse(cssText)
 
-        ' the CssParser treats the input text as an url or a file path when
-        ' the given text does not contains any newline character, so that
-        ' we needs to make sure that the input css text always contains
-        ' the newline character.
-        If cssText.IndexOf(vbLf) < 0 Then
-            cssText = cssText.Replace("}", "}" & vbLf)
-        End If
-
-        Try
-            css = CssParser.GetTagWithCSS(cssText)
-        Catch ex As Exception
-            Return
-        End Try
-
-        If css Is Nothing OrElse css.Selectors Is Nothing Then
+        If rules.Count = 0 Then
             Return
         End If
 
         ' pass 1: collect all of the css variables at first
-        For Each selector As Selector In css.Selectors.Values
-            For Each [property] As KeyValuePair(Of String, String) In selector.Properties
+        For Each rule As CssRule In rules
+            For Each [property] As KeyValuePair(Of String, String) In rule.Properties
                 If [property].Key.StartsWith("--") Then
                     variables([property].Key) = [property].Value
                 End If
@@ -491,13 +476,13 @@ Friend Class ThemeStatistics
         Next
 
         ' pass 2: vote for the theme style values
-        For Each selector As Selector In css.Selectors.Values
+        For Each rule As CssRule In rules
             RuleCount += 1
 
-            Dim weight As Double = SelectorWeight(selector.Selector)
+            Dim weight As Double = SelectorWeight(rule.Selector)
 
-            For Each [property] As KeyValuePair(Of String, String) In selector.Properties
-                Call vote(selector.Selector, [property].Key, [property].Value, weight)
+            For Each [property] As KeyValuePair(Of String, String) In rule.Properties
+                Call vote(rule.Selector, [property].Key, [property].Value, weight)
             Next
         Next
 
@@ -569,7 +554,9 @@ Friend Class ThemeStatistics
                 Call addVote("border", value, weight * 0.6)
 
             Case "font-family", "font"
-                Call addVote("font", value, weight)
+                ' the font-family of the body element is the website font,
+                ' the font-family of the code block is not.
+                Call addVote("font", value, If(weight >= 7, weight * 2.5, weight))
 
             Case "border-radius"
                 Call addVote("radius", value, weight * 0.4)
@@ -666,14 +653,12 @@ Friend Class ThemeStatistics
             Return Nothing
         End If
 
-        If category = "font" OrElse category = "radius" Then
+        If category = "radius" Then
             Dim best As String = Nothing
             Dim bestScore As Double = 0
 
             For Each vote As KeyValuePair(Of String, Double) In votes(category)
-                Dim value As String = If(category = "font",
-                    FontStack.Clean(vote.Key),
-                    normalizeRadius(vote.Key))
+                Dim value As String = normalizeRadius(vote.Key)
 
                 If value Is Nothing Then
                     Continue For
@@ -686,6 +671,38 @@ Friend Class ThemeStatistics
             Next
 
             Return best
+        End If
+
+        If category = "font" Then
+            Dim candidates As New List(Of (font As String, score As Double))
+
+            For Each vote As KeyValuePair(Of String, Double) In votes(category)
+                Dim value As String = FontStack.Clean(vote.Key)
+
+                If value Is Nothing Then
+                    Continue For
+                End If
+
+                candidates.Add((value, vote.Value))
+            Next
+
+            If candidates.Count = 0 Then
+                Return Nothing
+            End If
+
+            Dim best As (font As String, score As Double) = candidates.OrderByDescending(Function(c) c.score).First
+            Dim sans = candidates _
+                .Where(Function(c) Not isMonospace(c.font)) _
+                .OrderByDescending(Function(c) c.score) _
+                .FirstOrDefault
+
+            ' the monospace font of the code block should not be used as
+            ' the website font when there is a proportional font candidate
+            If Not sans.font Is Nothing AndAlso sans.score >= best.score * 0.5 Then
+                Return sans.font
+            End If
+
+            Return best.font
         End If
 
         Dim scores As New Dictionary(Of String, Double)
@@ -711,6 +728,24 @@ Friend Class ThemeStatistics
         End If
 
         Return scores.OrderByDescending(Function(v) v.Value).First.Key
+    End Function
+
+    ''' <summary>
+    ''' is the given font stack a monospace font stack?
+    ''' </summary>
+    ''' <param name="font"></param>
+    ''' <returns></returns>
+    Private Function isMonospace(font As String) As Boolean
+        If font Is Nothing Then
+            Return False
+        End If
+
+        Dim lower As String = font.ToLower
+
+        Return lower.Contains("monospace") OrElse
+               lower.Contains("mono") OrElse
+               lower.Contains("consolas") OrElse
+               lower.Contains("courier")
     End Function
 
     ''' <summary>
@@ -816,9 +851,18 @@ Friend Class ThemeStatistics
             Return 1
         End If
 
+        Dim parts As String() = selectorText.Split(","c)
+
+        If parts.Length > 1 Then
+            ' a css rule block may owns a list of the selector, example as
+            ' the ``html, body {...}`` rule block, the importance weight of
+            ' such rule block is the max weight of its selector list.
+            Return parts.Max(Function(part) SelectorWeight(part))
+        End If
+
         Dim s As String = Regex.Replace(selectorText.Trim.ToLower, "\s+", " ")
 
-        If s = "body" OrElse s = "html" OrElse s = "html, body" OrElse s = "body, html" Then
+        If s = "body" OrElse s = "html" Then
             Return 12
         ElseIf s.StartsWith(":root") OrElse s = "root" Then
             Return 6
