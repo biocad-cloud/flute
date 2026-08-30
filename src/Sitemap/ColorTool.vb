@@ -52,6 +52,43 @@ Public Module ColorTool
     End Function
 
     ''' <summary>
+    ''' the css color literal pattern: the hex color, the rgb/rgba function
+    ''' and the hsl/hsla function
+    ''' </summary>
+    ReadOnly colorLiteral As New Regex(
+        "#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3})\b|rgba?\([^)]*\)|hsla?\([^)]*\)",
+        RegexOptions.IgnoreCase)
+
+    ''' <summary>
+    ''' find the first valid css color literal from a complex css value,
+    ''' example as the shorthand property ``background: #fff url(bg.png)``
+    ''' </summary>
+    ''' <param name="expression"></param>
+    ''' <param name="overBackground"></param>
+    ''' <returns></returns>
+    Public Function FindColor(expression As String, Optional overBackground As String = Nothing) As String
+        Dim direct As String = ParseColor(expression, overBackground)
+
+        If Not direct Is Nothing Then
+            Return direct
+        End If
+
+        If expression Is Nothing Then
+            Return InvalidColor
+        End If
+
+        For Each m As Match In colorLiteral.Matches(expression)
+            Dim color As String = ParseColor(m.Value, overBackground)
+
+            If Not color Is Nothing Then
+                Return color
+            End If
+        Next
+
+        Return InvalidColor
+    End Function
+
+    ''' <summary>
     ''' parse a css color expression as the rgb color integer bits, the
     ''' <see cref="InvalidColor"/> (Nothing) will be returns if the given
     ''' expression is not a valid css color value.
@@ -142,9 +179,9 @@ Public Module ColorTool
         End If
 
         If a < 0.9 Then
-            ' composite the semi-transparent color on the white or black
-            ' background based on the color brightness
-            Dim back As String = If(a < 0.5, "#000000", "#ffffff")
+            ' composite the semi-transparent color on the given background,
+            ' or on the white/black background based on the alpha value
+            Dim back As String = If(overBackground Is Nothing, If(a < 0.5, "#000000", "#ffffff"), overBackground)
             Return Composite(back, ToHex(r, g, b), a)
         End If
 
