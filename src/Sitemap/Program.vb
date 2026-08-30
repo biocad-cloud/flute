@@ -13,7 +13,7 @@ Module Program
     <Description("Make sitemap.xml file")>
     <Argument("--site", False, CLITypes.String, AcceptTypes:={GetType(String)}, Description:="target website url or local website dir path to make sitemap, example as: https://website.com")>
     <Argument("--out", True, CLITypes.File, AcceptTypes:={GetType(String)}, Description:="result sitemap file output dir path, default is in current workdir. a sitemap.xml and sitemap.xsl will generated inside this output dir.")>
-    <Argument("--sleep", True, CLITypes.Double, AcceptTypes:={GetType(Double)}, Description:="thread sleep interval in time unit 'seconds' before fetch next url page.")>
+    <Argument("--sleep", True, CLITypes.Double, AcceptTypes:={GetType(Double)}, Description:="thread sleep interval in time unit 'seconds' before fetch next url page. this options will be disabled when working on local wwwroot dir.")>
     Public Function MakeSitemap(site As String, Optional out As String = "./", Optional sleep As Double = 0.5, Optional args As CommandLine = Nothing) As Integer
 
     End Function
