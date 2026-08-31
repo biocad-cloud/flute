@@ -1,5 +1,6 @@
 ﻿Imports System.Globalization
 Imports System.Text.RegularExpressions
+Imports Microsoft.VisualBasic.Language
 
 Public Class HttpLogEntry
 
@@ -39,7 +40,7 @@ Public Class HttpLogEntry
         Dim m As Match = LogRegex.Match(line)
         If Not m.Success Then Return Nothing   ' 格式不符，跳过
 
-        Dim entry As New ApacheLogEntry With {
+        Dim entry As New HttpLogEntry With {
             .RemoteIp = m.Groups("ip").Value,
             .Ident = m.Groups("ident").Value,
             .RemoteUser = m.Groups("user").Value,
@@ -78,7 +79,7 @@ Public Class HttpLogEntry
     End Function
 
     ' ========== 4. 时间戳解析（关键：Apache 时区无冒号，.NET 需要有冒号） ==========
-    Private Function ParseApacheTimestamp(raw As String) As DateTimeOffset?
+    Private Shared Function ParseApacheTimestamp(raw As String) As DateTimeOffset?
         If String.IsNullOrWhiteSpace(raw) Then Return Nothing
 
         ' 将 "+0000" 规范为 "+00:00"
@@ -104,4 +105,33 @@ Public Class HttpLogEntry
         Return Nothing
     End Function
 
+    ' ========== 5. 批量解析文件 ==========
+    Public Shared Iterator Function ParseApacheLogFile(logFilePath As String) As IEnumerable(Of HttpLogEntry)
+        Dim failedCount As Integer = 0
+
+        Using sr As New IO.StreamReader(logFilePath, Text.Encoding.UTF8)
+            Dim lineNo As Integer = 0
+            Dim line As Value(Of String) = ""
+
+            Do While Not (line = sr.ReadLine) Is Nothing
+                lineNo += 1
+
+                Try
+                    Dim e = ParseLine(line)
+
+                    If e IsNot Nothing Then
+                        Yield e
+                    Else
+                        failedCount += 1
+                        Call $"[SKIP] 第 {lineNo} 行格式异常: {CStr(line).Substring(0, Math.Min(80, CStr(line).Length))}...".debug
+                    End If
+                Catch ex As Exception
+                    failedCount += 1
+                    Call $"[ERR ] 第 {lineNo} 行解析异常: {ex.Message}".error
+                End Try
+            Loop
+        End Using
+
+        Call $"解析完成: 成功 {list.Count} 条，跳过/失败 {failedCount} 条".info
+    End Function
 End Class
