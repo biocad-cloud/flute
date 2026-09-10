@@ -239,8 +239,6 @@ Namespace Core.HttpStream
         Private Sub LoadMultiPart(fileName As String, parseJSON As JSONParser)
             Dim boundary As String = GetParameter(ContentType, "; boundary=")
 
-            Call $"multipart debug: contentType='{ContentType}', boundary='{boundary}'".info()
-
             If boundary Is Nothing Then
                 Call loadjQueryPOST(fileName, parseJSON)
             Else
@@ -251,8 +249,6 @@ Namespace Core.HttpStream
                     }, ContentEncoding)
                 End Using
             End If
-
-            Call $"multipart debug: form={Form.Count}, files={files.Count}".info()
         End Sub
 
         Public Shared Sub loadMultiPart(boundary$, input As Stream, load As ContentOutput, Optional contentEncoding As Encoding = Nothing)
