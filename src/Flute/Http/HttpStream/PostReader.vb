@@ -110,10 +110,12 @@ Namespace Core.HttpStream
 
             Dim [end] As Integer = header.IndexOf(ending, ap + 1)
             If [end] = -1 Then
-                Return If((ending = """"c), Nothing, header.Substring(ap))
+                Return If((ending = """"c), Nothing, header.Substring(ap).Trim())
             End If
 
-            Return header.Substring(ap + 1, [end] - ap - 1)
+            ' the raw header line may still carry a trailing CR, so the extracted
+            ' value is trimmed to keep the multipart boundary clean.
+            Return header.Substring(ap + 1, [end] - ap - 1).Trim()
         End Function
 
         ''' <summary>
